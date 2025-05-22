@@ -49,40 +49,45 @@ You can also install these when installing `dn`, like so:
 ## To and from jupyter notebooks
 
 
+    from dn import markdown_to_notebook
+
+    sample_markdown = """# Sample Notebook
+
+    This is a markdown cell with some explanation.
+
+    ```python
+    # This is a code cell
+    print("Hello, World!")
+    x = 42
+    print(f"The answer is {x}")
+    ```
+
+    ## Another Section
+
+    More markdown content here.
+
+    ```python
+    # Another code cell
+    def greet(name):
+        return f"Hello, {name}!"
+
+    print(greet("Jupyter"))
+    ```
+
+    Final markdown cell."""
+        
+
+
+Test basic functionality
+
 ```python
-from dn import markdown_to_notebook
-
-sample_markdown = """# Sample Notebook
-
-This is a markdown cell with some explanation.
-
-```python
-# This is a code cell
-print("Hello, World!")
-x = 42
-print(f"The answer is {x}")
-```
-
-## Another Section
-
-More markdown content here.
-
-```python
-# Another code cell
-def greet(name):
-    return f"Hello, {name}!"
-
-print(greet("Jupyter"))
-```
-
-Final markdown cell."""
-    
-
-# Test basic functionality
 notebook = markdown_to_notebook(sample_markdown)
 print(f"Created notebook with {len(notebook['cells'])} cells")
+```
 
-# Test with file output
+Test with file output
+
+```python
 output_path = markdown_to_notebook(
     sample_markdown,
     egress="./sample_notebook.ipynb"
