@@ -24,6 +24,7 @@ jobs:
         uses: i2mint/isee/actions/install-packages@master
         with:
           dependency-files: setup.cfg
+          pypi-packages: pypdf, mammoth, pandas, python_pptx, html2text
           # ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Uncomment this if you need to install private dependencies from source
 
       - name: Format Source Code
