@@ -1,7 +1,7 @@
 """
 General utilities for dn
 
-This module provides core utility functions used throughout the contaix package, including:
+This module provides core utility functions used throughout the dn package, including:
 - File path handling (fullpath)
 - URL detection and content retrieval (is_url, url_to_contents)
 - File saving utilities (save_to_file_and_return_file)

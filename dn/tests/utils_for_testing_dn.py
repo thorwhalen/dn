@@ -1,4 +1,4 @@
-"""Utils for testing contaix."""
+"""Utils for testing dn."""
 
 from importlib.resources import files
 from pathlib import Path

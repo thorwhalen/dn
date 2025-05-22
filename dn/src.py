@@ -29,7 +29,7 @@ from typing import (
 
 from dol import Files, TextFiles
 
-from contaix.util import (
+from dn.util import (
     fullpath,
     identity,
     is_url,
@@ -591,7 +591,7 @@ def try_to_convert_to_markdown(
 ) -> Optional[str]:
     """
     Attempts to identify the content type of the given bytes and convert it to markdown
-    using appropriate converters from contaix.markdown.
+    using appropriate converters from dn.src.
 
     Args:
         data: The byte data to convert
