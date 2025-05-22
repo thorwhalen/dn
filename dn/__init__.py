@@ -27,7 +27,7 @@ with _ignore_import_errors:
     from dn.src import docx_to_markdown  # requires mammoth
 
 with _ignore_import_errors:
-    from dn.src import excel_to_markdown  # requires pandas and openpyxl
+    from dn.src import excel_to_markdown  # requires pandas and openpyxl and tabulate
 
 with _ignore_import_errors:
     from dn.src import pptx_to_markdown  # requires python-pptx
