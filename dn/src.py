@@ -76,7 +76,7 @@ with ignore_import_errors:
 
 # Excel Conversion
 with ignore_import_errors:
-    import pandas as pd  # pip install pandas
+    import pandas as pd  # pip install pandas, openpyxl
 
     def excel_to_markdown(
         excel_bytes: bytes, *, md_inner_file_header=dflt_md_inner_file_header
