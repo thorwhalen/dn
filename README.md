@@ -5,6 +5,45 @@ Markdown parsing and generation
 To install: `pip install dn`
 
 
+## Optional Dependencies
+
+This package supports converting various file formats to Markdown, with each format requiring specific dependencies:
+
+
+    Format      Required Package(s)
+    ----------- -----------------
+    PDF         pypdf
+    Word        mammoth
+    Excel       pandas, openpyxl, tabulate
+    PowerPoint  python-pptx
+    HTML        html2text
+    Notebooks   nbconvert, nbformat
+
+**Installation Options**
+
+You can install these dependencies after the fact, if and when package complains it needs some specific resource. 
+
+You can also install these when installing `dn`, like so:
+
+```bash
+    # Install with minimal dependencies
+    pip install dn
+
+    # Install with support for specific formats
+    pip install dn[pdf]               # PDF conversion support
+    pip install dn[word]              # Word document support
+    pip install dn[excel]             # Excel support
+    pip install dn[powerpoint]        # PowerPoint support
+    pip install dn[html]              # HTML conversion
+    pip install dn[notebook]          # Jupyter Notebook support
+
+    # Install multiple format support
+    pip install dn[pdf,word,excel]    # Multiple formats
+
+    # Install all optional dependencies
+    pip install dn[all]
+```
+
 # Examples
 
 ## To and from jupyter notebooks
