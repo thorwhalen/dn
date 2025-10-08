@@ -234,7 +234,7 @@ def truncate_text(text: str, *, max_chars=200) -> str:
 # TODO: Also there's test2doc.notebook_utils.ensure_notebook_dict that givs us the json
 # TODO: Generalize to get more control over output (and source) transformation control
 def notebook_to_markdown(
-    src_notebook: str,
+    src_notebook: Optional[str] = None,
     *,
     target_file: Optional[str] = None,  # "*.md"
     output_processors: Sequence[Callable[[str], str]] = (truncate_text,),
@@ -255,8 +255,11 @@ def notebook_to_markdown(
 
 
     """
-    if "nbconvert" not in installed_packages or "nbformat" not in installed_packages:
-        raise ImportError("nbconvert and nbformat must both be installed.")
+
+    if src_notebook is None:
+        import ipynbname  # pip install ipynbname
+
+        src_notebook = str(ipynbname.path())
 
     if isinstance(src_notebook, dict):
         src_notebook = json.dumps(src_notebook)
@@ -264,7 +267,7 @@ def notebook_to_markdown(
     if isinstance(src_notebook, str) and src_notebook.startswith("~"):
         # Expand user directory
         src_notebook = os.path.expanduser(src_notebook)
-        
+
     if is_url(src_notebook):
         src_content = url_to_contents(src_notebook)
         src_notebook = save_to_file_and_return_file(src_content)
