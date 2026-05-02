@@ -5,12 +5,13 @@ Converting markdown to other formats
 import json
 import re
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional, Union
+from collections.abc import Callable
 
 
 def markdown_to_notebook(
-    markdown: Union[str, Path, bytes], *, egress: Optional[Union[Callable, str]] = None
-) -> Union[dict[str, Any], Any]:
+    markdown: str | Path | bytes, *, egress: Callable | str | None = None
+) -> dict[str, Any] | Any:
     """Convert markdown content to Jupyter notebook format.
 
     Args:
@@ -41,7 +42,7 @@ def markdown_to_notebook(
 
         return save_notebook
 
-    def _determine_output_path(input_path: Optional[str]) -> str:
+    def _determine_output_path(input_path: str | None) -> str:
         """Determine output path when egress is '.ipynb'."""
         if input_path:
             return str(Path(input_path).with_suffix('.ipynb'))

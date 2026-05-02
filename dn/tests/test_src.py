@@ -1,4 +1,3 @@
-
 """
 Tests for the markdown conversion functions in dn.
 
@@ -8,7 +7,8 @@ using the bytes_to_markdown and bytes_store_to_markdown_store functions.
 
 import os
 import pytest
-from typing import Dict, Any, Callable
+from typing import Dict, Any
+from collections.abc import Callable
 from pathlib import Path
 
 from dn.tests.utils_for_testing_dn import test_data_dir
@@ -21,7 +21,7 @@ from dn.src import bytes_to_markdown, bytes_store_to_markdown_store
 def _get_expected_content(filename: str) -> str:
     """Read the expected content for a specific file from the test data"""
     with open(
-        os.path.join(test_data_dir, f"{filename}.md"), "r", encoding="utf-8"
+        os.path.join(test_data_dir, f"{filename}.md"), encoding="utf-8"
     ) as f:
         return f.read()
 
@@ -232,7 +232,7 @@ def test_bytes_store_to_markdown_store_with_custom_egress():
     }
 
     # Define a custom egress function to aggregate content
-    def aggregate_content(store: Dict[str, str]) -> str:
+    def aggregate_content(store: dict[str, str]) -> str:
         """Combine all markdown content into a single document with headers."""
         result = "# Combined Markdown Document\n\n"
 

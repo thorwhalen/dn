@@ -9,7 +9,8 @@ This module provides core utility functions used throughout the dn package, incl
 """
 
 import os
-from typing import Union, Callable, Optional
+from typing import Union, Optional
+from collections.abc import Callable
 import requests
 from dol import written_key
 
@@ -80,7 +81,7 @@ def url_to_contents(url: str):
 
 
 def save_to_file_and_return_file(
-    obj=None, *, encoder=identity, key: Union[str, Callable] = None
+    obj=None, *, encoder=identity, key: str | Callable = None
 ):
     """
     Save `encoder(obj)` to a file using a random name in `rootdir` (or a temp directory if not provided).

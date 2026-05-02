@@ -17,15 +17,12 @@ import contextlib
 import base64
 import io
 from typing import (
-    Callable,
     Dict,
     Optional,
-    Mapping,
-    MutableMapping,
     Any,
     Union,
-    Iterable,
 )
+from collections.abc import Callable, Mapping, MutableMapping, Iterable
 
 from dol import Files, TextFiles
 
@@ -41,7 +38,7 @@ from dn.util import (
 ignore_import_errors = contextlib.suppress(ImportError)
 
 # Initialize the default converters dictionary
-dflt_converters: Dict[str, Callable[[bytes], str]] = {}
+dflt_converters: dict[str, Callable[[bytes], str]] = {}
 
 dflt_md_inner_file_header = "###"
 
@@ -197,11 +194,10 @@ def add_dflt_converter(input_format: str, converter: Callable[[bytes], str]):
 # Convert Jupyter notebooks to Markdown
 
 import os
-from typing import Sequence, Callable
+from collections.abc import Sequence, Callable
 from contextlib import suppress
 
 from dol import Pipe
-import lkj
 
 ignore_import_errors = suppress(ImportError, ModuleNotFoundError)
 
@@ -234,9 +230,9 @@ def truncate_text(text: str, *, max_chars=200) -> str:
 # TODO: Also there's test2doc.notebook_utils.ensure_notebook_dict that givs us the json
 # TODO: Generalize to get more control over output (and source) transformation control
 def notebook_to_markdown(
-    src_notebook: Optional[str] = None,
+    src_notebook: str | None = None,
     *,
-    target_file: Optional[str] = None,  # "*.md"
+    target_file: str | None = None,  # "*.md"
     output_processors: Sequence[Callable[[str], str]] = (truncate_text,),
     read_encoding: str = "utf-8",
     write_encoding: str = "utf-8",
@@ -307,7 +303,7 @@ def notebook_to_markdown(
             return cell, resources
 
     # Load notebook
-    with open(src_notebook, "r", encoding=read_encoding) as f:
+    with open(src_notebook, encoding=read_encoding) as f:
         nb = nbformat.read(f, as_version=4)
 
     # Configure exporter with preprocessor
@@ -347,7 +343,8 @@ Functions for detecting content types and converting various formats to markdown
 import io
 import binascii
 import mimetypes
-from typing import Optional, Callable, Dict, Any, Union
+from typing import Optional, Dict, Any, Union
+from collections.abc import Callable
 from pathlib import Path
 from functools import partial
 
@@ -428,7 +425,7 @@ def _is_ipynb(data: bytes) -> bool:
         return False
 
 
-def _detect_with_python_magic(data: bytes) -> Optional[str]:
+def _detect_with_python_magic(data: bytes) -> str | None:
     """
     Attempt to detect content type using python-magic if available.
 
@@ -475,7 +472,7 @@ def _detect_with_python_magic(data: bytes) -> Optional[str]:
 
 
 def _detect_content_type(
-    data: bytes, key: Optional[str] = None, *, verbose: bool = False
+    data: bytes, key: str | None = None, *, verbose: bool = False
 ) -> str:
     """
     Detect the content type of the given bytes using multiple strategies.
@@ -587,11 +584,11 @@ def _detect_content_type(
 
 def try_to_convert_to_markdown(
     data: bytes,
-    key: Optional[str] = None,
+    key: str | None = None,
     *,
-    converters: Optional[Dict[str, Callable]] = None,
+    converters: dict[str, Callable] | None = None,
     verbose: bool = False,
-) -> Optional[str]:
+) -> str | None:
     """
     Attempts to identify the content type of the given bytes and convert it to markdown
     using appropriate converters from dn.src.
@@ -662,7 +659,7 @@ def get_extension(path: str) -> str:
 
 
 def extensions_not_supported_by_converters(
-    paths: Union[str, Iterable[str]], converters: Iterable = dflt_converters
+    paths: str | Iterable[str], converters: Iterable = dflt_converters
 ):
     """
     Returns a set of file extensions that are not supported by the given converters.
@@ -739,10 +736,10 @@ def _resolve_src_bytes_store_and_target_text_store(src_files, target_store):
 
 def bytes_to_markdown(
     b: bytes,
-    input_format: Optional[str] = None,
+    input_format: str | None = None,
     *,
-    key: Optional[str] = None,
-    converters: Dict[str, Callable[[bytes], str]] = dflt_converters,
+    key: str | None = None,
+    converters: dict[str, Callable[[bytes], str]] = dflt_converters,
     fallback: Callable = default_fallback,
     ext_to_input_format: Callable[[str], str] = lambda x: x,
     try_bytes_detection: bool = True,
@@ -845,10 +842,10 @@ def bytes_to_markdown(
 
 
 def bytes_store_to_markdown_store(
-    src_files: Union[str, Mapping[str, bytes]],
-    target_store: Union[str, MutableMapping[str, bytes]] = None,
+    src_files: str | Mapping[str, bytes],
+    target_store: str | MutableMapping[str, bytes] = None,
     *,
-    converters: Dict[str, Callable[[bytes], str]] = dflt_converters,
+    converters: dict[str, Callable[[bytes], str]] = dflt_converters,
     fallback: Callable = default_fallback,
     ext_to_input_format: Callable[[str], str] = lambda x: x,
     try_bytes_detection: bool = True,
