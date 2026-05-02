@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dn.src &mdash; dn 0.0.1 documentation</title>
+  <title>dn.src &mdash; dn 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -493,11 +493,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_html</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes likely represent an HTML file.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&lt;!doctype html&#39;</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&lt;html&#39;</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="s1">&#39;&lt;html&#39;</span> <span class="ow">in</span> <span class="n">text</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;!doctype html&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;html&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="s2">&quot;&lt;html&quot;</span> <span class="ow">in</span> <span class="n">text</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -527,30 +527,30 @@
         <span class="n">mime</span> <span class="o">=</span> <span class="n">magic</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Map mime types to format identifiers</span>
-        <span class="k">if</span> <span class="n">mime</span> <span class="o">==</span> <span class="s1">&#39;application/pdf&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;pdf&#39;</span>
+        <span class="k">if</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;application/vnd.openxmlformats-officedocument.wordprocessingml.document&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;application/msword&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;application/msword&quot;</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;docx&#39;</span>
+            <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;application/vnd.ms-excel&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;application/vnd.ms-excel&quot;</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;xlsx&#39;</span>
+            <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;application/vnd.openxmlformats-officedocument.presentationml.presentation&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;application/vnd.ms-powerpoint&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.presentationml.presentation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;application/vnd.ms-powerpoint&quot;</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;pptx&#39;</span>
-        <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;text/html&#39;</span><span class="p">,</span> <span class="s1">&#39;application/xhtml+xml&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;html&#39;</span>
-        <span class="k">elif</span> <span class="n">mime</span> <span class="o">==</span> <span class="s1">&#39;application/json&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
+        <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;text/html&quot;</span><span class="p">,</span> <span class="s2">&quot;application/xhtml+xml&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
+        <span class="k">elif</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">&quot;application/json&quot;</span><span class="p">:</span>
             <span class="c1"># Need to check if it&#39;s specifically a Jupyter notebook</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="s1">&#39;ipynb&#39;</span>
+                    <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -589,36 +589,36 @@
     <span class="c1"># Fall back to signature-based detection</span>
     <span class="k">if</span> <span class="n">_is_pdf</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PDF via signature&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;pdf&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
     <span class="k">elif</span> <span class="n">_is_docx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected DOCX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;docx&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
     <span class="k">elif</span> <span class="n">_is_xlsx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected XLSX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;xlsx&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
     <span class="k">elif</span> <span class="n">_is_pptx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PPTX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;pptx&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
     <span class="k">elif</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Jupyter notebook via structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;ipynb&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
     <span class="k">elif</span> <span class="n">_is_html</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected HTML via content pattern&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;html&#39;</span>
+        <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
 
     <span class="c1"># Try to use extension from the key if available</span>
     <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
-        <span class="n">extension</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;pdf&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;docx&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;doc&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;xlsx&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;xls&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;pptx&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;ppt&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;html&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;ipynb&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;docx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;doc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;xls&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pptx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ppt&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;html&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected content type via filename extension: </span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">extension</span>
@@ -626,49 +626,49 @@
         <span class="c1"># Also try mimetypes module for extension-based detection</span>
         <span class="n">mime_type</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mime_type</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mime_type</span> <span class="o">==</span> <span class="s1">&#39;application/pdf&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mime_type</span> <span class="o">==</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">:</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PDF via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s1">&#39;pdf&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s1">&#39;application/vnd.openxmlformats-officedocument.wordprocessingml.document&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;application/msword&#39;</span><span class="p">,</span>
+                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;application/msword&quot;</span><span class="p">,</span>
             <span class="p">):</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Word document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s1">&#39;docx&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s1">&#39;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;application/vnd.ms-excel&#39;</span><span class="p">,</span>
+                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;application/vnd.ms-excel&quot;</span><span class="p">,</span>
             <span class="p">):</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Excel document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s1">&#39;xlsx&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s1">&#39;application/vnd.openxmlformats-officedocument.presentationml.presentation&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;application/vnd.ms-powerpoint&#39;</span><span class="p">,</span>
+                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.presentationml.presentation&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;application/vnd.ms-powerpoint&quot;</span><span class="p">,</span>
             <span class="p">):</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PowerPoint document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s1">&#39;pptx&#39;</span>
-            <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;text/html&#39;</span><span class="p">,</span> <span class="s1">&#39;application/xhtml+xml&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
+            <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;text/html&quot;</span><span class="p">,</span> <span class="s2">&quot;application/xhtml+xml&quot;</span><span class="p">):</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected HTML via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s1">&#39;html&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
 
     <span class="c1"># Additional text-based detection for JSON/Jupyter notebooks</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Try to decode first ~1000 bytes to see if it&#39;s text</span>
-        <span class="n">sample</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
         <span class="c1"># Check for JSON structure that might be a notebook</span>
-        <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;}&#39;</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;}&quot;</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
                     <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Jupyter notebook via JSON pattern&quot;</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="s1">&#39;ipynb&#39;</span>
+                    <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not determine content type&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s1">&#39;unknown&#39;</span>
+    <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
 
 
 <div class="viewcode-block" id="try_to_convert_to_markdown">
@@ -707,11 +707,11 @@
     <span class="c1"># First try to detect the content type</span>
     <span class="n">content_type</span> <span class="o">=</span> <span class="n">_detect_content_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s1">&#39;unknown&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
         <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not detect content type. Trying common formats...&quot;</span><span class="p">)</span>
 
         <span class="c1"># Try the most common formats in a reasonable order</span>
-        <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="s1">&#39;docx&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;xlsx&#39;</span><span class="p">,</span> <span class="s1">&#39;ipynb&#39;</span><span class="p">,</span> <span class="s1">&#39;pptx&#39;</span><span class="p">]</span>
+        <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;docx&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span> <span class="s2">&quot;pptx&quot;</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats_to_try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
@@ -912,16 +912,16 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Attempting content-based format detection&quot;</span><span class="p">)</span>
             <span class="n">content_type</span> <span class="o">=</span> <span class="n">_detect_content_type</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">content_type</span> <span class="o">!=</span> <span class="s1">&#39;unknown&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
                 <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected content type: </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">converter</span> <span class="o">=</span> <span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">content_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
                 <span class="k">if</span> <span class="n">converter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 
             <span class="c1"># If unknown, try common formats in a reasonable order</span>
-            <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s1">&#39;unknown&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
                 <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not detect content type. Trying common formats...&quot;</span><span class="p">)</span>
-                <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="s1">&#39;docx&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;xlsx&#39;</span><span class="p">,</span> <span class="s1">&#39;ipynb&#39;</span><span class="p">,</span> <span class="s1">&#39;pptx&#39;</span><span class="p">]</span>
+                <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;docx&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span> <span class="s2">&quot;pptx&quot;</span><span class="p">]</span>
 
                 <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats_to_try</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
