@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dn.repair &mdash; dn 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dn.src" href="src.html" />
+    <link rel="prev" title="dn" href="../dn.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dn.html">dn</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dn.repair</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.fix_empty_links"><code class="docutils literal notranslate"><span class="pre">fix_empty_links()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.fix_multiline_links"><code class="docutils literal notranslate"><span class="pre">fix_multiline_links()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.remove_hyperlink_crap"><code class="docutils literal notranslate"><span class="pre">remove_hyperlink_crap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.remove_improperly_double_newlines"><code class="docutils literal notranslate"><span class="pre">remove_improperly_double_newlines()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.repair_markdown"><code class="docutils literal notranslate"><span class="pre">repair_markdown()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.html">dn.src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="to.html">dn.to</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dn.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dn.repair</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dn/repair.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dn.repair">
+<span id="dn-repair"></span><h1>dn.repair<a class="headerlink" href="#module-dn.repair" title="Link to this heading"></a></h1>
+<p>Markdown repair and cleanup utilities.</p>
+<p>Pure string→string transforms for fixing common markdown artifacts.
+These arise from web scraping, AI-generated text, format conversion,
+or copy-paste from rich-text sources.</p>
+<p>Main entry point:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dn.repair</span><span class="w"> </span><span class="kn">import</span> <span class="n">repair_markdown</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Title](http://x.com) — Description.&#39;</span>
+</pre></div>
+</div>
+<p>Individual fixers can be used standalone or composed.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.fix_empty_links">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">fix_empty_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#fix_empty_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.fix_empty_links" title="Link to this definition"></a></dt>
+<dd><p>Remove empty links like <code class="docutils literal notranslate"><span class="pre">[](url)</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">&#39;before [](http://x.com) after&#39;</span><span class="p">)</span>
+<span class="go">&#39;before  after&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">&#39;[real](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[real](http://x.com)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.fix_multiline_links">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">fix_multiline_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#fix_multiline_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.fix_multiline_links" title="Link to this definition"></a></dt>
+<dd><p>Fix markdown links whose text spans multiple lines.</p>
+<p>Collapses <code class="docutils literal notranslate"><span class="pre">[title\ndescription](url)</span></code> into
+<code class="docutils literal notranslate"><span class="pre">[title](url)</span> <span class="pre">—</span> <span class="pre">description</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>md</strong> (<em>str</em>) – Markdown text.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text with multi-line links collapsed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">&#39;[Hello</span><span class="se">\n\n</span><span class="s1">World](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Hello](http://x.com) — World&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">&#39;[Single line](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Single line](http://x.com)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.remove_hyperlink_crap">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">remove_hyperlink_crap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#remove_hyperlink_crap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.remove_hyperlink_crap" title="Link to this definition"></a></dt>
+<dd><p>Remove unwanted hyperlink artifacts from text.</p>
+<p>Cleans up common artifacts from AI-generated or copy-pasted text:</p>
+<ul class="simple">
+<li><p>ChatGPT UTM tracking: <code class="docutils literal notranslate"><span class="pre">?utm_source=chatgpt.com</span></code></p></li>
+<li><p>ChatGPT citation markers: <code class="docutils literal notranslate"><span class="pre">oai_citation:\d+‡</span></code></p></li>
+<li><p>Double hyperlinks: <code class="docutils literal notranslate"><span class="pre">[[X](Y)](Y)</span></code> → <code class="docutils literal notranslate"><span class="pre">[X](Y)</span></code>
+(common when copying from Claude)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – Text to clean.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cleaned text.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">&#39;See [here](http://x.com?utm_source=chatgpt.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;See [here](http://x.com)&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">&#39;[[Title](http://x.com)](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Title](http://x.com)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.remove_improperly_double_newlines">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">remove_improperly_double_newlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#remove_improperly_double_newlines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.remove_improperly_double_newlines" title="Link to this definition"></a></dt>
+<dd><p>Remove spurious double newlines caused by whitespace-only lines.</p>
+<p>Replaces patterns like <code class="docutils literal notranslate"><span class="pre">\n</span>&#160;&#160; <span class="pre">\n</span></code> (newline, spaces, newline) with a
+single newline. Also normalizes <code class="docutils literal notranslate"><span class="pre">\r\n</span></code> and <code class="docutils literal notranslate"><span class="pre">\n\r</span></code> to <code class="docutils literal notranslate"><span class="pre">\n</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – Text to clean.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Text with spurious double newlines removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_improperly_double_newlines</span><span class="p">(</span><span class="s2">&quot;a</span><span class="se">\n\n</span><span class="s2">b</span><span class="se">\n</span><span class="s2">  </span><span class="se">\n</span><span class="s2">c&quot;</span><span class="p">)</span>
+<span class="go">&#39;a\n\nb\nc&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.repair_markdown">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">repair_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#repair_markdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.repair_markdown" title="Link to this definition"></a></dt>
+<dd><p>Fix common markdown rendering issues.</p>
+<p>Applies all available fixers in sequence:</p>
+<ol class="arabic simple">
+<li><p><strong>Multi-line links</strong>: <code class="docutils literal notranslate"><span class="pre">[text</span> <span class="pre">with\nnewlines](url)</span></code> → single-line link
+with description appended after an em-dash.</p></li>
+<li><p><strong>Empty links</strong>: <code class="docutils literal notranslate"><span class="pre">[](url)</span></code> → removed.</p></li>
+</ol>
+<p>This is useful as a post-processing step on any markdown, regardless of
+how it was generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>md</strong> (<em>str</em>) – Markdown text to repair.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Repaired markdown text.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Title](http://x.com) — Description.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Good link](http://x.com)&#39;</span><span class="p">)</span>
+<span class="go">&#39;[Good link](http://x.com)&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;before [](http://empty) after&#39;</span><span class="p">)</span>
+<span class="go">&#39;before  after&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dn.html" class="btn btn-neutral float-left" title="dn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.html" class="btn btn-neutral float-right" title="dn.src" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

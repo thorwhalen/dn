@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dn.src &mdash; dn 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dn.to" href="to.html" />
+    <link rel="prev" title="dn.repair" href="repair.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repair.html">dn.repair</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dn.src</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.add_dflt_converter"><code class="docutils literal notranslate"><span class="pre">add_dflt_converter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.bytes_store_to_markdown_store"><code class="docutils literal notranslate"><span class="pre">bytes_store_to_markdown_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.bytes_to_markdown"><code class="docutils literal notranslate"><span class="pre">bytes_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.default_fallback"><code class="docutils literal notranslate"><span class="pre">default_fallback()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.extensions_not_supported_by_converters"><code class="docutils literal notranslate"><span class="pre">extensions_not_supported_by_converters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.get_extension"><code class="docutils literal notranslate"><span class="pre">get_extension()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.notebook_to_markdown"><code class="docutils literal notranslate"><span class="pre">notebook_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.src.try_to_convert_to_markdown"><code class="docutils literal notranslate"><span class="pre">try_to_convert_to_markdown()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="to.html">dn.to</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dn.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dn.src</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dn/src.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dn.src">
+<span id="dn-src"></span><h1>dn.src<a class="headerlink" href="#module-dn.src" title="Link to this heading"></a></h1>
+<p>Converting things to markdown</p>
+<p>This module provides tools to convert various file formats (PDF, Word, Excel, PowerPoint, HTML)
+to markdown format. It includes:
+- Default converters for common file formats
+- Functions to convert bytes to markdown
+- Store-based converters for processing multiple files</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.add_dflt_converter">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">add_dflt_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dn/src.html#add_dflt_converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.add_dflt_converter" title="Link to this definition"></a></dt>
+<dd><p>Add (or change) a default converter for a given input format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.bytes_store_to_markdown_store">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">bytes_store_to_markdown_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">src_files:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.Mapping[str,</span> <span class="pre">bytes],</span> <span class="pre">target_store:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping[str,</span> <span class="pre">bytes]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">converters:</span> <span class="pre">dict[str,</span> <span class="pre">~collections.abc.Callable[[bytes],</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">{'ipynb':</span> <span class="pre">&lt;function</span> <span class="pre">notebook_to_markdown&gt;},</span> <span class="pre">fallback:</span> <span class="pre">~collections.abc.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_fallback&gt;,</span> <span class="pre">ext_to_input_format:</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;,</span> <span class="pre">try_bytes_detection:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">verbose:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">old_to_new_key:</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;,</span> <span class="pre">target_store_egress:</span> <span class="pre">~collections.abc.Callable[[~collections.abc.Mapping],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">identity&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dn/src.html#bytes_store_to_markdown_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.bytes_store_to_markdown_store" title="Link to this definition"></a></dt>
+<dd><p>Converts files to markdown using the enhanced bytes_to_markdown function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_files</strong> – Source files as a directory path or mapping</p></li>
+<li><p><strong>target_store</strong> – Target store for markdown output</p></li>
+<li><p><strong>converters</strong> – Dictionary of format-specific converters</p></li>
+<li><p><strong>fallback</strong> – Fallback conversion method</p></li>
+<li><p><strong>ext_to_input_format</strong> – Function to extract format from key</p></li>
+<li><p><strong>try_bytes_detection</strong> – Whether to try content detection from bytes</p></li>
+<li><p><strong>verbose</strong> – Whether to print detection information</p></li>
+<li><p><strong>old_to_new_key</strong> – Function to transform source keys to target keys</p></li>
+<li><p><strong>target_store_egress</strong> – Function to process the target store before returning</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of applying target_store_egress to the target store</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p># Convert all files in a directory using extension detection
+result = bytes_store_to_markdown_store(‘path/to/files’, ‘path/to/output’)</p>
+<p># Convert using content-based detection
+result = bytes_store_to_markdown_store(‘path/to/files’, ‘path/to/output’,</p>
+<blockquote>
+<div><p>ext_to_input_format=None)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.bytes_to_markdown">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">bytes_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">b:</span> <span class="pre">bytes,</span> <span class="pre">input_format:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">key:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">converters:</span> <span class="pre">dict[str,</span> <span class="pre">~collections.abc.Callable[[bytes],</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">{'ipynb':</span> <span class="pre">&lt;function</span> <span class="pre">notebook_to_markdown&gt;},</span> <span class="pre">fallback:</span> <span class="pre">~collections.abc.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_fallback&gt;,</span> <span class="pre">ext_to_input_format:</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;,</span> <span class="pre">try_bytes_detection:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">verbose:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/src.html#bytes_to_markdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.bytes_to_markdown" title="Link to this definition"></a></dt>
+<dd><p>Convert bytes to markdown text using a flexible detection strategy.</p>
+<p>The function follows this logic to find a converter:
+1. If input_format is provided, use it directly to find a converter
+2. If input_format is None but key is provided, extract format using ext_to_input_format
+3. If try_bytes_detection is True, attempt content-type detection from bytes
+4. If no converter found through above methods, use the fallback</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>b</strong> (<em>bytes</em>) – Input bytes to convert</p></li>
+<li><p><strong>input_format</strong> (<em>str</em><em>, </em><em>optional</em>) – Format of the input (e.g., ‘pdf’, ‘docx’)</p></li>
+<li><p><strong>key</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename or identifier to help with format detection</p></li>
+<li><p><strong>converters</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>]</em>) – Dictionary of format-specific converters</p></li>
+<li><p><strong>fallback</strong> (<em>Callable</em>) – Fallback conversion method</p></li>
+<li><p><strong>ext_to_input_format</strong> (<em>Callable</em>) – Function to extract format from key</p></li>
+<li><p><strong>try_bytes_detection</strong> (<em>bool</em>) – Whether to try content detection from bytes</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to print detection information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Markdown-formatted text</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p># Convert with explicit format
+md = bytes_to_markdown(pdf_bytes, ‘pdf’)</p>
+<p># Convert using filename extension
+md = bytes_to_markdown(file_bytes, key=’document.docx’)</p>
+<p># Convert using only content-based detection
+md = bytes_to_markdown(file_bytes, input_format=None,</p>
+<blockquote>
+<div><p>ext_to_input_format=None)</p>
+</div></blockquote>
+<p># Convert with explicit format and disable content detection
+md = bytes_to_markdown(file_bytes, ‘xlsx’, try_bytes_detection=False)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.default_fallback">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">default_fallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/src.html#default_fallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.default_fallback" title="Link to this definition"></a></dt>
+<dd><p>Fallback converter that attempts basic text extraction.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.extensions_not_supported_by_converters">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">extensions_not_supported_by_converters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">paths:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.Iterable[str],</span> <span class="pre">converters:</span> <span class="pre">~collections.abc.Iterable</span> <span class="pre">=</span> <span class="pre">{'ipynb':</span> <span class="pre">&lt;function</span> <span class="pre">notebook_to_markdown&gt;}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dn/src.html#extensions_not_supported_by_converters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.extensions_not_supported_by_converters" title="Link to this definition"></a></dt>
+<dd><p>Returns a set of file extensions that are not supported by the given converters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>str</em><em> or </em><em>Iterable</em>) – A list of file paths or the root directory to check for paths.</p></li>
+<li><p><strong>converters</strong> (<em>dict</em>) – An iterable of extensions supported by the converters.
+By default, it’s the default converters (a dict, so keys are considered).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set of file extensions that are not supported by the given converters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.get_extension">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">get_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/src.html#get_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.get_extension" title="Link to this definition"></a></dt>
+<dd><p>Get the extension of a file path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.notebook_to_markdown">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">notebook_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">src_notebook:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">target_file:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">output_processors:</span> <span class="pre">~collections.abc.Sequence[~collections.abc.Callable[[str],</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">(&lt;function</span> <span class="pre">truncate_text&gt;,),</span> <span class="pre">read_encoding:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'utf-8',</span> <span class="pre">write_encoding:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'utf-8'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dn/src.html#notebook_to_markdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.notebook_to_markdown" title="Link to this definition"></a></dt>
+<dd><p>Converts a Jupyter notebook to Markdown, applying a output text processors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_notebook</strong> (<em>str</em>) – Path to the source notebook or URL.</p></li>
+<li><p><strong>target_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to save the converted Markdown file. If None, returns the Markdown content.
+If it starts with ‘*’, the ‘*’ is replaced with the source notebook name.
+Popular value for target_file is ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.md’.</p></li>
+<li><p><strong>output_processors</strong> (<em>Sequence</em><em>[</em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – List of functions to process cell outputs.</p></li>
+<li><p><strong>read_encoding</strong> (<em>str</em>) – Encoding for reading the source notebook.</p></li>
+<li><p><strong>write_encoding</strong> (<em>str</em>) – Encoding for writing the Markdown file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.src.try_to_convert_to_markdown">
+<span class="sig-prename descclassname"><span class="pre">dn.src.</span></span><span class="sig-name descname"><span class="pre">try_to_convert_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dn/src.html#try_to_convert_to_markdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.src.try_to_convert_to_markdown" title="Link to this definition"></a></dt>
+<dd><p>Attempts to identify the content type of the given bytes and convert it to markdown
+using appropriate converters from dn.src.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – The byte data to convert</p></li>
+<li><p><strong>key</strong> – Optional identifier/filename to help with content detection and for verbose output</p></li>
+<li><p><strong>converters</strong> – Optional dictionary of content type to converter function mappings
+If None, uses the default converters from contexts module</p></li>
+<li><p><strong>verbose</strong> – Whether to print information about the conversion process</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Markdown string if conversion successful, None otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="repair.html" class="btn btn-neutral float-left" title="dn.repair" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="to.html" class="btn btn-neutral float-right" title="dn.to" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
