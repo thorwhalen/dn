@@ -404,11 +404,11 @@ def _is_pptx(data: bytes) -> bool:
 def _is_html(data: bytes) -> bool:
     """Check if bytes likely represent an HTML file."""
     try:
-        text = data.decode('utf-8', errors='ignore').lower()
+        text = data.decode("utf-8", errors="ignore").lower()
         return (
-            text.strip().startswith('<!doctype html')
-            or text.strip().startswith('<html')
-            or '<html' in text[:1000]
+            text.strip().startswith("<!doctype html")
+            or text.strip().startswith("<html")
+            or "<html" in text[:1000]
         )
     except Exception:
         return False
@@ -438,30 +438,30 @@ def _detect_with_python_magic(data: bytes) -> str | None:
         mime = magic.from_buffer(data, mime=True)
 
         # Map mime types to format identifiers
-        if mime == 'application/pdf':
-            return 'pdf'
+        if mime == "application/pdf":
+            return "pdf"
         elif mime in (
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/msword',
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",
         ):
-            return 'docx'
+            return "docx"
         elif mime in (
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel",
         ):
-            return 'xlsx'
+            return "xlsx"
         elif mime in (
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            'application/vnd.ms-powerpoint',
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "application/vnd.ms-powerpoint",
         ):
-            return 'pptx'
-        elif mime in ('text/html', 'application/xhtml+xml'):
-            return 'html'
-        elif mime == 'application/json':
+            return "pptx"
+        elif mime in ("text/html", "application/xhtml+xml"):
+            return "html"
+        elif mime == "application/json":
             # Need to check if it's specifically a Jupyter notebook
             try:
                 if _is_ipynb(data):
-                    return 'ipynb'
+                    return "ipynb"
             except Exception:
                 pass
             return None
@@ -500,36 +500,36 @@ def _detect_content_type(
     # Fall back to signature-based detection
     if _is_pdf(data):
         _log("Detected PDF via signature")
-        return 'pdf'
+        return "pdf"
     elif _is_docx(data):
         _log("Detected DOCX via internal structure")
-        return 'docx'
+        return "docx"
     elif _is_xlsx(data):
         _log("Detected XLSX via internal structure")
-        return 'xlsx'
+        return "xlsx"
     elif _is_pptx(data):
         _log("Detected PPTX via internal structure")
-        return 'pptx'
+        return "pptx"
     elif _is_ipynb(data):
         _log("Detected Jupyter notebook via structure")
-        return 'ipynb'
+        return "ipynb"
     elif _is_html(data):
         _log("Detected HTML via content pattern")
-        return 'html'
+        return "html"
 
     # Try to use extension from the key if available
     if key:
-        extension = Path(key).suffix.lstrip('.').lower()
+        extension = Path(key).suffix.lstrip(".").lower()
         if extension in (
-            'pdf',
-            'docx',
-            'doc',
-            'xlsx',
-            'xls',
-            'pptx',
-            'ppt',
-            'html',
-            'ipynb',
+            "pdf",
+            "docx",
+            "doc",
+            "xlsx",
+            "xls",
+            "pptx",
+            "ppt",
+            "html",
+            "ipynb",
         ):
             _log(f"Detected content type via filename extension: {extension}")
             return extension
@@ -537,49 +537,49 @@ def _detect_content_type(
         # Also try mimetypes module for extension-based detection
         mime_type, _ = mimetypes.guess_type(key)
         if mime_type:
-            if mime_type == 'application/pdf':
+            if mime_type == "application/pdf":
                 _log("Detected PDF via mimetypes")
-                return 'pdf'
+                return "pdf"
             elif mime_type in (
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/msword',
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/msword",
             ):
                 _log("Detected Word document via mimetypes")
-                return 'docx'
+                return "docx"
             elif mime_type in (
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-excel',
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
             ):
                 _log("Detected Excel document via mimetypes")
-                return 'xlsx'
+                return "xlsx"
             elif mime_type in (
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'application/vnd.ms-powerpoint',
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "application/vnd.ms-powerpoint",
             ):
                 _log("Detected PowerPoint document via mimetypes")
-                return 'pptx'
-            elif mime_type in ('text/html', 'application/xhtml+xml'):
+                return "pptx"
+            elif mime_type in ("text/html", "application/xhtml+xml"):
                 _log("Detected HTML via mimetypes")
-                return 'html'
+                return "html"
 
     # Additional text-based detection for JSON/Jupyter notebooks
     try:
         # Try to decode first ~1000 bytes to see if it's text
-        sample = data[:1000].decode('utf-8', errors='ignore')
+        sample = data[:1000].decode("utf-8", errors="ignore")
 
         # Check for JSON structure that might be a notebook
-        if sample.strip().startswith('{') and '}' in sample:
+        if sample.strip().startswith("{") and "}" in sample:
             try:
                 if _is_ipynb(data):
                     _log("Detected Jupyter notebook via JSON pattern")
-                    return 'ipynb'
+                    return "ipynb"
             except Exception:
                 pass
     except Exception:
         pass
 
     _log("Could not determine content type")
-    return 'unknown'
+    return "unknown"
 
 
 def try_to_convert_to_markdown(
@@ -616,11 +616,11 @@ def try_to_convert_to_markdown(
     # First try to detect the content type
     content_type = _detect_content_type(data, key, verbose=verbose)
 
-    if content_type == 'unknown':
+    if content_type == "unknown":
         _log("Could not detect content type. Trying common formats...")
 
         # Try the most common formats in a reasonable order
-        formats_to_try = ['pdf', 'docx', 'html', 'xlsx', 'ipynb', 'pptx']
+        formats_to_try = ["pdf", "docx", "html", "xlsx", "ipynb", "pptx"]
 
         for fmt in formats_to_try:
             if fmt in converters:
@@ -812,16 +812,16 @@ def bytes_to_markdown(
         try:
             _log("Attempting content-based format detection")
             content_type = _detect_content_type(b, key, verbose=verbose)
-            if content_type != 'unknown':
+            if content_type != "unknown":
                 _log(f"Detected content type: {content_type}")
                 converter = converters.get(content_type.lower())
                 if converter is not None:
                     return converter(b)
 
             # If unknown, try common formats in a reasonable order
-            if content_type == 'unknown':
+            if content_type == "unknown":
                 _log("Could not detect content type. Trying common formats...")
-                formats_to_try = ['pdf', 'docx', 'html', 'xlsx', 'ipynb', 'pptx']
+                formats_to_try = ["pdf", "docx", "html", "xlsx", "ipynb", "pptx"]
 
                 for fmt in formats_to_try:
                     if fmt in converters:

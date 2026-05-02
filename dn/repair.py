@@ -79,15 +79,15 @@ def fix_multiline_links(md: str) -> str:
     def _collapse_link(match):
         full_text = match.group(1)
         url = match.group(2)
-        lines = [line.strip() for line in full_text.split('\n') if line.strip()]
+        lines = [line.strip() for line in full_text.split("\n") if line.strip()]
         if len(lines) <= 1:
             return match.group(0)  # Not actually multi-line
         title = lines[0]
-        desc = ' '.join(lines[1:])
-        return f'[{title}]({url}) — {desc}'
+        desc = " ".join(lines[1:])
+        return f"[{title}]({url}) — {desc}"
 
     return re.sub(
-        r'\[([^\]]*\n[^\]]*)\]\(([^)]+)\)',
+        r"\[([^\]]*\n[^\]]*)\]\(([^)]+)\)",
         _collapse_link,
         md,
     )
@@ -103,7 +103,7 @@ def fix_empty_links(md: str) -> str:
     >>> fix_empty_links('[real](http://x.com)')
     '[real](http://x.com)'
     """
-    return re.sub(r'\[\s*\]\([^)]+\)', '', md)
+    return re.sub(r"\[\s*\]\([^)]+\)", "", md)
 
 
 def remove_hyperlink_crap(string: str) -> str:
@@ -133,14 +133,14 @@ def remove_hyperlink_crap(string: str) -> str:
     >>> remove_hyperlink_crap('[[Title](http://x.com)](http://x.com)')
     '[Title](http://x.com)'
     """
-    string = string.replace('?utm_source=chatgpt.com', '')
-    string = string.replace('&utm_source=chatgpt.com', '')
-    string = re.sub(r'oai_citation:\d*‡', '', string)
+    string = string.replace("?utm_source=chatgpt.com", "")
+    string = string.replace("&utm_source=chatgpt.com", "")
+    string = re.sub(r"oai_citation:\d*‡", "", string)
 
     # Remove double hyperlinks: [[X](Y)](Y) -> [X](Y)
     # Tolerant of trailing-slash differences
-    pattern = r'\[\[([^\]]+)\]\(([^)]+?)/?\)\]\(\2/?\)'
-    replacement = r'[\1](\2)'
+    pattern = r"\[\[([^\]]+)\]\(([^)]+?)/?\)\]\(\2/?\)"
+    replacement = r"[\1](\2)"
     string = re.sub(pattern, replacement, string)
 
     return string
@@ -167,5 +167,5 @@ def remove_improperly_double_newlines(string: str) -> str:
     >>> remove_improperly_double_newlines("a\n\nb\n  \nc")
     'a\n\nb\nc'
     """
-    string = string.replace('\n\r', '\n').replace('\r\n', '\n')
-    return re.sub(r'\n +\n', '\n', string)
+    string = string.replace("\n\r", "\n").replace("\r\n", "\n")
+    return re.sub(r"\n +\n", "\n", string)

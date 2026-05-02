@@ -14,6 +14,7 @@ from collections.abc import Callable
 import requests
 from dol import written_key
 
+
 def identity(x):
     """
     Returns the input unchanged.

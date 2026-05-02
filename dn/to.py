@@ -35,7 +35,7 @@ def markdown_to_notebook(
             full_path = Path(filepath).expanduser().resolve()
             full_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(full_path, 'w', encoding='utf-8') as f:
+            with open(full_path, "w", encoding="utf-8") as f:
                 json.dump(notebook_dict, f, indent=1, ensure_ascii=False)
 
             return str(full_path)
@@ -45,7 +45,7 @@ def markdown_to_notebook(
     def _determine_output_path(input_path: str | None) -> str:
         """Determine output path when egress is '.ipynb'."""
         if input_path:
-            return str(Path(input_path).with_suffix('.ipynb'))
+            return str(Path(input_path).with_suffix(".ipynb"))
         return "./markdown_to_notebook.ipynb"
 
     def _parse_markdown_content(content: str) -> list[dict[str, Any]]:
@@ -70,7 +70,7 @@ def markdown_to_notebook(
             }
 
         # Split content by code blocks
-        pattern = r'```(\w+)?\n(.*?)\n```'
+        pattern = r"```(\w+)?\n(.*?)\n```"
         parts = re.split(pattern, content, flags=re.DOTALL)
 
         cells = []
@@ -95,18 +95,18 @@ def markdown_to_notebook(
     input_filepath = None
 
     if isinstance(markdown, bytes):
-        content = markdown.decode('utf-8')
+        content = markdown.decode("utf-8")
     elif isinstance(markdown, Path):
         input_filepath = str(markdown)
-        content = markdown.read_text(encoding='utf-8')
+        content = markdown.read_text(encoding="utf-8")
     elif isinstance(markdown, str):
         # Check if it's a reasonable file path (no newlines, reasonable length)
-        if '\n' not in markdown and len(markdown) < 260:
+        if "\n" not in markdown and len(markdown) < 260:
             markdown_path = Path(markdown)
             try:
                 if markdown_path.exists():
                     input_filepath = str(markdown_path)
-                    content = markdown_path.read_text(encoding='utf-8')
+                    content = markdown_path.read_text(encoding="utf-8")
                 else:
                     # Treat as string content
                     content = markdown
