@@ -58,6 +58,19 @@ all = [
     "nbconvert",
     "nbformat",
 ]
+# Alias used by wads CI (install-deps-uv defaults to extras=dev). Pulling in
+# all converters lets the test suite exercise every converter path.
+dev = [
+    "pypdf",
+    "mammoth",
+    "pandas",
+    "openpyxl",
+    "tabulate",
+    "python-pptx",
+    "html2text",
+    "nbconvert",
+    "nbformat",
+]
 
 [tool.ruff]
 line-length = 88
