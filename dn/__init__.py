@@ -11,6 +11,7 @@ from dn.repair import (
     fix_empty_links,
     remove_hyperlink_crap,
     remove_improperly_double_newlines,
+    strip_repeated_lines,
 )
 
 from dn.src import (
