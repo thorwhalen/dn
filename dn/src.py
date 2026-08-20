@@ -35,7 +35,6 @@ from dn.util import (
 )
 from dn.ebook import (
     EBOOK_FORMATS,
-    ebook_to_markdown,
     register_ebook_converters,
     sniff_ebook_format,
 )

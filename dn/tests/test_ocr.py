@@ -27,7 +27,7 @@ _SCANNED_LINES = ("Scanned pages need optical", "character recognition.")
 
 def _scanned_pdf_bytes(lines=_SCANNED_LINES) -> bytes:
     """Build a PDF whose only content is a picture of some text."""
-    PIL = pytest.importorskip("PIL")
+    pytest.importorskip("PIL")
     from PIL import Image, ImageDraw, ImageFont
 
     image = Image.new("L", (1700, 200 + 140 * len(lines)), color=255)

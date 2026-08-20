@@ -33,8 +33,8 @@ import os
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Optional, Union
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from typing import Optional
+from collections.abc import Iterable, Iterator, Sequence
 
 __all__ = [
     "OcrError",

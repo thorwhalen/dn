@@ -20,7 +20,9 @@ from dn.src import bytes_to_markdown, bytes_store_to_markdown_store
 # Helper function to read the expected content
 def _get_expected_content(filename: str) -> str:
     """Read the expected content for a specific file from the test data"""
-    with open(os.path.join(test_data_dir, f"{filename}.md"), encoding="utf-8") as f:
+    with open(
+        os.path.join(test_data_dir, f"{filename}.md"), encoding="utf-8"
+    ) as f:
         return f.read()
 
 
@@ -39,9 +41,7 @@ def test_bytes_to_markdown_with_explicit_format():
 
     # Verify it worked correctly
     assert "Page 1" in markdown_content, f"md conversion of {test_key} not as expected"
-    assert (
-        "This  is  a  title" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
+    assert "This  is  a  title" in markdown_content, f"md conversion of {test_key} not as expected"
 
 
 def test_bytes_to_markdown_with_key_detection():
@@ -58,12 +58,8 @@ def test_bytes_to_markdown_with_key_detection():
     markdown_content = bytes_to_markdown(docx_bytes, input_format=None, key="test.docx")
 
     # Verify it worked correctly
-    assert (
-        "This is a title" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
-    assert (
-        "This is Heading 1" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
+    assert "This is a title" in markdown_content, f"md conversion of {test_key} not as expected"
+    assert "This is Heading 1" in markdown_content, f"md conversion of {test_key} not as expected"
 
 
 def test_bytes_to_markdown_with_content_detection():
@@ -87,12 +83,8 @@ def test_bytes_to_markdown_with_content_detection():
     )
 
     # Verify it worked correctly
-    assert (
-        "Heading 1" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
-    assert (
-        "This is a paragraph" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
+    assert "Heading 1" in markdown_content, f"md conversion of {test_key} not as expected"
+    assert "This is a paragraph" in markdown_content, f"md conversion of {test_key} not as expected"
 
 
 def test_bytes_to_markdown_with_fallback():
@@ -127,12 +119,8 @@ def test_bytes_to_markdown_excel_conversion():
     markdown_content = bytes_to_markdown(xlsx_bytes, "xlsx")
 
     # Verify it created markdown tables correctly
-    assert (
-        "Sheet: Sheet1" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
-    assert (
-        "hourly_fee" in markdown_content
-    ), f"md conversion of {test_key} not as expected"
+    assert "Sheet: Sheet1" in markdown_content, f"md conversion of {test_key} not as expected"
+    assert "hourly_fee" in markdown_content, f"md conversion of {test_key} not as expected"
     assert "hours" in markdown_content, f"md conversion of {test_key} not as expected"
     assert "total" in markdown_content, f"md conversion of {test_key} not as expected"
 
@@ -181,7 +169,7 @@ def test_bytes_store_to_markdown_store_selective_conversion():
 
     # Setup a dict with only docx and pdf files
     filtered_files = {
-        k: v for k, v in src_files.items() if k.endswith(".docx") or k.endswith(".pdf")
+        k: v for k, v in src_files.items() if k.endswith('.docx') or k.endswith('.pdf')
     }
 
     # Setup target store as an in-memory dictionary
@@ -207,7 +195,7 @@ def test_bytes_store_to_markdown_store_with_custom_key_transform():
 
     # Filter to only include a few files for simplicity
     filtered_files = {
-        k: v for k, v in src_files.items() if k in ["test.docx", "test.pdf"]
+        k: v for k, v in src_files.items() if k in ['test.docx', 'test.pdf']
     }
 
     # Setup target store
@@ -240,7 +228,7 @@ def test_bytes_store_to_markdown_store_with_custom_egress():
 
     # Filter to only include a few files for simplicity
     filtered_files = {
-        k: v for k, v in src_files.items() if k in ["test.docx", "test.pdf"]
+        k: v for k, v in src_files.items() if k in ['test.docx', 'test.pdf']
     }
 
     # Define a custom egress function to aggregate content
@@ -318,32 +306,20 @@ def test_file_content_matches_expected():
 
         # Assert content meets basic expectations based on file type
         if "docx" in filename:
-            assert (
-                "This is a title" in converted
-            ), f"md conversion of {filename} not as expected"
-            assert (
-                "This is Heading 1" in converted
-            ), f"md conversion of {filename} not as expected"
+            assert "This is a title" in converted, f"md conversion of {filename} not as expected"
+            assert "This is Heading 1" in converted, f"md conversion of {filename} not as expected"
         elif "pptx" in filename:
             assert "Slide" in converted, f"md conversion of {filename} not as expected"
         elif "pdf" in filename:
             assert "Page 1" in converted, f"md conversion of {filename} not as expected"
         elif "html" in filename:
-            assert (
-                "Heading 1" in converted
-            ), f"md conversion of {filename} not as expected"
+            assert "Heading 1" in converted, f"md conversion of {filename} not as expected"
         elif "xlsx" in filename:
             assert "Sheet:" in converted, f"md conversion of {filename} not as expected"
-            assert (
-                "hourly_fee" in converted
-            ), f"md conversion of {filename} not as expected"
+            assert "hourly_fee" in converted, f"md conversion of {filename} not as expected"
         elif "ipynb" in filename:
-            assert (
-                "Header 1" in converted
-            ), f"md conversion of {filename} not as expected"
-            assert (
-                "code block" in converted
-            ), f"md conversion of {filename} not as expected"
+            assert "Header 1" in converted, f"md conversion of {filename} not as expected"
+            assert "code block" in converted, f"md conversion of {filename} not as expected"
 
 
 def test_bytes_store_to_markdown_store_with_custom_converters():
@@ -354,13 +330,13 @@ def test_bytes_store_to_markdown_store_with_custom_converters():
     src_files = Files(test_data_dir)
 
     # Filter to only include text files
-    text_files = {k: v for k, v in src_files.items() if k.endswith(".txt")}
+    text_files = {k: v for k, v in src_files.items() if k.endswith('.txt')}
 
     # Define a custom converter for text files
     def custom_txt_converter(b: bytes) -> str:
         """A simple custom converter that adds some formatting to text files."""
-        text = b.decode("utf-8", errors="ignore")
-        lines = text.split("\n")
+        text = b.decode('utf-8', errors='ignore')
+        lines = text.split('\n')
         result = f"# Custom Converted Text File\n\n"
 
         for line in lines:
