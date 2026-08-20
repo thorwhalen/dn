@@ -32,6 +32,14 @@ from dn.ebook import (
     register_ebook_backend,  # Add your own ebook-to-markdown strategy
 )
 
+from dn.ocr import (
+    ocr_pdf_to_markdown,  # OCR a scanned (text-layer-less) PDF into markdown
+    ocr_pdf_pages,  # OCR selected pages of a PDF
+    ocr_is_available,  # Whether the OCR stack is installed
+    check_ocr_requirements,  # Report OCR requirements and how to install them
+    OcrError,  # Raised when OCR could not be performed
+)
+
 
 # --------------------------------------------------------------------------------------
 from contextlib import suppress as _suppress
