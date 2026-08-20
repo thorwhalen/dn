@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dn.repair &mdash; dn 0.0.10 documentation</title>
+  <title>dn.repair &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="dn.src" href="src.html" />
-    <link rel="prev" title="dn" href="../dn.html" /> 
+    <link rel="prev" title="dn.ocr" href="ocr.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -50,12 +50,15 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocr.html">dn.ocr</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dn.repair</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dn.repair.fix_empty_links"><code class="docutils literal notranslate"><span class="pre">fix_empty_links()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dn.repair.fix_multiline_links"><code class="docutils literal notranslate"><span class="pre">fix_multiline_links()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dn.repair.remove_hyperlink_crap"><code class="docutils literal notranslate"><span class="pre">remove_hyperlink_crap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dn.repair.remove_improperly_double_newlines"><code class="docutils literal notranslate"><span class="pre">remove_improperly_double_newlines()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dn.repair.repair_markdown"><code class="docutils literal notranslate"><span class="pre">repair_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.repair.strip_repeated_lines"><code class="docutils literal notranslate"><span class="pre">strip_repeated_lines()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="src.html">dn.src</a></li>
@@ -95,8 +98,8 @@ These arise from web scraping, AI-generated text, format conversion,
 or copy-paste from rich-text sources.</p>
 <p>Main entry point:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dn.repair</span><span class="w"> </span><span class="kn">import</span> <span class="n">repair_markdown</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Title](http://x.com) — Description.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">'[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Title](http://x.com) — Description.'</span>
 </pre></div>
 </div>
 <p>Individual fixers can be used standalone or composed.</p>
@@ -105,10 +108,10 @@ or copy-paste from rich-text sources.</p>
 <span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">fix_empty_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">md</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#fix_empty_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.fix_empty_links" title="Link to this definition"></a></dt>
 <dd><p>Remove empty links like <code class="docutils literal notranslate"><span class="pre">[](url)</span></code>.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">&#39;before [](http://x.com) after&#39;</span><span class="p">)</span>
-<span class="go">&#39;before  after&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">&#39;[real](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[real](http://x.com)&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">'before [](http://x.com) after'</span><span class="p">)</span>
+<span class="go">'before  after'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_empty_links</span><span class="p">(</span><span class="s1">'[real](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[real](http://x.com)'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -131,10 +134,10 @@ or copy-paste from rich-text sources.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">&#39;[Hello</span><span class="se">\n\n</span><span class="s1">World](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Hello](http://x.com) — World&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">&#39;[Single line](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Single line](http://x.com)&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">'[Hello</span><span class="se">\n\n</span><span class="s1">World](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Hello](http://x.com) — World'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fix_multiline_links</span><span class="p">(</span><span class="s1">'[Single line](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Single line](http://x.com)'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -162,10 +165,10 @@ or copy-paste from rich-text sources.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">&#39;See [here](http://x.com?utm_source=chatgpt.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;See [here](http://x.com)&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">&#39;[[Title](http://x.com)](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Title](http://x.com)&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">'See [here](http://x.com?utm_source=chatgpt.com)'</span><span class="p">)</span>
+<span class="go">'See [here](http://x.com)'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remove_hyperlink_crap</span><span class="p">(</span><span class="s1">'[[Title](http://x.com)](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Title](http://x.com)'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -188,8 +191,8 @@ single newline. Also normalizes <code class="docutils literal notranslate"><span
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_improperly_double_newlines</span><span class="p">(</span><span class="s2">&quot;a</span><span class="se">\n\n</span><span class="s2">b</span><span class="se">\n</span><span class="s2">  </span><span class="se">\n</span><span class="s2">c&quot;</span><span class="p">)</span>
-<span class="go">&#39;a\n\nb\nc&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remove_improperly_double_newlines</span><span class="p">(</span><span class="s2">"a</span><span class="se">\n\n</span><span class="s2">b</span><span class="se">\n</span><span class="s2">  </span><span class="se">\n</span><span class="s2">c"</span><span class="p">)</span>
+<span class="go">'a\n\nb\nc'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -218,12 +221,61 @@ how it was generated.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Title](http://x.com) — Description.&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;[Good link](http://x.com)&#39;</span><span class="p">)</span>
-<span class="go">&#39;[Good link](http://x.com)&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">&#39;before [](http://empty) after&#39;</span><span class="p">)</span>
-<span class="go">&#39;before  after&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">'[Title</span><span class="se">\n\n</span><span class="s1">Description.](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Title](http://x.com) — Description.'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">'[Good link](http://x.com)'</span><span class="p">)</span>
+<span class="go">'[Good link](http://x.com)'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repair_markdown</span><span class="p">(</span><span class="s1">'before [](http://empty) after'</span><span class="p">)</span>
+<span class="go">'before  after'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.repair.strip_repeated_lines">
+<span class="sig-prename descclassname"><span class="pre">dn.repair.</span></span><span class="sig-name descname"><span class="pre">strip_repeated_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">md:</span> <span class="pre">str,</span> <span class="pre">*,</span> <span class="pre">min_repeats:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">30,</span> <span class="pre">protect:</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">bool]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_dflt_protect_repeated&gt;,</span> <span class="pre">keep_first:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/repair.html#strip_repeated_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.repair.strip_repeated_lines" title="Link to this definition"></a></dt>
+<dd><p>Remove boilerplate lines that recur throughout scraped/aggregated markdown.</p>
+<p>Web-scrape and multi-page aggregates are dominated by chrome that repeats on every
+page – navigation sidebars, header/footer menus, cookie banners. Such a file can be
+&gt;95% duplicated boilerplate. This drops every line (compared ignoring its trailing
+newline) whose total occurrence count exceeds <code class="docutils literal notranslate"><span class="pre">min_repeats</span></code>, leaving the unique
+content behind.</p>
+<p>Structural markdown lines (blank lines, code fences, table separators) are protected
+by <code class="docutils literal notranslate"><span class="pre">protect</span></code> so formatting survives no matter how often they recur. Pair this with
+<a class="reference internal" href="#dn.repair.remove_improperly_double_newlines" title="dn.repair.remove_improperly_double_newlines"><code class="xref py py-func docutils literal notranslate"><span class="pre">remove_improperly_double_newlines()</span></code></a> afterwards to tidy the gaps left behind.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>md</strong> (<em>str</em>) – The markdown text.</p></li>
+<li><p><strong>min_repeats</strong> (<em>int</em>) – Lines occurring strictly more than this many times are removed. Defaults to 30.</p></li>
+<li><p><strong>protect</strong> (<em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>bool</em><em>]</em>) – Predicate; lines for which it returns True are always kept. Defaults to
+protecting blank lines, code fences and table separators.</p></li>
+<li><p><strong>keep_first</strong> (<em>bool</em>) – If True, keep the first occurrence of each removed line (e.g. to retain one copy
+of a nav menu as a table of contents). Defaults to False (remove all occurrences,
+since boilerplate is pure noise in an AI context).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The markdown with repeated boilerplate removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">md</span> <span class="o">=</span> <span class="s2">"# Real title</span><span class="se">\n</span><span class="s2">NAV</span><span class="se">\n</span><span class="s2">unique A</span><span class="se">\n</span><span class="s2">NAV</span><span class="se">\n</span><span class="s2">unique B</span><span class="se">\n</span><span class="s2">NAV</span><span class="se">\n</span><span class="s2">unique C</span><span class="se">\n</span><span class="s2">NAV</span><span class="se">\n</span><span class="s2">"</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">strip_repeated_lines</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">min_repeats</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="go"># Real title</span>
+<span class="go">unique A</span>
+<span class="go">unique B</span>
+<span class="go">unique C</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">strip_repeated_lines</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">min_repeats</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keep_first</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="go"># Real title</span>
+<span class="go">NAV</span>
+<span class="go">unique A</span>
+<span class="go">unique B</span>
+<span class="go">unique C</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -234,14 +286,14 @@ how it was generated.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../dn.html" class="btn btn-neutral float-left" title="dn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ocr.html" class="btn btn-neutral float-left" title="dn.ocr" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="src.html" class="btn btn-neutral float-right" title="dn.src" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

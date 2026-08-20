@@ -1,0 +1,1120 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dn.ebook &mdash; dn 0.0.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ocr.html">dn.ocr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/repair.html">dn.repair</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/src.html">dn.src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/to.html">dn.to</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/util.html">dn.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dn.ebook</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dn.ebook</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, ...) to markdown.</span>
+
+<span class="sd">Ebooks are containers of styled HTML, so the quality of the markdown you get out</span>
+<span class="sd">depends on two things: resolving the publisher's CSS (which is where emphasis and</span>
+<span class="sd">structure usually live) and rendering the result without leaving HTML soup behind.</span>
+<span class="sd">No single pure-python library does both well, so this module is organized as a</span>
+<span class="sd">**backend registry**: several conversion strategies, each declaring what it needs</span>
+<span class="sd">and which formats it handles, tried in preference order.</span>
+
+<span class="sd">The simple case is a one-liner -- point it at a file and get markdown back:</span>
+
+<span class="sd">&gt;&gt;&gt; md = ebook_to_markdown('book.epub')  # doctest: +SKIP</span>
+
+<span class="sd">The registry is open: inspect it, reorder it, or add your own strategy.</span>
+
+<span class="sd">&gt;&gt;&gt; 'calibre_pandoc' in ebook_backends()</span>
+<span class="sd">True</span>
+
+<span class="sd">Backends shipped, in default preference order:</span>
+
+<span class="sd">``calibre_pandoc``</span>
+<span class="sd">    Calibre's ``ebook-convert`` normalizes the ebook into DOCX -- which resolves</span>
+<span class="sd">    CSS classes into real character formatting -- and then ``pandoc`` renders</span>
+<span class="sd">    clean GitHub-flavored markdown. Best fidelity, and covers every format</span>
+<span class="sd">    calibre reads.</span>
+<span class="sd">``pandoc``</span>
+<span class="sd">    Pandoc reading the ebook directly. No calibre needed, but limited to the</span>
+<span class="sd">    formats pandoc understands, and it cannot resolve class-based emphasis, so</span>
+<span class="sd">    italics and bold from CSS-styled ebooks are lost.</span>
+<span class="sd">``calibre_txt``</span>
+<span class="sd">    Calibre's own markdown-flavored TXT output. No pandoc needed, but it escapes</span>
+<span class="sd">    punctuation aggressively and flattens nested blockquotes.</span>
+<span class="sd">``ebooklib``</span>
+<span class="sd">    Pure python (``ebooklib`` + ``html2text``). EPUB only, but needs no external</span>
+<span class="sd">    binary.</span>
+
+<span class="sd">Neither calibre nor pandoc is a python package. Call :func:`check_ebook_requirements`</span>
+<span class="sd">for a report of what is available and how to install what is not.</span>
+
+<span class="sd">&gt;&gt;&gt; report = check_ebook_requirements(verbose=False)</span>
+<span class="sd">&gt;&gt;&gt; sorted(report) == sorted(ebook_backends())</span>
+<span class="sd">True</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">MutableMapping</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dn.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">url_to_contents</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"EBOOK_FORMATS"</span><span class="p">,</span>
+    <span class="s2">"AUTOWIRED_EBOOK_FORMATS"</span><span class="p">,</span>
+    <span class="s2">"ebook_formats"</span><span class="p">,</span>
+    <span class="s2">"EbookBackend"</span><span class="p">,</span>
+    <span class="s2">"EbookConversionError"</span><span class="p">,</span>
+    <span class="s2">"ebook_to_markdown"</span><span class="p">,</span>
+    <span class="s2">"ebook_backends"</span><span class="p">,</span>
+    <span class="s2">"available_ebook_backends"</span><span class="p">,</span>
+    <span class="s2">"register_ebook_backend"</span><span class="p">,</span>
+    <span class="s2">"register_ebook_converters"</span><span class="p">,</span>
+    <span class="s2">"check_ebook_requirements"</span><span class="p">,</span>
+    <span class="s2">"sniff_ebook_format"</span><span class="p">,</span>
+    <span class="s2">"find_ebook_convert"</span><span class="p">,</span>
+    <span class="s2">"find_pandoc"</span><span class="p">,</span>
+    <span class="s2">"calibre_pandoc_to_markdown"</span><span class="p">,</span>
+    <span class="s2">"pandoc_to_markdown"</span><span class="p">,</span>
+    <span class="s2">"calibre_txt_to_markdown"</span><span class="p">,</span>
+    <span class="s2">"ebooklib_to_markdown"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Formats</span>
+
+<span class="c1">#: Formats :func:`ebook_to_markdown` will attempt when asked explicitly.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Deliberately excludes formats ``dn`` already converts natively (``pdf``,</span>
+<span class="c1">#: ``docx``, ``html``, ``xlsx``, ``pptx``, ``ipynb``) so registering these</span>
+<span class="c1">#: converters never shadows a lighter-weight one, and excludes image containers</span>
+<span class="c1">#: (``cbz``, ``djvu``, ...) which hold no extractable text.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Being in here does *not* mean the extension is auto-detected -- see</span>
+<span class="c1">#: :data:`AUTOWIRED_EBOOK_FORMATS`.</span>
+<span class="n">EBOOK_FORMATS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"azw"</span><span class="p">,</span>
+        <span class="s2">"azw3"</span><span class="p">,</span>
+        <span class="s2">"azw4"</span><span class="p">,</span>
+        <span class="s2">"chm"</span><span class="p">,</span>
+        <span class="s2">"epub"</span><span class="p">,</span>
+        <span class="s2">"fb2"</span><span class="p">,</span>
+        <span class="s2">"fbz"</span><span class="p">,</span>
+        <span class="s2">"htmlz"</span><span class="p">,</span>
+        <span class="s2">"kepub"</span><span class="p">,</span>
+        <span class="s2">"lit"</span><span class="p">,</span>
+        <span class="s2">"lrf"</span><span class="p">,</span>
+        <span class="s2">"mobi"</span><span class="p">,</span>
+        <span class="s2">"odt"</span><span class="p">,</span>
+        <span class="s2">"opf"</span><span class="p">,</span>
+        <span class="s2">"pdb"</span><span class="p">,</span>
+        <span class="s2">"pml"</span><span class="p">,</span>
+        <span class="s2">"pmlz"</span><span class="p">,</span>
+        <span class="s2">"pobi"</span><span class="p">,</span>
+        <span class="s2">"prc"</span><span class="p">,</span>
+        <span class="s2">"rb"</span><span class="p">,</span>
+        <span class="s2">"rtf"</span><span class="p">,</span>
+        <span class="s2">"snb"</span><span class="p">,</span>
+        <span class="s2">"tcr"</span><span class="p">,</span>
+        <span class="s2">"textile"</span><span class="p">,</span>
+        <span class="s2">"txtz"</span><span class="p">,</span>
+        <span class="s2">"updb"</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1">#: The subset of :data:`EBOOK_FORMATS` wired into ``dn``'s converter registry</span>
+<span class="c1">#: and filename-based content detection.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Several extensions calibre reads are *predominantly* something else:</span>
+<span class="c1">#: ``.rb`` is Ruby source far more often than Rocket eBook, ``.pdb`` is a</span>
+<span class="c1">#: Protein Data Bank or debug-symbol file far more often than PalmDoc, ``.prc``</span>
+<span class="c1">#: and ``.snb`` and ``.tcr`` are ambiguous, ``.opf`` is a manifest rather than a</span>
+<span class="c1">#: book, and ``.textile`` is a markup language. Auto-claiming those would route</span>
+<span class="c1">#: ordinary source files through calibre -- slow, and failing where the plain</span>
+<span class="c1">#: text fallback used to succeed. They stay convertible on explicit request via</span>
+<span class="c1">#: ``ebook_to_markdown(src, input_format='rb')``.</span>
+<span class="n">AUTOWIRED_EBOOK_FORMATS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"azw"</span><span class="p">,</span>
+        <span class="s2">"azw3"</span><span class="p">,</span>
+        <span class="s2">"azw4"</span><span class="p">,</span>
+        <span class="s2">"chm"</span><span class="p">,</span>
+        <span class="s2">"epub"</span><span class="p">,</span>
+        <span class="s2">"fb2"</span><span class="p">,</span>
+        <span class="s2">"fbz"</span><span class="p">,</span>
+        <span class="s2">"htmlz"</span><span class="p">,</span>
+        <span class="s2">"kepub"</span><span class="p">,</span>
+        <span class="s2">"lit"</span><span class="p">,</span>
+        <span class="s2">"lrf"</span><span class="p">,</span>
+        <span class="s2">"mobi"</span><span class="p">,</span>
+        <span class="s2">"odt"</span><span class="p">,</span>
+        <span class="s2">"pmlz"</span><span class="p">,</span>
+        <span class="s2">"pobi"</span><span class="p">,</span>
+        <span class="s2">"rtf"</span><span class="p">,</span>
+        <span class="s2">"txtz"</span><span class="p">,</span>
+        <span class="s2">"updb"</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1">#: Formats pandoc can read without calibre's help.</span>
+<span class="n">PANDOC_READABLE_FORMATS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"epub"</span><span class="p">,</span> <span class="s2">"fb2"</span><span class="p">,</span> <span class="s2">"odt"</span><span class="p">,</span> <span class="s2">"rtf"</span><span class="p">,</span> <span class="s2">"textile"</span><span class="p">,</span> <span class="s2">"docx"</span><span class="p">})</span>
+
+<span class="c1">#: Pandoc output target. ``-raw_html`` drops the ``&lt;span&gt;``/``&lt;div&gt;`` scaffolding</span>
+<span class="c1">#: that ebook toolchains leave behind, which is the difference between readable</span>
+<span class="c1">#: markdown and HTML soup.</span>
+<span class="n">DFLT_PANDOC_TO</span> <span class="o">=</span> <span class="s2">"gfm-raw_html"</span>
+
+
+<div class="viewcode-block" id="EbookConversionError">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.EbookConversionError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EbookConversionError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Raised when an ebook could not be converted to markdown."""</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># External tool discovery</span>
+<span class="c1">#</span>
+<span class="c1"># calibre and pandoc are ordinary executables, not python packages, so they can't</span>
+<span class="c1"># be found through import machinery. We look on PATH first, then in the places</span>
+<span class="c1"># each platform's installer actually puts them.</span>
+
+<span class="n">_CALIBRE_CANDIDATES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"/Applications/calibre.app/Contents/MacOS/ebook-convert"</span><span class="p">,</span>
+    <span class="s2">"/Applications/Calibre.app/Contents/MacOS/ebook-convert"</span><span class="p">,</span>
+    <span class="s2">"/opt/calibre/ebook-convert"</span><span class="p">,</span>
+    <span class="s2">"/usr/bin/ebook-convert"</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">"C:\Program Files\Calibre2\ebook-convert.exe"</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">"C:\Program Files (x86)\Calibre2\ebook-convert.exe"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">_PANDOC_CANDIDATES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"/opt/homebrew/bin/pandoc"</span><span class="p">,</span>
+    <span class="s2">"/usr/local/bin/pandoc"</span><span class="p">,</span>
+    <span class="s2">"/usr/bin/pandoc"</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">"C:\Program Files\Pandoc\pandoc.exe"</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_importable</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``module_name`` can be imported, without actually importing it."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_executable</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">candidates</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Find an executable on PATH, falling back to explicit candidate paths.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Executable name to look for on ``PATH`` (e.g. ``'pandoc'``).</span>
+<span class="sd">        candidates: Absolute paths to try if ``PATH`` yields nothing.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Path to the executable, or ``None`` if it could not be found.</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path</span>
+    <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">candidate</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="find_ebook_convert">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.find_ebook_convert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_ebook_convert</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Find Calibre's ``ebook-convert`` binary, or ``None`` if it isn't installed.</span>
+
+<span class="sd">    &gt;&gt;&gt; find_ebook_convert()  # doctest: +SKIP</span>
+<span class="sd">    '/Applications/calibre.app/Contents/MacOS/ebook-convert'</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_find_executable</span><span class="p">(</span><span class="s2">"ebook-convert"</span><span class="p">,</span> <span class="n">_CALIBRE_CANDIDATES</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_pandoc">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.find_pandoc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_pandoc</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Find the ``pandoc`` binary, or ``None`` if it isn't installed.</span>
+
+<span class="sd">    &gt;&gt;&gt; find_pandoc()  # doctest: +SKIP</span>
+<span class="sd">    '/opt/homebrew/bin/pandoc'</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_find_executable</span><span class="p">(</span><span class="s2">"pandoc"</span><span class="p">,</span> <span class="n">_PANDOC_CANDIDATES</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_tail</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Last few meaningful lines of tool output.</span>
+
+<span class="sd">    Calibre dumps a full python traceback on failure and puts the line that</span>
+<span class="sd">    actually explains the problem at the very end, so the tail is the useful part.</span>
+
+<span class="sd">    &gt;&gt;&gt; _tail('a\\n\\nb\\nc\\n', n_lines=2)</span>
+<span class="sd">    'b\\nc'</span>
+<span class="sd">    """</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="n">n_lines</span><span class="p">:])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span>
+    <span class="n">cmd</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Run a command, raising an :class:`EbookConversionError` that says what broke.</span>
+
+<span class="sd">    ``stdin`` is closed: a tool that decides to prompt should fail rather than</span>
+<span class="sd">    silently consume the caller's stdin and hang.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> timed out after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not run </span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="ow">or</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"replace"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> failed (exit code </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">_tail</span><span class="p">(</span><span class="n">detail</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Conversion primitives</span>
+<span class="c1">#</span>
+<span class="c1"># Each is directly callable with its full set of options. The registry below only</span>
+<span class="c1"># handles dispatch, so tuning a backend means calling these yourself (or</span>
+<span class="c1"># registering a `partial` of one).</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ebook_convert</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">dst</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">extra_args</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">ebook_convert_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Run Calibre's ``ebook-convert`` on ``src``, writing ``dst``."""</span>
+    <span class="n">ebook_convert_path</span> <span class="o">=</span> <span class="n">ebook_convert_path</span> <span class="ow">or</span> <span class="n">find_ebook_convert</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ebook_convert_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+            <span class="s2">"Calibre's ebook-convert is required but was not found. "</span>
+            <span class="o">+</span> <span class="n">_install_hint</span><span class="p">(</span><span class="s2">"calibre"</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">_run</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">ebook_convert_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst</span><span class="p">),</span> <span class="o">*</span><span class="n">extra_args</span><span class="p">],</span>
+        <span class="n">what</span><span class="o">=</span><span class="s2">"Calibre's ebook-convert"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pandoc</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">from_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">to_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_PANDOC_TO</span><span class="p">,</span>
+    <span class="n">extract_media</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra_args</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">pandoc_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Run pandoc on ``src`` and return its output as text."""</span>
+    <span class="n">pandoc_path</span> <span class="o">=</span> <span class="n">pandoc_path</span> <span class="ow">or</span> <span class="n">find_pandoc</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pandoc_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+            <span class="s2">"pandoc is required but was not found. "</span> <span class="o">+</span> <span class="n">_install_hint</span><span class="p">(</span><span class="s2">"pandoc"</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"out.md"</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">pandoc_path</span><span class="p">,</span>
+            <span class="s2">"-f"</span><span class="p">,</span>
+            <span class="n">from_format</span><span class="p">,</span>
+            <span class="s2">"-t"</span><span class="p">,</span>
+            <span class="n">to_format</span><span class="p">,</span>
+            <span class="s2">"--wrap=none"</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">),</span>
+            <span class="s2">"-o"</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">extract_media</span><span class="p">:</span>
+            <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"--extract-media=</span><span class="si">{</span><span class="n">extract_media</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_args</span><span class="p">)</span>
+        <span class="n">_run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s2">"pandoc"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="calibre_pandoc_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.calibre_pandoc_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calibre_pandoc_to_markdown</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">to_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_PANDOC_TO</span><span class="p">,</span>
+    <span class="n">extract_media</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert an ebook to markdown via Calibre's DOCX output, rendered by pandoc.</span>
+
+<span class="sd">    The DOCX detour is the point: calibre resolves the ebook's CSS into real</span>
+<span class="sd">    character formatting, so italics and bold survive as ``*emphasis*`` instead of</span>
+<span class="sd">    being dropped with the ``&lt;span class="calibre3"&gt;`` wrappers that carried them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: Path to the ebook file.</span>
+<span class="sd">        input_format: Ebook format. Unused here (calibre dispatches on the file</span>
+<span class="sd">            extension); accepted so backends share one signature.</span>
+<span class="sd">        to_format: Pandoc output target.</span>
+<span class="sd">        extract_media: Directory to write embedded images to. If ``None``, image</span>
+<span class="sd">            references are kept but the files are not extracted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
+        <span class="n">docx</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"book.docx"</span>
+        <span class="n">_ebook_convert</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">docx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_pandoc</span><span class="p">(</span>
+            <span class="n">docx</span><span class="p">,</span>
+            <span class="n">from_format</span><span class="o">=</span><span class="s2">"docx"</span><span class="p">,</span>
+            <span class="n">to_format</span><span class="o">=</span><span class="n">to_format</span><span class="p">,</span>
+            <span class="n">extract_media</span><span class="o">=</span><span class="n">extract_media</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pandoc_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.pandoc_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pandoc_to_markdown</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">to_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_PANDOC_TO</span><span class="p">,</span>
+    <span class="n">extract_media</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert an ebook to markdown with pandoc alone (no calibre).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: Path to the ebook file.</span>
+<span class="sd">        input_format: Ebook format, used as pandoc's ``-f``. Inferred from the</span>
+<span class="sd">            file extension when ``None``.</span>
+<span class="sd">        to_format: Pandoc output target.</span>
+<span class="sd">        extract_media: Directory to write embedded images to.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+<span class="sd">    """</span>
+    <span class="n">from_format</span> <span class="o">=</span> <span class="p">(</span><span class="n">input_format</span> <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_pandoc</span><span class="p">(</span>
+        <span class="n">src</span><span class="p">,</span>
+        <span class="n">from_format</span><span class="o">=</span><span class="n">from_format</span><span class="p">,</span>
+        <span class="n">to_format</span><span class="o">=</span><span class="n">to_format</span><span class="p">,</span>
+        <span class="n">extract_media</span><span class="o">=</span><span class="n">extract_media</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calibre_txt_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.calibre_txt_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calibre_txt_to_markdown</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert an ebook to markdown using Calibre's markdown-flavored TXT output.</span>
+
+<span class="sd">    A fallback for when pandoc isn't available. Calibre understands its own CSS so</span>
+<span class="sd">    emphasis survives, but it escapes punctuation aggressively (``\\(`` for ``(``)</span>
+<span class="sd">    and flattens nested blockquotes onto one line.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: Path to the ebook file.</span>
+<span class="sd">        input_format: Ebook format. Unused (calibre dispatches on the extension).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"book.txt"</span>
+        <span class="n">_ebook_convert</span><span class="p">(</span>
+            <span class="n">src</span><span class="p">,</span>
+            <span class="n">out</span><span class="p">,</span>
+            <span class="n">extra_args</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"--txt-output-formatting=markdown"</span><span class="p">,</span>
+                <span class="s2">"--keep-links"</span><span class="p">,</span>
+                <span class="s2">"--keep-image-references"</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ebooklib_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.ebooklib_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ebooklib_to_markdown</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">item_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert an EPUB to markdown in pure python, via ``ebooklib`` and ``html2text``.</span>
+
+<span class="sd">    Needs no external binary, but only reads EPUB, and cannot resolve class-based</span>
+<span class="sd">    emphasis (the CSS is never applied), so styled italics and bold are lost.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: Path to the EPUB file.</span>
+<span class="sd">        input_format: Ebook format. Only ``'epub'`` is supported.</span>
+<span class="sd">        item_separator: Text placed between successive document items.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">ebooklib</span>  <span class="c1"># pip install EbookLib</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">ebooklib</span><span class="w"> </span><span class="kn">import</span> <span class="n">epub</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">html2text</span>  <span class="c1"># pip install html2text</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+            <span class="s2">"The 'ebooklib' backend needs ebooklib and html2text. "</span>
+            <span class="o">+</span> <span class="n">_install_hint</span><span class="p">(</span><span class="s2">"ebooklib"</span><span class="p">)</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="n">book</span> <span class="o">=</span> <span class="n">epub</span><span class="o">.</span><span class="n">read_epub</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
+    <span class="n">converter</span> <span class="o">=</span> <span class="n">html2text</span><span class="o">.</span><span class="n">HTML2Text</span><span class="p">()</span>
+    <span class="n">converter</span><span class="o">.</span><span class="n">ignore_links</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">converter</span><span class="o">.</span><span class="n">ignore_images</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">converter</span><span class="o">.</span><span class="n">body_width</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># don't hard-wrap</span>
+
+    <span class="n">chunks</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">converter</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get_content</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"replace"</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">book</span><span class="o">.</span><span class="n">get_items_of_type</span><span class="p">(</span><span class="n">ebooklib</span><span class="o">.</span><span class="n">ITEM_DOCUMENT</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">item_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span> <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Backend registry</span>
+
+
+<div class="viewcode-block" id="EbookBackend">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.EbookBackend">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EbookBackend</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A strategy for turning an ebook file into markdown.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: Registry key.</span>
+<span class="sd">        convert: ``(src_path, input_format) -&gt; markdown``.</span>
+<span class="sd">        is_available: ``() -&gt; bool``, whether this backend's requirements are met.</span>
+<span class="sd">        formats: Formats handled, or ``None`` for "everything in EBOOK_FORMATS".</span>
+<span class="sd">        priority: Backends are tried in ascending priority (lowest first).</span>
+<span class="sd">        requires: Human-readable requirement names, used by</span>
+<span class="sd">            :func:`check_ebook_requirements`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">convert</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">is_available</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span>
+    <span class="n">formats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">requires</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="EbookBackend.handles">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.EbookBackend.handles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Whether this backend claims support for ``input_format``.</span>
+
+<span class="sd">        &gt;&gt;&gt; backend = EbookBackend('x', lambda s, f: '', lambda: True)</span>
+<span class="sd">        &gt;&gt;&gt; backend.handles('mobi'), backend.handles('cbz')</span>
+<span class="sd">        (True, False)</span>
+<span class="sd">        """</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="n">EBOOK_FORMATS</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">formats</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">formats</span>
+        <span class="k">return</span> <span class="n">input_format</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">formats</span></div>
+</div>
+
+
+
+<span class="n">_ebook_backends</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="register_ebook_backend">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.register_ebook_backend">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_ebook_backend</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">convert</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">is_available</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">],</span>
+    <span class="n">formats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">requires</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EbookBackend</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Register an ebook-to-markdown backend.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Registry key. Re-registering an existing name needs ``force=True``.</span>
+<span class="sd">        convert: ``(src_path, input_format) -&gt; markdown``.</span>
+<span class="sd">        is_available: ``() -&gt; bool``, checked before the backend is tried.</span>
+<span class="sd">        formats: Formats handled. ``None`` means all of :data:`EBOOK_FORMATS`.</span>
+<span class="sd">        priority: Backends are tried in ascending priority (lowest first).</span>
+<span class="sd">        requires: Human-readable requirement names, for the requirements report.</span>
+<span class="sd">        force: Overwrite an existing registration under the same name.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The registered :class:`EbookBackend`.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``name`` is already registered and ``force`` is False.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; backend = register_ebook_backend(</span>
+<span class="sd">    ...     'shouty',</span>
+<span class="sd">    ...     lambda src, fmt: 'HELLO',</span>
+<span class="sd">    ...     is_available=lambda: True,</span>
+<span class="sd">    ...     formats=['epub'],</span>
+<span class="sd">    ...     priority=99,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; try:</span>
+<span class="sd">    ...     backend.handles('epub'), backend.handles('mobi')</span>
+<span class="sd">    ... finally:</span>
+<span class="sd">    ...     _ = _ebook_backends.pop('shouty')</span>
+<span class="sd">    (True, False)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_ebook_backends</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Backend </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is already registered. Pass force=True to replace it."</span>
+        <span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">EbookBackend</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">convert</span><span class="o">=</span><span class="n">convert</span><span class="p">,</span>
+        <span class="n">is_available</span><span class="o">=</span><span class="n">is_available</span><span class="p">,</span>
+        <span class="n">formats</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">formats</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">),</span>
+        <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+        <span class="n">requires</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">requires</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">_ebook_backends</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span>
+    <span class="k">return</span> <span class="n">backend</span></div>
+
+
+
+<div class="viewcode-block" id="ebook_backends">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.ebook_backends">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ebook_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Names of all registered backends, in the order they'd be tried.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_format: If given, restrict to backends that handle that format.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Backend names, best first.</span>
+
+<span class="sd">    &gt;&gt;&gt; ebook_backends()[0]</span>
+<span class="sd">    'calibre_pandoc'</span>
+<span class="sd">    &gt;&gt;&gt; 'ebooklib' in ebook_backends('mobi')  # ebooklib is EPUB-only</span>
+<span class="sd">    False</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_sorted_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="available_ebook_backends">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.available_ebook_backends">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">available_ebook_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Names of registered backends whose requirements are actually met.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_format: If given, restrict to backends that handle that format.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Backend names, best first. Empty if nothing is installed.</span>
+
+<span class="sd">    &gt;&gt;&gt; available_ebook_backends()  # doctest: +SKIP</span>
+<span class="sd">    ('calibre_pandoc', 'pandoc', 'calibre_txt')</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_sorted_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">)</span> <span class="k">if</span> <span class="n">_safe_is_available</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ebook_formats">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.ebook_formats">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ebook_formats</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Every format some registered backend claims, right now.</span>
+
+<span class="sd">    :data:`EBOOK_FORMATS` is the built-in baseline; registering a backend with</span>
+<span class="sd">    an explicit ``formats`` adds to it. Derived live rather than snapshotted, so</span>
+<span class="sd">    a custom backend for a new format is visible to</span>
+<span class="sd">    :func:`register_ebook_converters` and to error messages.</span>
+
+<span class="sd">    &gt;&gt;&gt; 'epub' in ebook_formats()</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="n">extra</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">formats</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_ebook_backends</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">formats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">EBOOK_FORMATS</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="n">extra</span><span class="p">)</span> <span class="k">if</span> <span class="n">_ebook_backends</span> <span class="k">else</span> <span class="n">EBOOK_FORMATS</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sorted_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Registered backends in try-order, optionally filtered by format."""</span>
+    <span class="n">backends</span> <span class="o">=</span> <span class="n">_ebook_backends</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">input_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">backends</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">backends</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">handles</span><span class="p">(</span><span class="n">input_format</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">backends</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_safe_is_available</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">EbookBackend</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``backend.is_available()``, treating a raising check as "not available"."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">is_available</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Format sniffing</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_zip_declares_epub</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``data`` is a zip whose ``mimetype`` entry declares an EPUB."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"mimetype"</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">"application/epub+zip"</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">BadZipFile</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="sniff_ebook_format">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.sniff_ebook_format">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sniff_ebook_format</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Guess an ebook format from its leading bytes.</span>
+
+<span class="sd">    Recognizes EPUB (a zip whose first entry declares the epub mimetype) and the</span>
+<span class="sd">    MOBI/AZW family (a PalmDB header whose type field is ``BOOKMOBI``).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: Leading bytes of the file (at least 68 bytes to detect MOBI).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Format name (e.g. ``'epub'``), or ``None`` if unrecognized.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; sniff_ebook_format(b'not an ebook') is None</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; sniff_ebook_format(b'\\x00' * 60 + b'BOOKMOBI' + b'rest')</span>
+<span class="sd">    'mobi'</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">"PK</span><span class="se">\x03\x04</span><span class="s2">"</span><span class="p">:</span>
+        <span class="c1"># The spec puts an uncompressed "mimetype" entry first, so the cheap</span>
+        <span class="c1"># substring check catches conforming files. Plenty of real EPUBs violate</span>
+        <span class="c1"># that, so fall back to actually reading the entry.</span>
+        <span class="k">if</span> <span class="sa">b</span><span class="s2">"application/epub+zip"</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span> <span class="ow">or</span> <span class="n">_zip_declares_epub</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">"epub"</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">60</span><span class="p">:</span><span class="mi">68</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="sa">b</span><span class="s2">"BOOKMOBI"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"TEXtREAd"</span><span class="p">):</span>
+        <span class="c1"># The MOBI/AZW/AZW3 family shares this PalmDB type. Calibre reads them all</span>
+        <span class="c1"># through the same code path, so reporting 'mobi' is enough to convert.</span>
+        <span class="k">return</span> <span class="s2">"mobi"</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">"&lt;?xml"</span> <span class="ow">and</span> <span class="sa">b</span><span class="s2">"&lt;FictionBook"</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[:</span><span class="mi">2048</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">"fb2"</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># The main entry point</span>
+
+
+<div class="viewcode-block" id="ebook_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.ebook_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ebook_to_markdown</span><span class="p">(</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fallback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert an ebook to markdown.</span>
+
+<span class="sd">    Accepts whatever you have on hand -- raw bytes, a file path, or a URL -- and</span>
+<span class="sd">    picks the best available backend unless you name one.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: Ebook bytes, a path to an ebook file, or a URL to fetch one from.</span>
+<span class="sd">        input_format: Ebook format (e.g. ``'mobi'``). Inferred from the file</span>
+<span class="sd">            extension, then from the leading bytes, when not given.</span>
+<span class="sd">        backend: Name of the backend to use. When ``None``, backends are tried in</span>
+<span class="sd">            preference order (see :func:`ebook_backends`).</span>
+<span class="sd">        fallback: If a chosen backend fails mid-conversion, try the next available</span>
+<span class="sd">            one. Set ``False`` to let the first failure propagate.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        EbookConversionError: If the format can't be determined, no backend is</span>
+<span class="sd">            available, or every attempted backend failed. The message names the</span>
+<span class="sd">            missing requirements.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; ebook_to_markdown('book.epub')  # doctest: +SKIP</span>
+<span class="sd">    '# Chapter One\\n\\n...'</span>
+<span class="sd">    &gt;&gt;&gt; ebook_to_markdown(mobi_bytes, input_format='mobi')  # doctest: +SKIP</span>
+<span class="sd">    '...'</span>
+<span class="sd">    """</span>
+    <span class="n">src_bytes</span><span class="p">,</span> <span class="n">resolved_format</span> <span class="o">=</span> <span class="n">_resolve_src</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">input_format</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">resolved_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+            <span class="s2">"Could not determine the ebook format. Pass input_format explicitly, "</span>
+            <span class="sa">f</span><span class="s2">"e.g. input_format='epub'. Known formats: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">EBOOK_FORMATS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="n">resolved_format</span> <span class="o">=</span> <span class="n">resolved_format</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_ebook_backends</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Unknown backend </span><span class="si">{</span><span class="n">backend</span><span class="si">!r}</span><span class="s2">. Registered: </span><span class="si">{</span><span class="n">ebook_backends</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">_ebook_backends</span><span class="p">[</span><span class="n">backend</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_sorted_backends</span><span class="p">(</span><span class="n">resolved_format</span><span class="p">)</span> <span class="k">if</span> <span class="n">_safe_is_available</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span><span class="n">_no_backend_message</span><span class="p">(</span><span class="n">resolved_format</span><span class="p">))</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
+        <span class="n">src_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"book.</span><span class="si">{</span><span class="n">resolved_format</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">src_path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">src_bytes</span><span class="p">)</span>
+
+        <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">candidate</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">resolved_format</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">candidate</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fallback</span> <span class="ow">or</span> <span class="n">backend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Backend </span><span class="si">{</span><span class="n">candidate</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> failed converting "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">resolved_format</span><span class="si">!r}</span><span class="s2"> to markdown: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="n">tried</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">EbookConversionError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"All backends failed converting </span><span class="si">{</span><span class="n">resolved_format</span><span class="si">!r}</span><span class="s2"> to markdown:</span><span class="se">\n</span><span class="si">{</span><span class="n">tried</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_src</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Normalize ``src`` to ``(bytes, format)``, inferring the format if it can."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="n">sniff_ebook_format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">is_url</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">url_to_contents</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"?"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span> <span class="ow">or</span> <span class="n">sniff_ebook_format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span> <span class="ow">or</span> <span class="n">sniff_ebook_format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_no_backend_message</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Explain that nothing can convert ``input_format``, and how to fix that."""</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="n">_sorted_backends</span><span class="p">(</span><span class="n">input_format</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">handlers</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"No backend handles the </span><span class="si">{</span><span class="n">input_format</span><span class="si">!r}</span><span class="s2"> format. "</span>
+            <span class="sa">f</span><span class="s2">"Formats with backends: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">ebook_formats</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="n">needed</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">req</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">handlers</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">requires</span><span class="p">})</span>
+    <span class="n">hints</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  - </span><span class="si">{</span><span class="n">_install_hint</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">needed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"No available backend for </span><span class="si">{</span><span class="n">input_format</span><span class="si">!r}</span><span class="s2">: every backend that handles it "</span>
+        <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">handlers</span><span class="p">)</span><span class="si">}</span><span class="s2">) is missing its requirements.</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">"Install one of:</span><span class="se">\n</span><span class="si">{</span><span class="n">hints</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Requirements reporting</span>
+
+
+<span class="n">_INSTALL_HINTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"calibre"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"Calibre (provides ebook-convert) -- https://calibre-ebook.com/download</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"      macOS: brew install --cask calibre  |  "</span>
+        <span class="s2">"Linux: sudo apt install calibre  |  Windows: winget install calibre.calibre"</span>
+    <span class="p">),</span>
+    <span class="s2">"pandoc"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"pandoc -- https://pandoc.org/installing.html</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"      macOS: brew install pandoc  |  "</span>
+        <span class="s2">"Linux: sudo apt install pandoc  |  Windows: winget install JohnMacFarlane.Pandoc"</span>
+    <span class="p">),</span>
+    <span class="s2">"ebooklib"</span><span class="p">:</span> <span class="s2">"pip install 'dn[ebook]'  (installs EbookLib and html2text)"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_install_hint</span><span class="p">(</span><span class="n">requirement</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Installation guidance for a named requirement."""</span>
+    <span class="k">return</span> <span class="n">_INSTALL_HINTS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">requirement</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"install </span><span class="si">{</span><span class="n">requirement</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_ebook_requirements">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.check_ebook_requirements">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_ebook_requirements</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Report which ebook backends are usable, and how to install the missing ones.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        verbose: Print a human-readable report as well as returning it.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``{backend_name: {'available', 'requires', 'formats', 'install'}}``.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; report = check_ebook_requirements(verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; report['calibre_pandoc']['requires']</span>
+<span class="sd">    ('calibre', 'pandoc')</span>
+<span class="sd">    """</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">_sorted_backends</span><span class="p">():</span>
+        <span class="n">available</span> <span class="o">=</span> <span class="n">_safe_is_available</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+        <span class="n">report</span><span class="p">[</span><span class="n">backend</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"available"</span><span class="p">:</span> <span class="n">available</span><span class="p">,</span>
+            <span class="s2">"requires"</span><span class="p">:</span> <span class="n">backend</span><span class="o">.</span><span class="n">requires</span><span class="p">,</span>
+            <span class="s2">"formats"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"all"</span> <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">formats</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">formats</span><span class="p">))</span>
+            <span class="p">),</span>
+            <span class="s2">"install"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="kc">None</span> <span class="k">if</span> <span class="n">available</span> <span class="k">else</span> <span class="p">[</span><span class="n">_install_hint</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">backend</span><span class="o">.</span><span class="n">requires</span><span class="p">]</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Ebook-to-markdown backends (best first):</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">mark</span> <span class="o">=</span> <span class="s2">"OK     "</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">"available"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"MISSING"</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">mark</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">  (needs: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">'requires'</span><span class="p">])</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'nothing'</span><span class="si">}</span><span class="s2">)"</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">hint</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s2">"install"</span><span class="p">]</span> <span class="ow">or</span> <span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"      </span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"available"</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">No backend is available: ebook conversion will not work yet."</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">report</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Register the shipped backends</span>
+<span class="c1">#</span>
+<span class="c1"># Priorities encode the fidelity ranking documented in the module docstring.</span>
+
+<span class="n">register_ebook_backend</span><span class="p">(</span>
+    <span class="s2">"calibre_pandoc"</span><span class="p">,</span>
+    <span class="n">calibre_pandoc_to_markdown</span><span class="p">,</span>
+    <span class="n">is_available</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">find_ebook_convert</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find_pandoc</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">priority</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">requires</span><span class="o">=</span><span class="p">(</span><span class="s2">"calibre"</span><span class="p">,</span> <span class="s2">"pandoc"</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">register_ebook_backend</span><span class="p">(</span>
+    <span class="s2">"pandoc"</span><span class="p">,</span>
+    <span class="n">pandoc_to_markdown</span><span class="p">,</span>
+    <span class="n">is_available</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">find_pandoc</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">formats</span><span class="o">=</span><span class="n">PANDOC_READABLE_FORMATS</span><span class="p">,</span>
+    <span class="n">priority</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">requires</span><span class="o">=</span><span class="p">(</span><span class="s2">"pandoc"</span><span class="p">,),</span>
+<span class="p">)</span>
+
+<span class="n">register_ebook_backend</span><span class="p">(</span>
+    <span class="s2">"calibre_txt"</span><span class="p">,</span>
+    <span class="n">calibre_txt_to_markdown</span><span class="p">,</span>
+    <span class="n">is_available</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">find_ebook_convert</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">priority</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">requires</span><span class="o">=</span><span class="p">(</span><span class="s2">"calibre"</span><span class="p">,),</span>
+<span class="p">)</span>
+
+<span class="n">register_ebook_backend</span><span class="p">(</span>
+    <span class="s2">"ebooklib"</span><span class="p">,</span>
+    <span class="n">ebooklib_to_markdown</span><span class="p">,</span>
+    <span class="n">is_available</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"ebooklib"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"html2text"</span><span class="p">),</span>
+    <span class="n">formats</span><span class="o">=</span><span class="p">(</span><span class="s2">"epub"</span><span class="p">,),</span>
+    <span class="n">priority</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">requires</span><span class="o">=</span><span class="p">(</span><span class="s2">"ebooklib"</span><span class="p">,),</span>
+<span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Wiring into dn's converter registry</span>
+
+
+<div class="viewcode-block" id="register_ebook_converters">
+<a class="viewcode-back" href="../../module_docs/dn/ebook.html#dn.ebook.register_ebook_converters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_ebook_converters</span><span class="p">(</span>
+    <span class="n">converters</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">formats</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Add ``format -&gt; (bytes -&gt; markdown)`` entries for ebook formats.</span>
+
+<span class="sd">    Used to wire this module into ``dn.src.dflt_converters`` so that</span>
+<span class="sd">    ``bytes_to_markdown`` handles ebooks. Entries are registered whether or not a</span>
+<span class="sd">    backend is installed: calling one without calibre or pandoc raises an</span>
+<span class="sd">    :class:`EbookConversionError` naming what to install, which beats silently</span>
+<span class="sd">    falling through to a base64 dump of the file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        converters: The registry to add to.</span>
+<span class="sd">        formats: Formats to register.</span>
+<span class="sd">        force: Replace existing entries for these formats.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The (mutated) ``converters`` mapping.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; registry = {}</span>
+<span class="sd">    &gt;&gt;&gt; _ = register_ebook_converters(registry)</span>
+<span class="sd">    &gt;&gt;&gt; 'mobi' in registry and 'epub' in registry</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">formats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># The autowired baseline, plus any format a custom backend has claimed</span>
+        <span class="c1"># since import (those are opt-in by definition, so no ambiguity risk).</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="n">AUTOWIRED_EBOOK_FORMATS</span> <span class="o">|</span> <span class="p">(</span><span class="n">ebook_formats</span><span class="p">()</span> <span class="o">-</span> <span class="n">EBOOK_FORMATS</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">force</span> <span class="ow">or</span> <span class="n">fmt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
+            <span class="n">converters</span><span class="p">[</span><span class="n">fmt</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">ebook_to_markdown</span><span class="p">,</span> <span class="n">input_format</span><span class="o">=</span><span class="n">fmt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">converters</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

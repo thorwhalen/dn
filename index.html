@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to dn’s documentation! &mdash; dn 0.0.10 documentation</title>
+  <title>Welcome to dn’s documentation! &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="_static/documentation_options.js?v=9fc46840"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -49,6 +49,8 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ocr.html">dn.ocr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/repair.html">dn.repair</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/src.html">dn.src</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/to.html">dn.to</a></li>
@@ -85,12 +87,45 @@
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ebook.html">dn.ebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.AUTOWIRED_EBOOK_FORMATS"><code class="docutils literal notranslate"><span class="pre">AUTOWIRED_EBOOK_FORMATS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EBOOK_FORMATS"><code class="docutils literal notranslate"><span class="pre">EBOOK_FORMATS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EbookBackend"><code class="docutils literal notranslate"><span class="pre">EbookBackend</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EbookConversionError"><code class="docutils literal notranslate"><span class="pre">EbookConversionError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.available_ebook_backends"><code class="docutils literal notranslate"><span class="pre">available_ebook_backends()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.calibre_pandoc_to_markdown"><code class="docutils literal notranslate"><span class="pre">calibre_pandoc_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.calibre_txt_to_markdown"><code class="docutils literal notranslate"><span class="pre">calibre_txt_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.check_ebook_requirements"><code class="docutils literal notranslate"><span class="pre">check_ebook_requirements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_backends"><code class="docutils literal notranslate"><span class="pre">ebook_backends()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_formats"><code class="docutils literal notranslate"><span class="pre">ebook_formats()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_to_markdown"><code class="docutils literal notranslate"><span class="pre">ebook_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebooklib_to_markdown"><code class="docutils literal notranslate"><span class="pre">ebooklib_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.find_ebook_convert"><code class="docutils literal notranslate"><span class="pre">find_ebook_convert()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.find_pandoc"><code class="docutils literal notranslate"><span class="pre">find_pandoc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.pandoc_to_markdown"><code class="docutils literal notranslate"><span class="pre">pandoc_to_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.register_ebook_backend"><code class="docutils literal notranslate"><span class="pre">register_ebook_backend()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.register_ebook_converters"><code class="docutils literal notranslate"><span class="pre">register_ebook_converters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.sniff_ebook_format"><code class="docutils literal notranslate"><span class="pre">sniff_ebook_format()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ocr.html">dn.ocr</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_DPI"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_DPI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_LANG"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_LANG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.OcrError"><code class="docutils literal notranslate"><span class="pre">OcrError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.check_ocr_requirements"><code class="docutils literal notranslate"><span class="pre">check_ocr_requirements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.find_tesseract"><code class="docutils literal notranslate"><span class="pre">find_tesseract()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_is_available"><code class="docutils literal notranslate"><span class="pre">ocr_is_available()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_pages"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_pages()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_to_markdown"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_to_markdown()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/repair.html">dn.repair</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.fix_empty_links"><code class="docutils literal notranslate"><span class="pre">fix_empty_links()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.fix_multiline_links"><code class="docutils literal notranslate"><span class="pre">fix_multiline_links()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.remove_hyperlink_crap"><code class="docutils literal notranslate"><span class="pre">remove_hyperlink_crap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.remove_improperly_double_newlines"><code class="docutils literal notranslate"><span class="pre">remove_improperly_double_newlines()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.repair_markdown"><code class="docutils literal notranslate"><span class="pre">repair_markdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.strip_repeated_lines"><code class="docutils literal notranslate"><span class="pre">strip_repeated_lines()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/src.html">dn.src</a><ul>
@@ -126,8 +161,8 @@
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-<p>Release: 0.0.10</p>
-<p>Last change: May 14, 2026</p>
+<p>Release: 0.0.13</p>
+<p>Last change: Aug 20, 2026</p>
 </section>
 
 
@@ -140,7 +175,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

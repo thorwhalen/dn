@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; dn 0.0.10 documentation</title>
+  <title>Index &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="_static/documentation_options.js?v=9fc46840"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,8 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ocr.html">dn.ocr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/repair.html">dn.repair</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/src.html">dn.src</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/dn/to.html">dn.to</a></li>
@@ -82,13 +84,17 @@
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -99,6 +105,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/dn/src.html#dn.src.add_dflt_converter">add_dflt_converter() (in module dn.src)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.AUTOWIRED_EBOOK_FORMATS">AUTOWIRED_EBOOK_FORMATS (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.available_ebook_backends">available_ebook_backends() (in module dn.ebook)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -115,10 +127,32 @@
   </ul></td>
 </tr></table>
 
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.calibre_pandoc_to_markdown">calibre_pandoc_to_markdown() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.calibre_txt_to_markdown">calibre_txt_to_markdown() (in module dn.ebook)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.check_ebook_requirements">check_ebook_requirements() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.check_ocr_requirements">check_ocr_requirements() (in module dn.ocr)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.convert">convert (dn.ebook.EbookBackend attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/dn/src.html#dn.src.default_fallback">default_fallback() (in module dn.src)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_DPI">DFLT_OCR_DPI (in module dn.ocr)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_LANG">DFLT_OCR_LANG (in module dn.ocr)</a>
 </li>
       <li>
     dn
@@ -128,14 +162,28 @@
 </li>
       </ul></li>
       <li>
+    dn.ebook
+
+      <ul>
+        <li><a href="module_docs/dn/ebook.html#module-dn.ebook">module</a>
+</li>
+      </ul></li>
+      <li>
+    dn.ocr
+
+      <ul>
+        <li><a href="module_docs/dn/ocr.html#module-dn.ocr">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     dn.repair
 
       <ul>
         <li><a href="module_docs/dn/repair.html#module-dn.repair">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     dn.src
 
@@ -163,6 +211,22 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.ebook_backends">ebook_backends() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EBOOK_FORMATS">EBOOK_FORMATS (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.ebook_formats">ebook_formats() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.ebook_to_markdown">ebook_to_markdown() (in module dn.ebook)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend">EbookBackend (class in dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookConversionError">EbookConversionError</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.ebooklib_to_markdown">ebooklib_to_markdown() (in module dn.ebook)</a>
+</li>
       <li><a href="module_docs/dn/src.html#dn.src.extensions_not_supported_by_converters">extensions_not_supported_by_converters() (in module dn.src)</a>
 </li>
   </ul></td>
@@ -171,11 +235,19 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="module_docs/dn/repair.html#dn.repair.fix_empty_links">fix_empty_links() (in module dn.repair)</a>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.find_ebook_convert">find_ebook_convert() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.find_pandoc">find_pandoc() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.find_tesseract">find_tesseract() (in module dn.ocr)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/repair.html#dn.repair.fix_empty_links">fix_empty_links() (in module dn.repair)</a>
+</li>
       <li><a href="module_docs/dn/repair.html#dn.repair.fix_multiline_links">fix_multiline_links() (in module dn.repair)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.formats">formats (dn.ebook.EbookBackend attribute)</a>
 </li>
       <li><a href="module_docs/dn/util.html#dn.util.fullpath">fullpath() (in module dn.util)</a>
 </li>
@@ -190,6 +262,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.handles">handles() (dn.ebook.EbookBackend method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -197,6 +277,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.is_available">is_available (dn.ebook.EbookBackend attribute)</a>
+</li>
       <li><a href="module_docs/dn/util.html#dn.util.is_url">is_url() (in module dn.util)</a>
 </li>
   </ul></td>
@@ -213,6 +295,10 @@
       <ul>
         <li><a href="module_docs/dn.html#module-dn">dn</a>
 </li>
+        <li><a href="module_docs/dn/ebook.html#module-dn.ebook">dn.ebook</a>
+</li>
+        <li><a href="module_docs/dn/ocr.html#module-dn.ocr">dn.ocr</a>
+</li>
         <li><a href="module_docs/dn/repair.html#module-dn.repair">dn.repair</a>
 </li>
         <li><a href="module_docs/dn/src.html#module-dn.src">dn.src</a>
@@ -228,7 +314,39 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.name">name (dn.ebook.EbookBackend attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/dn/src.html#dn.src.notebook_to_markdown">notebook_to_markdown() (in module dn.src)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.ocr_is_available">ocr_is_available() (in module dn.ocr)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_pages">ocr_pdf_pages() (in module dn.ocr)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_to_markdown">ocr_pdf_to_markdown() (in module dn.ocr)</a>
+</li>
+      <li><a href="module_docs/dn/ocr.html#dn.ocr.OcrError">OcrError</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.pandoc_to_markdown">pandoc_to_markdown() (in module dn.ebook)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.priority">priority (dn.ebook.EbookBackend attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -236,6 +354,10 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.register_ebook_backend">register_ebook_backend() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.register_ebook_converters">register_ebook_converters() (in module dn.ebook)</a>
+</li>
       <li><a href="module_docs/dn/repair.html#dn.repair.remove_hyperlink_crap">remove_hyperlink_crap() (in module dn.repair)</a>
 </li>
   </ul></td>
@@ -244,6 +366,8 @@
 </li>
       <li><a href="module_docs/dn/repair.html#dn.repair.repair_markdown">repair_markdown() (in module dn.repair)</a>
 </li>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.EbookBackend.requires">requires (dn.ebook.EbookBackend attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -251,6 +375,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/dn/util.html#dn.util.save_to_file_and_return_file">save_to_file_and_return_file() (in module dn.util)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/dn/ebook.html#dn.ebook.sniff_ebook_format">sniff_ebook_format() (in module dn.ebook)</a>
+</li>
+      <li><a href="module_docs/dn/repair.html#dn.repair.strip_repeated_lines">strip_repeated_lines() (in module dn.repair)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -280,7 +410,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

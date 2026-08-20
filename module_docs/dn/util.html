@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dn.util &mdash; dn 0.0.10 documentation</title>
+  <title>dn.util &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -49,6 +49,8 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocr.html">dn.ocr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="repair.html">dn.repair</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src.html">dn.src</a></li>
 <li class="toctree-l1"><a class="reference internal" href="to.html">dn.to</a></li>
@@ -110,12 +112,12 @@
 </dd>
 </dl>
 <p>Example:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fullpath</span><span class="p">(</span><span class="s1">&#39;~/Downloads&#39;</span><span class="p">)</span>
-<span class="go">&#39;/home/user/Downloads&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fullpath</span><span class="p">(</span><span class="s1">'~/Downloads'</span><span class="p">)</span>
+<span class="go">'/home/user/Downloads'</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fullpath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
-<span class="go">&#39;/home/user/python_projects/aix/aix&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fullpath</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span>
+<span class="go">'/home/user/python_projects/aix/aix'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -182,16 +184,16 @@ is to use a function that generates a key based on the object.</p></li>
 </dl>
 <p>Examples:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span> <span class="o">=</span> <span class="n">save_to_file_and_return_file</span><span class="p">(</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span> <span class="o">=</span> <span class="n">save_to_file_and_return_file</span><span class="p">(</span><span class="s2">"hello world"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
-<span class="go">&#39;hello world&#39;</span>
+<span class="go">'hello world'</span>
 </pre></div>
 </div>
 <p>The default encoder is identity, so you can save binary data as well:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span> <span class="o">=</span> <span class="n">save_to_file_and_return_file</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;binary data&quot;</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span> <span class="o">=</span> <span class="n">save_to_file_and_return_file</span><span class="p">(</span><span class="sa">b</span><span class="s2">"binary data"</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
-<span class="go">b&#39;binary data&#39;</span>
+<span class="go">b'binary data'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -228,7 +230,7 @@ is to use a function that generates a key based on the object.</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

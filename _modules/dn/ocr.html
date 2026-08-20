@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dn.ocr &mdash; dn 0.0.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ocr.html">dn.ocr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/repair.html">dn.repair</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/src.html">dn.src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/to.html">dn.to</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/util.html">dn.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dn.ocr</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dn.ocr</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Read text out of PDFs that have no text layer, by OCR.</span>
+
+<span class="sd">A scanned book is a PDF full of *pictures* of pages. ``pypdf`` and friends</span>
+<span class="sd">extract nothing from it -- not an error, just an empty string -- so</span>
+<span class="sd">:func:`dn.src.pdf_to_markdown` silently produces a markdown file with headers and</span>
+<span class="sd">no content. The fix is optical character recognition: render each page to an</span>
+<span class="sd">image and run it through Tesseract.</span>
+
+<span class="sd">The everyday use is not to call this module at all. ``pdf_to_markdown`` consults</span>
+<span class="sd">it automatically for pages that yield no text, so scanned PDFs simply work:</span>
+
+<span class="sd">&gt;&gt;&gt; from dn import pdf_to_markdown  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; md = pdf_to_markdown(scanned_pdf_bytes)  # OCRs the empty pages  # doctest: +SKIP</span>
+
+<span class="sd">Call it directly when you want control over resolution, language, or which pages</span>
+<span class="sd">to process:</span>
+
+<span class="sd">&gt;&gt;&gt; md = ocr_pdf_to_markdown(pdf_bytes, dpi=400, lang='eng+fra')  # doctest: +SKIP</span>
+
+<span class="sd">OCR is slow -- expect roughly a second per page -- and needs two things that are</span>
+<span class="sd">not pure-python dependencies: the Tesseract binary, and PyMuPDF to rasterize</span>
+<span class="sd">pages. :func:`check_ocr_requirements` reports what's present and how to install</span>
+<span class="sd">what isn't.</span>
+
+<span class="sd">&gt;&gt;&gt; report = check_ocr_requirements(verbose=False)</span>
+<span class="sd">&gt;&gt;&gt; sorted(report)</span>
+<span class="sd">['pymupdf', 'pytesseract', 'tesseract']</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"OcrError"</span><span class="p">,</span>
+    <span class="s2">"ocr_pdf_to_markdown"</span><span class="p">,</span>
+    <span class="s2">"ocr_pdf_pages"</span><span class="p">,</span>
+    <span class="s2">"check_ocr_requirements"</span><span class="p">,</span>
+    <span class="s2">"find_tesseract"</span><span class="p">,</span>
+    <span class="s2">"ocr_is_available"</span><span class="p">,</span>
+    <span class="s2">"DFLT_OCR_DPI"</span><span class="p">,</span>
+    <span class="s2">"DFLT_OCR_LANG"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1">#: Rendering resolution. 300 DPI is the usual floor for reliable OCR of body</span>
+<span class="c1">#: text; below it Tesseract starts dropping small type and footnotes.</span>
+<span class="n">DFLT_OCR_DPI</span> <span class="o">=</span> <span class="mi">300</span>
+
+<span class="c1">#: Tesseract language pack(s). Combine with '+', e.g. ``'eng+fra'``.</span>
+<span class="n">DFLT_OCR_LANG</span> <span class="o">=</span> <span class="s2">"eng"</span>
+
+<span class="c1">#: A page yielding fewer characters than this is treated as having no text layer.</span>
+<span class="c1">#: Scanned pages typically extract 0 characters; a handful can leak in from</span>
+<span class="c1">#: stamped page numbers or an embedded logo, hence a small non-zero threshold.</span>
+<span class="n">DFLT_MIN_CHARS_PER_PAGE</span> <span class="o">=</span> <span class="mi">20</span>
+
+
+<div class="viewcode-block" id="OcrError">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.OcrError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OcrError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Raised when OCR could not be performed."""</span></div>
+
+
+
+<span class="n">_TESSERACT_CANDIDATES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"/opt/homebrew/bin/tesseract"</span><span class="p">,</span>
+    <span class="s2">"/usr/local/bin/tesseract"</span><span class="p">,</span>
+    <span class="s2">"/usr/bin/tesseract"</span><span class="p">,</span>
+    <span class="sa">r</span><span class="s2">"C:\Program Files\Tesseract-OCR\tesseract.exe"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">_INSTALL_HINTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"tesseract"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"Tesseract OCR engine -- https://tesseract-ocr.github.io/tessdoc/Installation.html</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"      macOS: brew install tesseract  |  "</span>
+        <span class="s2">"Linux: sudo apt install tesseract-ocr  |  "</span>
+        <span class="s2">"Windows: winget install UB-Mannheim.TesseractOCR"</span>
+    <span class="p">),</span>
+    <span class="s2">"pytesseract"</span><span class="p">:</span> <span class="s2">"pip install 'dn[ocr]'  (installs pytesseract and PyMuPDF)"</span><span class="p">,</span>
+    <span class="s2">"pymupdf"</span><span class="p">:</span> <span class="s2">"pip install 'dn[ocr]'  (installs pytesseract and PyMuPDF)"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="find_tesseract">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.find_tesseract">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_tesseract</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Find the ``tesseract`` binary, or ``None`` if it isn't installed.</span>
+
+<span class="sd">    &gt;&gt;&gt; find_tesseract()  # doctest: +SKIP</span>
+<span class="sd">    '/opt/homebrew/bin/tesseract'</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"tesseract"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path</span>
+    <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">_TESSERACT_CANDIDATES</span><span class="p">:</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">candidate</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_importable</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``module_name`` can be imported, without importing it."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="ocr_is_available">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.ocr_is_available">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ocr_is_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether everything needed to OCR a PDF is present.</span>
+
+<span class="sd">    &gt;&gt;&gt; isinstance(ocr_is_available(), bool)</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">find_tesseract</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"pytesseract"</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"fitz"</span><span class="p">)</span>  <span class="c1"># PyMuPDF</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="check_ocr_requirements">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.check_ocr_requirements">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_ocr_requirements</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Report what OCR needs, what's present, and how to install the rest.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        verbose: Print a human-readable report as well as returning it.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``{requirement: {'available': bool, 'install': str | None}}``.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; report = check_ocr_requirements(verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; set(report['tesseract']) == {'available', 'install'}</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="n">present</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"tesseract"</span><span class="p">:</span> <span class="n">find_tesseract</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"pytesseract"</span><span class="p">:</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"pytesseract"</span><span class="p">),</span>
+        <span class="s2">"pymupdf"</span><span class="p">:</span> <span class="n">_importable</span><span class="p">(</span><span class="s2">"fitz"</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"available"</span><span class="p">:</span> <span class="n">ok</span><span class="p">,</span>
+            <span class="s2">"install"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">ok</span> <span class="k">else</span> <span class="n">_INSTALL_HINTS</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ok</span> <span class="ow">in</span> <span class="n">present</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"OCR requirements:</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">mark</span> <span class="o">=</span> <span class="s2">"OK     "</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">"available"</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"MISSING"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">mark</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">"install"</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"      </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">'install'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"available"</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">OCR is unavailable: scanned PDFs will yield no text."</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">report</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_require_ocr</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Import the OCR stack, or raise an error naming what to install."""</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">name</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">check_ocr_requirements</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">"available"</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="n">hints</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  - </span><span class="si">{</span><span class="n">_INSTALL_HINTS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">OcrError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"OCR needs </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">, which is missing.</span><span class="se">\n</span><span class="si">{</span><span class="n">hints</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">fitz</span>  <span class="c1"># PyMuPDF</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pytesseract</span>
+
+    <span class="n">tesseract_cmd</span> <span class="o">=</span> <span class="n">find_tesseract</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">tesseract_cmd</span><span class="p">:</span>
+        <span class="n">pytesseract</span><span class="o">.</span><span class="n">pytesseract</span><span class="o">.</span><span class="n">tesseract_cmd</span> <span class="o">=</span> <span class="n">tesseract_cmd</span>
+    <span class="k">return</span> <span class="n">fitz</span><span class="p">,</span> <span class="n">pytesseract</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_render_page</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">page_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Render one page of an open PyMuPDF document to PNG bytes."""</span>
+    <span class="n">pixmap</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">load_page</span><span class="p">(</span><span class="n">page_number</span><span class="p">)</span><span class="o">.</span><span class="n">get_pixmap</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pixmap</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="s2">"png"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_image_to_text</span><span class="p">(</span><span class="n">image_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">pytesseract</span><span class="p">,</span> <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""OCR a single PNG image."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+    <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">image_bytes</span><span class="p">))</span> <span class="k">as</span> <span class="n">image</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pytesseract</span><span class="o">.</span><span class="n">image_to_string</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_chunked</span><span class="p">(</span><span class="n">seq</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split a sequence into consecutive chunks of at most ``size``.</span>
+
+<span class="sd">    &gt;&gt;&gt; list(_chunked([1, 2, 3, 4, 5], 2))</span>
+<span class="sd">    [[1, 2], [3, 4], [5]]</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">seq</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ocr_pdf_pages">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.ocr_pdf_pages">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ocr_pdf_pages</span><span class="p">(</span>
+    <span class="n">pdf_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_OCR_DPI</span><span class="p">,</span>
+    <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_OCR_LANG</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""OCR selected pages of a PDF.</span>
+
+<span class="sd">    Pages are rendered in small batches and OCR'd concurrently. Tesseract runs as</span>
+<span class="sd">    a subprocess, so threads genuinely parallelize it, and batching keeps the</span>
+<span class="sd">    rendered images from piling up in memory on a long book.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pdf_bytes: The PDF file's bytes.</span>
+<span class="sd">        pages: Zero-based page numbers to OCR. ``None`` means every page.</span>
+<span class="sd">        dpi: Rendering resolution. Higher is slower and usually more accurate.</span>
+<span class="sd">        lang: Tesseract language pack(s), e.g. ``'eng'`` or ``'eng+fra'``.</span>
+<span class="sd">        max_workers: Concurrent OCR workers. Defaults to the CPU count, capped</span>
+<span class="sd">            at 8.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``{page_number: text}`` for the requested pages.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        OcrError: If Tesseract, pytesseract, or PyMuPDF is missing, if</span>
+<span class="sd">            ``max_workers`` or ``dpi`` is not positive, or if a page number is</span>
+<span class="sd">            out of range.</span>
+<span class="sd">    """</span>
+    <span class="n">fitz</span><span class="p">,</span> <span class="n">pytesseract</span> <span class="o">=</span> <span class="n">_require_ocr</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">max_workers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_workers</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_workers</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OcrError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"max_workers must be at least 1; got </span><span class="si">{</span><span class="n">max_workers</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dpi</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OcrError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dpi must be positive; got </span><span class="si">{</span><span class="n">dpi</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="n">ocr_one</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_image_to_text</span><span class="p">,</span> <span class="n">pytesseract</span><span class="o">=</span><span class="n">pytesseract</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+    <span class="n">texts</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">with</span> <span class="n">fitz</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">"pdf"</span><span class="p">)</span> <span class="k">as</span> <span class="n">doc</span><span class="p">:</span>
+        <span class="n">page_numbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">page_count</span><span class="p">)</span> <span class="k">if</span> <span class="n">pages</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pages</span><span class="p">)</span>
+        <span class="n">out_of_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">page_numbers</span> <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">doc</span><span class="o">.</span><span class="n">page_count</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">out_of_range</span><span class="p">:</span>
+            <span class="c1"># Negative indices would silently OCR a page from the end and file</span>
+            <span class="c1"># it under a nonsense key, so reject rather than guess.</span>
+            <span class="k">raise</span> <span class="n">OcrError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"page numbers out of range for a </span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2">-page "</span>
+                <span class="sa">f</span><span class="s2">"document: </span><span class="si">{</span><span class="n">out_of_range</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">_chunked</span><span class="p">(</span><span class="n">page_numbers</span><span class="p">,</span> <span class="n">max_workers</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="c1"># Render on this thread (PyMuPDF documents aren't thread-safe),</span>
+                <span class="c1"># then fan the slow part out.</span>
+                <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">_render_page</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">page_number</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">ocr_one</span><span class="p">,</span> <span class="n">images</span><span class="p">)):</span>
+                    <span class="n">texts</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">texts</span></div>
+
+
+
+<div class="viewcode-block" id="ocr_pdf_to_markdown">
+<a class="viewcode-back" href="../../module_docs/dn/ocr.html#dn.ocr.ocr_pdf_to_markdown">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ocr_pdf_to_markdown</span><span class="p">(</span>
+    <span class="n">pdf_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_OCR_DPI</span><span class="p">,</span>
+    <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_OCR_LANG</span><span class="p">,</span>
+    <span class="n">md_inner_file_header</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"###"</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""OCR an entire PDF and return it as markdown, one section per page.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pdf_bytes: The PDF file's bytes.</span>
+<span class="sd">        dpi: Rendering resolution.</span>
+<span class="sd">        lang: Tesseract language pack(s).</span>
+<span class="sd">        md_inner_file_header: Header level used for the per-page headings.</span>
+<span class="sd">        max_workers: Concurrent OCR workers.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Markdown text.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        OcrError: If the OCR stack is not installed.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; md = ocr_pdf_to_markdown(scanned_pdf_bytes)  # doctest: +SKIP</span>
+<span class="sd">    '### Page 1\\n\\nTHE VISUAL DISPLAY...'</span>
+<span class="sd">    """</span>
+    <span class="n">texts</span> <span class="o">=</span> <span class="n">ocr_pdf_pages</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Page </span><span class="si">{</span><span class="n">page_number</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">texts</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">for</span> <span class="n">page_number</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -3,6 +3,8 @@
    :caption: Contents:
 
    module_docs/dn
+   module_docs/dn/ebook
+   module_docs/dn/ocr
    module_docs/dn/repair
    module_docs/dn/src
    module_docs/dn/to

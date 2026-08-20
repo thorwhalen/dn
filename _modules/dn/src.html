@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dn.src &mdash; dn 0.0.10 documentation</title>
+  <title>dn.src &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,8 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ocr.html">dn.ocr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/repair.html">dn.repair</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/src.html">dn.src</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/to.html">dn.to</a></li>
@@ -78,7 +80,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dn.src</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Converting things to markdown</span>
 
 <span class="sd">This module provides tools to convert various file formats (PDF, Word, Excel, PowerPoint, HTML)</span>
@@ -86,7 +88,7 @@
 <span class="sd">- Default converters for common file formats</span>
 <span class="sd">- Functions to convert bytes to markdown</span>
 <span class="sd">- Store-based converters for processing multiple files</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="c1"># Note: This module is also vendored in dn package</span>
 <span class="c1"># TODO: Keep in sync and centralize when makes sense</span>
@@ -113,6 +115,17 @@
     <span class="n">url_to_contents</span><span class="p">,</span>
     <span class="n">save_to_file_and_return_file</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dn.ebook</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AUTOWIRED_EBOOK_FORMATS</span><span class="p">,</span>
+    <span class="n">EBOOK_FORMATS</span><span class="p">,</span>
+    <span class="n">register_ebook_converters</span><span class="p">,</span>
+    <span class="n">sniff_ebook_format</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dn.ocr</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DFLT_MIN_CHARS_PER_PAGE</span><span class="p">,</span>
+    <span class="n">ocr_is_available</span><span class="p">,</span>
+    <span class="n">ocr_pdf_pages</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Import libraries with error suppression</span>
 <span class="n">ignore_import_errors</span> <span class="o">=</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">)</span>
@@ -120,36 +133,121 @@
 <span class="c1"># Initialize the default converters dictionary</span>
 <span class="n">dflt_converters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 
-<span class="n">dflt_md_inner_file_header</span> <span class="o">=</span> <span class="s2">&quot;###&quot;</span>
+<span class="n">dflt_md_inner_file_header</span> <span class="o">=</span> <span class="s2">"###"</span>
 
 <span class="c1"># PDF Conversion</span>
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pypdf</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">pdf_to_markdown</span><span class="p">(</span>
-        <span class="n">pdf_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">md_inner_file_header</span><span class="o">=</span><span class="n">dflt_md_inner_file_header</span>
+        <span class="n">pdf_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">md_inner_file_header</span><span class="o">=</span><span class="n">dflt_md_inner_file_header</span><span class="p">,</span>
+        <span class="n">ocr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="n">ocr_min_chars_per_page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_MIN_CHARS_PER_PAGE</span><span class="p">,</span>
+        <span class="n">ocr_dpi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ocr_lang</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ocr_max_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert PDF to markdown text.&quot;&quot;&quot;</span>
-        <span class="n">pdf_reader</span> <span class="o">=</span> <span class="n">pypdf</span><span class="o">.</span><span class="n">PdfReader</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">))</span>
-        <span class="n">pages</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pdf_reader</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span>
-            <span class="n">pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Page </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Convert PDF to markdown text.</span>
 
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span>
+<span class="sd">        Args:</span>
+<span class="sd">            pdf_bytes: The PDF file's bytes.</span>
+<span class="sd">            md_inner_file_header: Header level for the per-page headings.</span>
+<span class="sd">            ocr: What to do about pages with no extractable text.</span>
+
+<span class="sd">                ``'auto'`` (default)</span>
+<span class="sd">                    OCR only when the PDF has *no* text layer at all -- i.e. a</span>
+<span class="sd">                    scanned book, where the alternative is an empty result.</span>
+<span class="sd">                    Requires the OCR stack; without it, conversion proceeds</span>
+<span class="sd">                    without OCR rather than failing, and an OCR error is</span>
+<span class="sd">                    swallowed in favour of the plain-extraction result.</span>
+<span class="sd">                ``True``</span>
+<span class="sd">                    OCR every text-less page, even in a PDF that is mostly text</span>
+<span class="sd">                    (scanned plates, inserts). Raises if OCR is unavailable or</span>
+<span class="sd">                    fails.</span>
+<span class="sd">                ``False``</span>
+<span class="sd">                    Never OCR.</span>
+
+<span class="sd">            ocr_min_chars_per_page: Below this many extracted characters, a page</span>
+<span class="sd">                counts as having no text layer.</span>
+<span class="sd">            ocr_dpi: Rendering resolution, defaults to :data:`dn.ocr.DFLT_OCR_DPI`.</span>
+<span class="sd">            ocr_lang: Tesseract language pack(s), e.g. ``'eng+fra'``.</span>
+<span class="sd">            ocr_max_workers: Concurrent OCR workers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Markdown text.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``.</span>
+<span class="sd">            dn.ocr.OcrError: If ``ocr=True`` and OCR is unavailable or fails.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            OCR costs roughly a second per page. Under ``'auto'`` a text PDF</span>
+<span class="sd">            never pays it -- not even one with blank or figure-only pages, since</span>
+<span class="sd">            the whole document must be text-less for OCR to engage.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">ocr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"ocr must be 'auto', True, or False; got </span><span class="si">{</span><span class="n">ocr</span><span class="si">!r}</span><span class="s2">. "</span>
+                <span class="s2">"(A truthy string is not a way to disable OCR.)"</span>
+            <span class="p">)</span>
+
+        <span class="n">pdf_reader</span> <span class="o">=</span> <span class="n">pypdf</span><span class="o">.</span><span class="n">PdfReader</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">))</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">""</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pdf_reader</span><span class="o">.</span><span class="n">pages</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ocr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">empty</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">i</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">ocr_min_chars_per_page</span>
+            <span class="p">]</span>
+            <span class="c1"># 'auto' targets scanned documents only: every page text-less. A</span>
+            <span class="c1"># text PDF with a few plate pages is left alone, because OCRing it</span>
+            <span class="c1"># would cost minutes for a handful of figure captions.</span>
+            <span class="n">engage</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">empty</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">empty</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span> <span class="k">if</span> <span class="n">ocr</span> <span class="o">==</span> <span class="s2">"auto"</span> <span class="k">else</span> <span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">engage</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ocr</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">ocr_is_available</span><span class="p">()):</span>
+                <span class="n">ocr_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="s2">"dpi"</span><span class="p">,</span> <span class="n">ocr_dpi</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s2">"lang"</span><span class="p">,</span> <span class="n">ocr_lang</span><span class="p">),</span>
+                        <span class="p">(</span><span class="s2">"max_workers"</span><span class="p">,</span> <span class="n">ocr_max_workers</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">page_number</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">ocr_pdf_pages</span><span class="p">(</span>
+                        <span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">pages</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">ocr_kwargs</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">texts</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">text</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># 'auto' is opportunistic: a missing language pack or a</span>
+                    <span class="c1"># render failure must not take down a whole directory</span>
+                    <span class="c1"># conversion. ocr=True asked for it, so it gets the error.</span>
+                    <span class="k">if</span> <span class="n">ocr</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Page </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"pdf"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span>
 
 <span class="c1"># Microsoft Office Conversion</span>
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">mammoth</span>  <span class="c1"># for .docx  # pip install mammoth</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">docx_to_markdown</span><span class="p">(</span><span class="n">docx_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert DOCX to markdown.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert DOCX to markdown."""</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">mammoth</span><span class="o">.</span><span class="n">convert_to_markdown</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">docx_bytes</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span>
 
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;docx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">docx_to_markdown</span>
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;doc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">docx_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"docx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">docx_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"doc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">docx_to_markdown</span>
 
 <span class="c1"># Excel Conversion</span>
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
@@ -158,21 +256,21 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">excel_to_markdown</span><span class="p">(</span>
         <span class="n">excel_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">md_inner_file_header</span><span class="o">=</span><span class="n">dflt_md_inner_file_header</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert Excel files to markdown tables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert Excel files to markdown tables."""</span>
         <span class="c1"># Support both xls and xlsx</span>
         <span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">excel_bytes</span><span class="p">),</span> <span class="n">sheet_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">markdown_output</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">sheet_name</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">markdown_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Sheet: </span><span class="si">{</span><span class="n">sheet_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">markdown_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Sheet: </span><span class="si">{</span><span class="n">sheet_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
             <span class="c1"># Convert DataFrame to markdown table</span>
             <span class="n">markdown_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_markdown</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-            <span class="n">markdown_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">markdown_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">markdown_output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">markdown_output</span><span class="p">)</span>
 
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;xlsx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">excel_to_markdown</span>
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;xls&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">excel_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"xlsx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">excel_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"xls"</span><span class="p">]</span> <span class="o">=</span> <span class="n">excel_to_markdown</span>
 
 <span class="c1"># PowerPoint Conversion</span>
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
@@ -181,33 +279,33 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">pptx_to_markdown</span><span class="p">(</span>
         <span class="n">pptx_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">md_inner_file_header</span><span class="o">=</span><span class="n">dflt_md_inner_file_header</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert PowerPoint to markdown.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert PowerPoint to markdown."""</span>
         <span class="n">presentation</span> <span class="o">=</span> <span class="n">pptx</span><span class="o">.</span><span class="n">Presentation</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">pptx_bytes</span><span class="p">))</span>
         <span class="n">slides</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slide</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">presentation</span><span class="o">.</span><span class="n">slides</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">slide_text</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Slide </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">]</span>
+            <span class="n">slide_text</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Slide </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">]</span>
 
             <span class="c1"># Extract text from various elements</span>
             <span class="k">for</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">slide</span><span class="o">.</span><span class="n">shapes</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">):</span>
                     <span class="n">slide_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
-            <span class="n">slides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slide_text</span><span class="p">))</span>
+            <span class="n">slides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slide_text</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slides</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">slides</span><span class="p">)</span>
 
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;pptx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pptx_to_markdown</span>
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;ppt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pptx_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"pptx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pptx_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"ppt"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pptx_to_markdown</span>
 
 <span class="c1"># HTML Conversion</span>
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">html2text</span>  <span class="c1"># pip install html2text</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">html_to_markdown</span><span class="p">(</span><span class="n">html_bytes</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert HTML to markdown.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert HTML to markdown."""</span>
         <span class="c1"># Decode bytes to string</span>
-        <span class="n">html_str</span> <span class="o">=</span> <span class="n">html_bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">html_str</span> <span class="o">=</span> <span class="n">html_bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
 
         <span class="c1"># Create HTML to Markdown converter</span>
         <span class="n">h</span> <span class="o">=</span> <span class="n">html2text</span><span class="o">.</span><span class="n">HTML2Text</span><span class="p">()</span>
@@ -216,17 +314,17 @@
 
         <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">html_str</span><span class="p">)</span>
 
-    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;html&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">html_to_markdown</span>
+    <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"html"</span><span class="p">]</span> <span class="o">=</span> <span class="n">html_to_markdown</span>
 
 
 <span class="c1"># Fallback converter (default)</span>
 <div class="viewcode-block" id="default_fallback">
 <a class="viewcode-back" href="../../module_docs/dn/src.html#dn.src.default_fallback">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">default_fallback</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fallback converter that attempts basic text extraction.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Fallback converter that attempts basic text extraction."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Try decoding with different encodings</span>
-        <span class="n">encodings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;latin-1&quot;</span><span class="p">,</span> <span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-16&quot;</span><span class="p">]</span>
+        <span class="n">encodings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"latin-1"</span><span class="p">,</span> <span class="s2">"ascii"</span><span class="p">,</span> <span class="s2">"utf-16"</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">encoding</span> <span class="ow">in</span> <span class="n">encodings</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
@@ -234,9 +332,9 @@
                 <span class="k">continue</span>
 
         <span class="c1"># If decoding fails, convert to base64 for preservation</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;# Conversion Failed for </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">```</span><span class="se">\n</span><span class="si">{</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">```&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"# Conversion Failed for </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">```</span><span class="se">\n</span><span class="si">{</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">```"</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;# Conversion Error</span><span class="se">\n\n</span><span class="s2">Could not convert </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"# Conversion Error</span><span class="se">\n\n</span><span class="s2">Could not convert </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span></div>
 
 
 
@@ -247,12 +345,12 @@
 <span class="c1">#     converters: Dict[str, Callable[[bytes], str]] = dflt_converters,</span>
 <span class="c1">#     fallback: Callable = default_fallback,</span>
 <span class="c1"># ) -&gt; str:</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     Convert bytes of a given format to markdown text.</span>
 
 <span class="c1">#     Args:</span>
 <span class="c1">#         b (bytes): Input bytes to convert</span>
-<span class="c1">#         input_format (str): Format of the input (e.g., &#39;pdf&#39;, &#39;docx&#39;)</span>
+<span class="c1">#         input_format (str): Format of the input (e.g., 'pdf', 'docx')</span>
 <span class="c1">#         converters (Dict[str, Callable]): Dictionary of format-specific converters</span>
 <span class="c1">#         fallback (Callable): Fallback conversion method</span>
 
@@ -260,7 +358,7 @@
 <span class="c1">#         str: Markdown-formatted text</span>
 
 <span class="c1">#     See also: https://github.com/thorwhalen/aix/discussions/3#discussioncomment-12387852</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     converter = converters.get(input_format.lower(), None)</span>
 <span class="c1">#     if converter is not None:</span>
 <span class="c1">#         return converter(b)</span>
@@ -271,7 +369,7 @@
 <div class="viewcode-block" id="add_dflt_converter">
 <a class="viewcode-back" href="../../module_docs/dn/src.html#dn.src.add_dflt_converter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_dflt_converter</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add (or change) a default converter for a given input format.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Add (or change) a default converter for a given input format."""</span>
     <span class="n">dflt_converters</span><span class="p">[</span><span class="n">input_format</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">converter</span></div>
 
 
@@ -293,12 +391,12 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">nbconvert.preprocessors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Preprocessor</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">nbconvert</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkdownExporter</span>
 
-    <span class="n">installed_packages</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;nbconvert&quot;</span><span class="p">)</span>
+    <span class="n">installed_packages</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"nbconvert"</span><span class="p">)</span>
 
 <span class="k">with</span> <span class="n">ignore_import_errors</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">nbformat</span>
 
-    <span class="n">installed_packages</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;nbformat&quot;</span><span class="p">)</span>
+    <span class="n">installed_packages</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"nbformat"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">truncate_text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -306,39 +404,39 @@
         <span class="n">cutoff</span> <span class="o">=</span> <span class="n">max_chars</span>
         <span class="n">first_part</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">cutoff</span><span class="p">)]</span>
         <span class="n">last_part</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.25</span> <span class="o">*</span> <span class="n">cutoff</span><span class="p">)</span> <span class="p">:]</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">first_part</span><span class="si">}</span><span class="se">\n</span><span class="s2">...</span><span class="se">\n</span><span class="si">{</span><span class="n">last_part</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">first_part</span><span class="si">}</span><span class="se">\n</span><span class="s2">...</span><span class="se">\n</span><span class="si">{</span><span class="n">last_part</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">return</span> <span class="n">text</span>
 
 
-<span class="c1"># TODO: Here&#39;s the default is to save md in file. Good default? What are the behaviors of dflt_converters?</span>
-<span class="c1"># TODO: There&#39;s a hubcap.tools.notebook_to_markdown</span>
+<span class="c1"># TODO: Here's the default is to save md in file. Good default? What are the behaviors of dflt_converters?</span>
+<span class="c1"># TODO: There's a hubcap.tools.notebook_to_markdown</span>
 <span class="c1">#       --&gt; Should these be merged?</span>
-<span class="c1"># TODO: Also there&#39;s test2doc.notebook_utils.ensure_notebook_dict that givs us the json</span>
+<span class="c1"># TODO: Also there's test2doc.notebook_utils.ensure_notebook_dict that givs us the json</span>
 <span class="c1"># TODO: Generalize to get more control over output (and source) transformation control</span>
 <div class="viewcode-block" id="notebook_to_markdown">
 <a class="viewcode-back" href="../../module_docs/dn/src.html#dn.src.notebook_to_markdown">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">notebook_to_markdown</span><span class="p">(</span>
     <span class="n">src_notebook</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">target_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># &quot;*.md&quot;</span>
+    <span class="n">target_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># "*.md"</span>
     <span class="n">output_processors</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">truncate_text</span><span class="p">,),</span>
-    <span class="n">read_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
-    <span class="n">write_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+    <span class="n">read_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"utf-8"</span><span class="p">,</span>
+    <span class="n">write_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"utf-8"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts a Jupyter notebook to Markdown, applying a output text processors.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        src_notebook (str): Path to the source notebook or URL.</span>
 <span class="sd">        target_file (str, optional): Path to save the converted Markdown file. If None, returns the Markdown content.</span>
-<span class="sd">            If it starts with &#39;*&#39;, the &#39;*&#39; is replaced with the source notebook name.</span>
-<span class="sd">            Popular value for target_file is &#39;*.md&#39;.</span>
+<span class="sd">            If it starts with '*', the '*' is replaced with the source notebook name.</span>
+<span class="sd">            Popular value for target_file is '*.md'.</span>
 <span class="sd">        output_processors (Sequence[Callable], optional): List of functions to process cell outputs.</span>
 <span class="sd">        read_encoding (str): Encoding for reading the source notebook.</span>
 <span class="sd">        write_encoding (str): Encoding for writing the Markdown file.</span>
 
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">src_notebook</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">ipynbname</span>  <span class="c1"># pip install ipynbname</span>
@@ -348,7 +446,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">src_notebook</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">src_notebook</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">src_notebook</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"~"</span><span class="p">):</span>
         <span class="c1"># Expand user directory</span>
         <span class="n">src_notebook</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">)</span>
 
@@ -360,7 +458,7 @@
         <span class="n">src_notebook</span> <span class="o">=</span> <span class="n">save_to_file_and_return_file</span><span class="p">(</span><span class="n">src_content</span><span class="p">)</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">TruncateOutputPreprocessor</span><span class="p">(</span><span class="n">Preprocessor</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Preprocessor that truncates long outputs in Jupyter Notebook cells.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Preprocessor that truncates long outputs in Jupyter Notebook cells."""</span>
 
         <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_processors</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -371,23 +469,23 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">process_output</span> <span class="o">=</span> <span class="n">identity</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">resources</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s2">&quot;outputs&quot;</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">"outputs"</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
                     <span class="c1"># Case 1: Traditional text output</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
-                            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_output</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="s2">"text"</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+                            <span class="n">output</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_output</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">"text"</span><span class="p">])</span>
 
                         <span class="c1"># Case 2: Rich MIME-based data (e.g. text/html, text/plain, etc.)</span>
-                        <span class="k">if</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">"data"</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
                             <span class="c1"># Clear all the existing fields</span>
                             <span class="n">output</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-                            <span class="c1"># Convert it to a &#39;stream&#39;-type output</span>
-                            <span class="c1"># &#39;text&#39; is valid only when &#39;output_type&#39; is &#39;stream&#39; or &#39;error&#39;</span>
-                            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;output_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;stream&quot;</span>
-                            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;stdout&quot;</span>  <span class="c1"># required for &#39;stream&#39;</span>
-                            <span class="n">output</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;HTML output truncated. (Data removed)</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="c1"># Convert it to a 'stream'-type output</span>
+                            <span class="c1"># 'text' is valid only when 'output_type' is 'stream' or 'error'</span>
+                            <span class="n">output</span><span class="p">[</span><span class="s2">"output_type"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"stream"</span>
+                            <span class="n">output</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"stdout"</span>  <span class="c1"># required for 'stream'</span>
+                            <span class="n">output</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"HTML output truncated. (Data removed)</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">return</span> <span class="n">cell</span><span class="p">,</span> <span class="n">resources</span>
 
     <span class="c1"># Load notebook</span>
@@ -405,12 +503,12 @@
     <span class="n">body</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">exporter</span><span class="o">.</span><span class="n">from_notebook_node</span><span class="p">(</span><span class="n">nb</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">target_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">target_file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">target_file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"*"</span><span class="p">):</span>
             <span class="n">src_notebook_no_ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">src_notebook</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">target_file</span> <span class="o">=</span> <span class="n">target_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">src_notebook_no_ext</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">target_file</span> <span class="o">=</span> <span class="n">target_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"*"</span><span class="p">,</span> <span class="n">src_notebook_no_ext</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Save markdown file</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">write_encoding</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">write_encoding</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">target_file</span>
@@ -420,14 +518,14 @@
 
 
 
-<span class="n">dflt_converters</span><span class="p">[</span><span class="s2">&quot;ipynb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">notebook_to_markdown</span>
+<span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"ipynb"</span><span class="p">]</span> <span class="o">=</span> <span class="n">notebook_to_markdown</span>
 
 
 <span class="c1"># --------------------------------------------------------------------------------------</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Functions for detecting content types and converting various formats to markdown.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">binascii</span>
@@ -439,13 +537,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_pdf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes represent a PDF file by looking for the PDF header signature.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;%PDF-&quot;</span>
+<span class="w">    </span><span class="sd">"""Check if bytes represent a PDF file by looking for the PDF header signature."""</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">"%PDF-"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_docx</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes represent a DOCX file by looking for the ZIP signature and checking if it contains word/document.xml.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">&quot;PK</span><span class="se">\x03\x04</span><span class="s2">&quot;</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
+<span class="w">    </span><span class="sd">"""Check if bytes represent a DOCX file by looking for the ZIP signature and checking if it contains word/document.xml."""</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">"PK</span><span class="se">\x03\x04</span><span class="s2">"</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -453,14 +551,14 @@
             <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 
             <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;word/document.xml&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">())</span>
+                <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="s2">"word/document.xml"</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">())</span>
     <span class="k">except</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">BadZipFile</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_xlsx</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes represent an XLSX file by looking for the ZIP signature and checking if it contains xl/workbook.xml.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">&quot;PK</span><span class="se">\x03\x04</span><span class="s2">&quot;</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
+<span class="w">    </span><span class="sd">"""Check if bytes represent an XLSX file by looking for the ZIP signature and checking if it contains xl/workbook.xml."""</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">"PK</span><span class="se">\x03\x04</span><span class="s2">"</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -468,14 +566,14 @@
             <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 
             <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;xl/workbook.xml&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">())</span>
+                <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="s2">"xl/workbook.xml"</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">())</span>
     <span class="k">except</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">BadZipFile</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_pptx</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes represent a PPTX file by looking for the ZIP signature and checking if it contains ppt/presentation.xml.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">&quot;PK</span><span class="se">\x03\x04</span><span class="s2">&quot;</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
+<span class="w">    </span><span class="sd">"""Check if bytes represent a PPTX file by looking for the ZIP signature and checking if it contains ppt/presentation.xml."""</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="sa">b</span><span class="s2">"PK</span><span class="se">\x03\x04</span><span class="s2">"</span><span class="p">:</span>  <span class="c1"># ZIP file signature</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -484,73 +582,73 @@
 
             <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
-                    <span class="s2">&quot;ppt/presentation.xml&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
+                    <span class="s2">"ppt/presentation.xml"</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">zip_ref</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
                 <span class="p">)</span>
     <span class="k">except</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">BadZipFile</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_html</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes likely represent an HTML file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Check if bytes likely represent an HTML file."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;!doctype html&quot;</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;html&quot;</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="s2">&quot;&lt;html&quot;</span> <span class="ow">in</span> <span class="n">text</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;!doctype html"</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;html"</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="s2">"&lt;html"</span> <span class="ow">in</span> <span class="n">text</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if bytes represent a Jupyter notebook by checking for JSON with notebook structure.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Check if bytes represent a Jupyter notebook by checking for JSON with notebook structure."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
         <span class="n">notebook</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;cells&quot;</span> <span class="ow">in</span> <span class="n">notebook</span> <span class="ow">and</span> <span class="s2">&quot;metadata&quot;</span> <span class="ow">in</span> <span class="n">notebook</span> <span class="ow">and</span> <span class="s2">&quot;nbformat&quot;</span> <span class="ow">in</span> <span class="n">notebook</span>
+        <span class="k">return</span> <span class="s2">"cells"</span> <span class="ow">in</span> <span class="n">notebook</span> <span class="ow">and</span> <span class="s2">"metadata"</span> <span class="ow">in</span> <span class="n">notebook</span> <span class="ow">and</span> <span class="s2">"nbformat"</span> <span class="ow">in</span> <span class="n">notebook</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_detect_with_python_magic</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attempt to detect content type using python-magic if available.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        String format identifier or None if detection failed or library not available</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">magic</span>
 
         <span class="n">mime</span> <span class="o">=</span> <span class="n">magic</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Map mime types to format identifiers</span>
-        <span class="k">if</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
+        <span class="k">if</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">"application/pdf"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"pdf"</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;application/msword&quot;</span><span class="p">,</span>
+            <span class="s2">"application/vnd.openxmlformats-officedocument.wordprocessingml.document"</span><span class="p">,</span>
+            <span class="s2">"application/msword"</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
+            <span class="k">return</span> <span class="s2">"docx"</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;application/vnd.ms-excel&quot;</span><span class="p">,</span>
+            <span class="s2">"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"</span><span class="p">,</span>
+            <span class="s2">"application/vnd.ms-excel"</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
+            <span class="k">return</span> <span class="s2">"xlsx"</span>
         <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;application/vnd.openxmlformats-officedocument.presentationml.presentation&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;application/vnd.ms-powerpoint&quot;</span><span class="p">,</span>
+            <span class="s2">"application/vnd.openxmlformats-officedocument.presentationml.presentation"</span><span class="p">,</span>
+            <span class="s2">"application/vnd.ms-powerpoint"</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
-        <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;text/html&quot;</span><span class="p">,</span> <span class="s2">&quot;application/xhtml+xml&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
-        <span class="k">elif</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">&quot;application/json&quot;</span><span class="p">:</span>
-            <span class="c1"># Need to check if it&#39;s specifically a Jupyter notebook</span>
+            <span class="k">return</span> <span class="s2">"pptx"</span>
+        <span class="k">elif</span> <span class="n">mime</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"text/html"</span><span class="p">,</span> <span class="s2">"application/xhtml+xml"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">"html"</span>
+        <span class="k">elif</span> <span class="n">mime</span> <span class="o">==</span> <span class="s2">"application/json"</span><span class="p">:</span>
+            <span class="c1"># Need to check if it's specifically a Jupyter notebook</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
+                    <span class="k">return</span> <span class="s2">"ipynb"</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -563,7 +661,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_detect_content_type</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect the content type of the given bytes using multiple strategies.</span>
 
 <span class="sd">    Args:</span>
@@ -572,103 +670,108 @@
 <span class="sd">        verbose: Whether to print detection information</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        String representing the detected format (e.g., &#39;pdf&#39;, &#39;docx&#39;, etc.)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        String representing the detected format (e.g., 'pdf', 'docx', etc.)</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] &quot;</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] "</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Try python-magic first if available</span>
     <span class="n">magic_result</span> <span class="o">=</span> <span class="n">_detect_with_python_magic</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">magic_result</span><span class="p">:</span>
-        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected content type via python-magic: </span><span class="si">{</span><span class="n">magic_result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected content type via python-magic: </span><span class="si">{</span><span class="n">magic_result</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">magic_result</span>
 
     <span class="c1"># Fall back to signature-based detection</span>
     <span class="k">if</span> <span class="n">_is_pdf</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PDF via signature&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected PDF via signature"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"pdf"</span>
     <span class="k">elif</span> <span class="n">_is_docx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected DOCX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected DOCX via internal structure"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"docx"</span>
     <span class="k">elif</span> <span class="n">_is_xlsx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected XLSX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected XLSX via internal structure"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"xlsx"</span>
     <span class="k">elif</span> <span class="n">_is_pptx</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PPTX via internal structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected PPTX via internal structure"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"pptx"</span>
     <span class="k">elif</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Jupyter notebook via structure&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected Jupyter notebook via structure"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"ipynb"</span>
     <span class="k">elif</span> <span class="n">_is_html</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected HTML via content pattern&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected HTML via content pattern"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"html"</span>
+
+    <span class="n">ebook_format</span> <span class="o">=</span> <span class="n">sniff_ebook_format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ebook_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="n">ebook_format</span><span class="si">}</span><span class="s2"> via signature"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ebook_format</span>
 
     <span class="c1"># Try to use extension from the key if available</span>
     <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
-        <span class="n">extension</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;docx&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;doc&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;xls&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;pptx&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ppt&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;html&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">AUTOWIRED_EBOOK_FORMATS</span> <span class="ow">or</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">"pdf"</span><span class="p">,</span>
+            <span class="s2">"docx"</span><span class="p">,</span>
+            <span class="s2">"doc"</span><span class="p">,</span>
+            <span class="s2">"xlsx"</span><span class="p">,</span>
+            <span class="s2">"xls"</span><span class="p">,</span>
+            <span class="s2">"pptx"</span><span class="p">,</span>
+            <span class="s2">"ppt"</span><span class="p">,</span>
+            <span class="s2">"html"</span><span class="p">,</span>
+            <span class="s2">"ipynb"</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected content type via filename extension: </span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected content type via filename extension: </span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">extension</span>
 
         <span class="c1"># Also try mimetypes module for extension-based detection</span>
         <span class="n">mime_type</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mime_type</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mime_type</span> <span class="o">==</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">:</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PDF via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;pdf&quot;</span>
+            <span class="k">if</span> <span class="n">mime_type</span> <span class="o">==</span> <span class="s2">"application/pdf"</span><span class="p">:</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected PDF via mimetypes"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"pdf"</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;application/msword&quot;</span><span class="p">,</span>
+                <span class="s2">"application/vnd.openxmlformats-officedocument.wordprocessingml.document"</span><span class="p">,</span>
+                <span class="s2">"application/msword"</span><span class="p">,</span>
             <span class="p">):</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Word document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;docx&quot;</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected Word document via mimetypes"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"docx"</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;application/vnd.ms-excel&quot;</span><span class="p">,</span>
+                <span class="s2">"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"</span><span class="p">,</span>
+                <span class="s2">"application/vnd.ms-excel"</span><span class="p">,</span>
             <span class="p">):</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Excel document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;xlsx&quot;</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected Excel document via mimetypes"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"xlsx"</span>
             <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="s2">&quot;application/vnd.openxmlformats-officedocument.presentationml.presentation&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;application/vnd.ms-powerpoint&quot;</span><span class="p">,</span>
+                <span class="s2">"application/vnd.openxmlformats-officedocument.presentationml.presentation"</span><span class="p">,</span>
+                <span class="s2">"application/vnd.ms-powerpoint"</span><span class="p">,</span>
             <span class="p">):</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected PowerPoint document via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;pptx&quot;</span>
-            <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;text/html&quot;</span><span class="p">,</span> <span class="s2">&quot;application/xhtml+xml&quot;</span><span class="p">):</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected HTML via mimetypes&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;html&quot;</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected PowerPoint document via mimetypes"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"pptx"</span>
+            <span class="k">elif</span> <span class="n">mime_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"text/html"</span><span class="p">,</span> <span class="s2">"application/xhtml+xml"</span><span class="p">):</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected HTML via mimetypes"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s2">"html"</span>
 
     <span class="c1"># Additional text-based detection for JSON/Jupyter notebooks</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Try to decode first ~1000 bytes to see if it&#39;s text</span>
-        <span class="n">sample</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="c1"># Try to decode first ~1000 bytes to see if it's text</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
 
         <span class="c1"># Check for JSON structure that might be a notebook</span>
-        <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;}&quot;</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"{"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"}"</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">_is_ipynb</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-                    <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Detected Jupyter notebook via JSON pattern&quot;</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="s2">&quot;ipynb&quot;</span>
+                    <span class="n">_log</span><span class="p">(</span><span class="s2">"Detected Jupyter notebook via JSON pattern"</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="s2">"ipynb"</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">pass</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">pass</span>
 
-    <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not determine content type&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="n">_log</span><span class="p">(</span><span class="s2">"Could not determine content type"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"unknown"</span>
 
 
 <div class="viewcode-block" id="try_to_convert_to_markdown">
@@ -680,7 +783,7 @@
     <span class="n">converters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attempts to identify the content type of the given bytes and convert it to markdown</span>
 <span class="sd">    using appropriate converters from dn.src.</span>
 
@@ -695,48 +798,48 @@
 <span class="sd">        Markdown string if conversion successful, None otherwise</span>
 
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">converters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">converters</span> <span class="o">=</span> <span class="n">dflt_converters</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] &quot;</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] "</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># First try to detect the content type</span>
     <span class="n">content_type</span> <span class="o">=</span> <span class="n">_detect_content_type</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not detect content type. Trying common formats...&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">"unknown"</span><span class="p">:</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Could not detect content type. Trying common formats..."</span><span class="p">)</span>
 
         <span class="c1"># Try the most common formats in a reasonable order</span>
-        <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;docx&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span> <span class="s2">&quot;pptx&quot;</span><span class="p">]</span>
+        <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"pdf"</span><span class="p">,</span> <span class="s2">"docx"</span><span class="p">,</span> <span class="s2">"html"</span><span class="p">,</span> <span class="s2">"xlsx"</span><span class="p">,</span> <span class="s2">"ipynb"</span><span class="p">,</span> <span class="s2">"pptx"</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats_to_try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
-                <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attempting conversion as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Attempting conversion as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">converters</span><span class="o">=</span><span class="n">converters</span><span class="p">)</span>
-                    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully converted content as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully converted content as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">result</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to convert as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to convert as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not convert content with any available converter&quot;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s2">"Could not convert content with any available converter"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># Content type detected, try the corresponding converter</span>
     <span class="k">if</span> <span class="n">content_type</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">converters</span><span class="o">=</span><span class="n">converters</span><span class="p">)</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully converted </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2"> to markdown&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully converted </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2"> to markdown"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">result</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to convert </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2"> to markdown: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to convert </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2"> to markdown: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No converter available for </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No converter available for </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -748,8 +851,8 @@
 <div class="viewcode-block" id="get_extension">
 <a class="viewcode-back" href="../../module_docs/dn/src.html#dn.src.get_extension">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_extension</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the extension of a file path.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+<span class="w">    </span><span class="sd">"""Get the extension of a file path."""</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
 
 
 
@@ -758,18 +861,18 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">extensions_not_supported_by_converters</span><span class="p">(</span>
     <span class="n">paths</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">converters</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="n">dflt_converters</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns a set of file extensions that are not supported by the given converters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        paths (str or Iterable): A list of file paths or the root directory to check for paths.</span>
 <span class="sd">        converters (dict): An iterable of extensions supported by the converters.</span>
-<span class="sd">            By default, it&#39;s the default converters (a dict, so keys are considered).</span>
+<span class="sd">            By default, it's the default converters (a dict, so keys are considered).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        set: A set of file extensions that are not supported by the given converters.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="n">Files</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
 
@@ -781,14 +884,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_src_bytes_store_and_target_text_store</span><span class="p">(</span><span class="n">src_files</span><span class="p">,</span> <span class="n">target_store</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolves the source bytes store and target text store.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_files</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">src_rootdir</span> <span class="o">=</span> <span class="n">fullpath</span><span class="p">(</span><span class="n">src_files</span><span class="p">)</span>
         <span class="n">src_files</span> <span class="o">=</span> <span class="n">Files</span><span class="p">(</span><span class="n">src_rootdir</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src_files</span><span class="p">,</span> <span class="s2">&quot;rootdir&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">src_files</span><span class="p">,</span> <span class="s2">"rootdir"</span><span class="p">):</span>
             <span class="n">src_rootdir</span> <span class="o">=</span> <span class="n">src_files</span><span class="o">.</span><span class="n">rootdir</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">src_rootdir</span> <span class="o">=</span> <span class="kc">None</span>
@@ -808,15 +911,15 @@
 <span class="c1">#     *,</span>
 <span class="c1">#     converters: Dict[str, Callable[[bytes], str]] = dflt_converters,</span>
 <span class="c1">#     verbose: bool = False,</span>
-<span class="c1">#     old_to_new_key: Callable[[str], str] = lambda x: x + &quot;.md&quot;,</span>
+<span class="c1">#     old_to_new_key: Callable[[str], str] = lambda x: x + ".md",</span>
 <span class="c1">#     target_store_egress: Callable[[Mapping], Any] = identity,</span>
 <span class="c1"># ):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     Converts files to markdown using the specified converters.</span>
 
 <span class="c1">#     Tip: You can use `target_store_egress=aggregate_store` to get an aggregate string</span>
 <span class="c1">#     as your output.</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     src_files, target_store = _resolve_src_bytes_store_and_target_text_store(</span>
 <span class="c1">#         src_files, target_store</span>
 <span class="c1">#     )</span>
@@ -824,7 +927,7 @@
 
 <span class="c1">#     for src_key, src_bytes in src_files.items():</span>
 <span class="c1">#         if verbose:</span>
-<span class="c1">#             print(f&quot;Converting {src_key} to markdown&quot;)</span>
+<span class="c1">#             print(f"Converting {src_key} to markdown")</span>
 <span class="c1">#         ext = get_extension(src_key)</span>
 <span class="c1">#         target_key = old_to_new_key(src_key)</span>
 <span class="c1">#         target_store[target_key] = _bytes_to_markdown(src_bytes, ext)</span>
@@ -845,7 +948,7 @@
     <span class="n">try_bytes_detection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert bytes to markdown text using a flexible detection strategy.</span>
 
 <span class="sd">    The function follows this logic to find a converter:</span>
@@ -856,7 +959,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        b (bytes): Input bytes to convert</span>
-<span class="sd">        input_format (str, optional): Format of the input (e.g., &#39;pdf&#39;, &#39;docx&#39;)</span>
+<span class="sd">        input_format (str, optional): Format of the input (e.g., 'pdf', 'docx')</span>
 <span class="sd">        key (str, optional): Filename or identifier to help with format detection</span>
 <span class="sd">        converters (Dict[str, Callable]): Dictionary of format-specific converters</span>
 <span class="sd">        fallback (Callable): Fallback conversion method</span>
@@ -869,27 +972,27 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        # Convert with explicit format</span>
-<span class="sd">        md = bytes_to_markdown(pdf_bytes, &#39;pdf&#39;)</span>
+<span class="sd">        md = bytes_to_markdown(pdf_bytes, 'pdf')</span>
 
 <span class="sd">        # Convert using filename extension</span>
-<span class="sd">        md = bytes_to_markdown(file_bytes, key=&#39;document.docx&#39;)</span>
+<span class="sd">        md = bytes_to_markdown(file_bytes, key='document.docx')</span>
 
 <span class="sd">        # Convert using only content-based detection</span>
 <span class="sd">        md = bytes_to_markdown(file_bytes, input_format=None,</span>
 <span class="sd">                              ext_to_input_format=None)</span>
 
 <span class="sd">        # Convert with explicit format and disable content detection</span>
-<span class="sd">        md = bytes_to_markdown(file_bytes, &#39;xlsx&#39;, try_bytes_detection=False)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        md = bytes_to_markdown(file_bytes, 'xlsx', try_bytes_detection=False)</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] &quot;</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">key_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] "</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_info</span><span class="si">}{</span><span class="n">msg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Strategy 1: Use provided input_format</span>
     <span class="k">if</span> <span class="n">input_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using provided input format: </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using provided input format: </span><span class="si">{</span><span class="n">input_format</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">format_key</span> <span class="o">=</span> <span class="n">input_format</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">converter</span> <span class="o">=</span> <span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">format_key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">converter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -900,44 +1003,44 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ext</span> <span class="o">=</span> <span class="n">get_extension</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="n">format_key</span> <span class="o">=</span> <span class="n">ext_to_input_format</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected format from key: </span><span class="si">{</span><span class="n">format_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected format from key: </span><span class="si">{</span><span class="n">format_key</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">converter</span> <span class="o">=</span> <span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">format_key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">converter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error extracting format from key: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error extracting format from key: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Strategy 3: Detect from bytes content</span>
     <span class="k">if</span> <span class="n">try_bytes_detection</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Attempting content-based format detection&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="s2">"Attempting content-based format detection"</span><span class="p">)</span>
             <span class="n">content_type</span> <span class="o">=</span> <span class="n">_detect_content_type</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
-                <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected content type: </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">content_type</span> <span class="o">!=</span> <span class="s2">"unknown"</span><span class="p">:</span>
+                <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected content type: </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">converter</span> <span class="o">=</span> <span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">content_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
                 <span class="k">if</span> <span class="n">converter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 
             <span class="c1"># If unknown, try common formats in a reasonable order</span>
-            <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
-                <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Could not detect content type. Trying common formats...&quot;</span><span class="p">)</span>
-                <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;docx&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;ipynb&quot;</span><span class="p">,</span> <span class="s2">&quot;pptx&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">"unknown"</span><span class="p">:</span>
+                <span class="n">_log</span><span class="p">(</span><span class="s2">"Could not detect content type. Trying common formats..."</span><span class="p">)</span>
+                <span class="n">formats_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"pdf"</span><span class="p">,</span> <span class="s2">"docx"</span><span class="p">,</span> <span class="s2">"html"</span><span class="p">,</span> <span class="s2">"xlsx"</span><span class="p">,</span> <span class="s2">"ipynb"</span><span class="p">,</span> <span class="s2">"pptx"</span><span class="p">]</span>
 
                 <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats_to_try</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">converters</span><span class="p">:</span>
-                        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attempting conversion as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                        <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Attempting conversion as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">result</span> <span class="o">=</span> <span class="n">converters</span><span class="p">[</span><span class="n">fmt</span><span class="p">](</span><span class="n">b</span><span class="p">)</span>
-                            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully converted content as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully converted content as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                             <span class="k">return</span> <span class="n">result</span>
                         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to convert as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to convert as </span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error during content detection: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error during content detection: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Strategy 4: Use fallback</span>
-    <span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Using fallback converter&quot;</span><span class="p">)</span>
-    <span class="n">detected_format</span> <span class="o">=</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="p">(</span><span class="n">key</span> <span class="ow">and</span> <span class="n">get_extension</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="ow">or</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="n">_log</span><span class="p">(</span><span class="s2">"Using fallback converter"</span><span class="p">)</span>
+    <span class="n">detected_format</span> <span class="o">=</span> <span class="n">input_format</span> <span class="ow">or</span> <span class="p">(</span><span class="n">key</span> <span class="ow">and</span> <span class="n">get_extension</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="ow">or</span> <span class="s2">"unknown"</span>
     <span class="k">return</span> <span class="n">fallback</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">detected_format</span><span class="p">)</span></div>
 
 
@@ -953,10 +1056,10 @@
     <span class="n">ext_to_input_format</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
     <span class="n">try_bytes_detection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">old_to_new_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="s2">&quot;.md&quot;</span><span class="p">,</span>
+    <span class="n">old_to_new_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="s2">".md"</span><span class="p">,</span>
     <span class="n">target_store_egress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">identity</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts files to markdown using the enhanced bytes_to_markdown function.</span>
 
 <span class="sd">    Args:</span>
@@ -975,24 +1078,24 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        # Convert all files in a directory using extension detection</span>
-<span class="sd">        result = bytes_store_to_markdown_store(&#39;path/to/files&#39;, &#39;path/to/output&#39;)</span>
+<span class="sd">        result = bytes_store_to_markdown_store('path/to/files', 'path/to/output')</span>
 
 <span class="sd">        # Convert using content-based detection</span>
-<span class="sd">        result = bytes_store_to_markdown_store(&#39;path/to/files&#39;, &#39;path/to/output&#39;,</span>
+<span class="sd">        result = bytes_store_to_markdown_store('path/to/files', 'path/to/output',</span>
 <span class="sd">                                             ext_to_input_format=None)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">src_files</span><span class="p">,</span> <span class="n">target_store</span> <span class="o">=</span> <span class="n">_resolve_src_bytes_store_and_target_text_store</span><span class="p">(</span>
         <span class="n">src_files</span><span class="p">,</span> <span class="n">target_store</span>
     <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">src_key</span><span class="p">,</span> <span class="n">src_bytes</span> <span class="ow">in</span> <span class="n">src_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting </span><span class="si">{</span><span class="n">src_key</span><span class="si">}</span><span class="s2"> to markdown&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Converting </span><span class="si">{</span><span class="n">src_key</span><span class="si">}</span><span class="s2"> to markdown"</span><span class="p">)</span>
 
         <span class="n">target_key</span> <span class="o">=</span> <span class="n">old_to_new_key</span><span class="p">(</span><span class="n">src_key</span><span class="p">)</span>
         <span class="n">target_store</span><span class="p">[</span><span class="n">target_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span>
             <span class="n">src_bytes</span><span class="p">,</span>
-            <span class="n">input_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># We&#39;ll detect from key or bytes</span>
+            <span class="n">input_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># We'll detect from key or bytes</span>
             <span class="n">key</span><span class="o">=</span><span class="n">src_key</span><span class="p">,</span>
             <span class="n">converters</span><span class="o">=</span><span class="n">converters</span><span class="p">,</span>
             <span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">,</span>
@@ -1003,6 +1106,17 @@
 
     <span class="k">return</span> <span class="n">target_store_egress</span><span class="p">(</span><span class="n">target_store</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Ebook Conversion (EPUB, MOBI, AZW3, ...)</span>
+<span class="c1">#</span>
+<span class="c1"># Ebook backends lean on external binaries (calibre, pandoc) rather than importable</span>
+<span class="c1"># packages, so unlike the converters above they can't be gated behind an ImportError</span>
+<span class="c1"># suppressor. They are registered unconditionally; dn.ebook raises an error naming</span>
+<span class="c1"># what to install if none of its backends is available. See dn/ebook.py.</span>
+
+<span class="n">register_ebook_converters</span><span class="p">(</span><span class="n">dflt_converters</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -1012,7 +1126,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

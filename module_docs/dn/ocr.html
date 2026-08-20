@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dn.ocr &mdash; dn 0.0.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dn.repair" href="repair.html" />
+    <link rel="prev" title="dn.ebook" href="ebook.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dn
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ebook.html">dn.ebook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dn.ocr</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.DFLT_OCR_DPI"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_DPI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.DFLT_OCR_LANG"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_LANG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.OcrError"><code class="docutils literal notranslate"><span class="pre">OcrError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.check_ocr_requirements"><code class="docutils literal notranslate"><span class="pre">check_ocr_requirements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.find_tesseract"><code class="docutils literal notranslate"><span class="pre">find_tesseract()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.ocr_is_available"><code class="docutils literal notranslate"><span class="pre">ocr_is_available()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.ocr_pdf_pages"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_pages()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dn.ocr.ocr_pdf_to_markdown"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_to_markdown()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repair.html">dn.repair</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src.html">dn.src</a></li>
+<li class="toctree-l1"><a class="reference internal" href="to.html">dn.to</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dn.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dn</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dn.ocr</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dn/ocr.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dn.ocr">
+<span id="dn-ocr"></span><h1>dn.ocr<a class="headerlink" href="#module-dn.ocr" title="Link to this heading"></a></h1>
+<p>Read text out of PDFs that have no text layer, by OCR.</p>
+<p>A scanned book is a PDF full of <em>pictures</em> of pages. <code class="docutils literal notranslate"><span class="pre">pypdf</span></code> and friends
+extract nothing from it – not an error, just an empty string – so
+<code class="xref py py-func docutils literal notranslate"><span class="pre">dn.src.pdf_to_markdown()</span></code> silently produces a markdown file with headers and
+no content. The fix is optical character recognition: render each page to an
+image and run it through Tesseract.</p>
+<p>The everyday use is not to call this module at all. <code class="docutils literal notranslate"><span class="pre">pdf_to_markdown</span></code> consults
+it automatically for pages that yield no text, so scanned PDFs simply work:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdf_to_markdown</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">md</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span><span class="p">(</span><span class="n">scanned_pdf_bytes</span><span class="p">)</span>  <span class="c1"># OCRs the empty pages</span>
+</pre></div>
+</div>
+<p>Call it directly when you want control over resolution, language, or which pages
+to process:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">md</span> <span class="o">=</span> <span class="n">ocr_pdf_to_markdown</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s1">'eng+fra'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>OCR is slow – expect roughly a second per page – and needs two things that are
+not pure-python dependencies: the Tesseract binary, and PyMuPDF to rasterize
+pages. <a class="reference internal" href="#dn.ocr.check_ocr_requirements" title="dn.ocr.check_ocr_requirements"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_ocr_requirements()</span></code></a> reports what’s present and how to install
+what isn’t.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">report</span> <span class="o">=</span> <span class="n">check_ocr_requirements</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+<span class="go">['pymupdf', 'pytesseract', 'tesseract']</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="dn.ocr.DFLT_OCR_DPI">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">DFLT_OCR_DPI</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">300</span></span><a class="headerlink" href="#dn.ocr.DFLT_OCR_DPI" title="Link to this definition"></a></dt>
+<dd><p>Rendering resolution. 300 DPI is the usual floor for reliable OCR of body
+text; below it Tesseract starts dropping small type and footnotes.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dn.ocr.DFLT_OCR_LANG">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">DFLT_OCR_LANG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'eng'</span></span><a class="headerlink" href="#dn.ocr.DFLT_OCR_LANG" title="Link to this definition"></a></dt>
+<dd><p>Tesseract language pack(s). Combine with ‘+’, e.g. <code class="docutils literal notranslate"><span class="pre">'eng+fra'</span></code>.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dn.ocr.OcrError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">OcrError</span></span><a class="reference internal" href="../../_modules/dn/ocr.html#OcrError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.OcrError" title="Link to this definition"></a></dt>
+<dd><p>Raised when OCR could not be performed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.ocr.check_ocr_requirements">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">check_ocr_requirements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../_modules/dn/ocr.html#check_ocr_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.check_ocr_requirements" title="Link to this definition"></a></dt>
+<dd><p>Report what OCR needs, what’s present, and how to install the rest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> – Print a human-readable report as well as returning it.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">{requirement:</span> <span class="pre">{'available':</span> <span class="pre">bool,</span> <span class="pre">'install':</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None}}</span></code>.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">report</span> <span class="o">=</span> <span class="n">check_ocr_requirements</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s1">'tesseract'</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'available'</span><span class="p">,</span> <span class="s1">'install'</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.ocr.find_tesseract">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">find_tesseract</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dn/ocr.html#find_tesseract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.find_tesseract" title="Link to this definition"></a></dt>
+<dd><p>Find the <code class="docutils literal notranslate"><span class="pre">tesseract</span></code> binary, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if it isn’t installed.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_tesseract</span><span class="p">()</span>
+<span class="go">'/opt/homebrew/bin/tesseract'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.ocr.ocr_is_available">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">ocr_is_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/dn/ocr.html#ocr_is_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.ocr_is_available" title="Link to this definition"></a></dt>
+<dd><p>Whether everything needed to OCR a PDF is present.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ocr_is_available</span><span class="p">(),</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.ocr.ocr_pdf_pages">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">ocr_pdf_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'eng'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../_modules/dn/ocr.html#ocr_pdf_pages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.ocr_pdf_pages" title="Link to this definition"></a></dt>
+<dd><p>OCR selected pages of a PDF.</p>
+<p>Pages are rendered in small batches and OCR’d concurrently. Tesseract runs as
+a subprocess, so threads genuinely parallelize it, and batching keeps the
+rendered images from piling up in memory on a long book.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_bytes</strong> – The PDF file’s bytes.</p></li>
+<li><p><strong>pages</strong> – Zero-based page numbers to OCR. <code class="docutils literal notranslate"><span class="pre">None</span></code> means every page.</p></li>
+<li><p><strong>dpi</strong> – Rendering resolution. Higher is slower and usually more accurate.</p></li>
+<li><p><strong>lang</strong> – Tesseract language pack(s), e.g. <code class="docutils literal notranslate"><span class="pre">'eng'</span></code> or <code class="docutils literal notranslate"><span class="pre">'eng+fra'</span></code>.</p></li>
+<li><p><strong>max_workers</strong> – Concurrent OCR workers. Defaults to the CPU count, capped
+at 8.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">{page_number:</span> <span class="pre">text}</span></code> for the requested pages.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dn.ocr.OcrError" title="dn.ocr.OcrError"><strong>OcrError</strong></a> – If Tesseract, pytesseract, or PyMuPDF is missing, if
+    <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> or <code class="docutils literal notranslate"><span class="pre">dpi</span></code> is not positive, or if a page number is
+    out of range.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.ocr.ocr_pdf_to_markdown">
+<span class="sig-prename descclassname"><span class="pre">dn.ocr.</span></span><span class="sig-name descname"><span class="pre">ocr_pdf_to_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'eng'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md_inner_file_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'###'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dn/ocr.html#ocr_pdf_to_markdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.ocr.ocr_pdf_to_markdown" title="Link to this definition"></a></dt>
+<dd><p>OCR an entire PDF and return it as markdown, one section per page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_bytes</strong> – The PDF file’s bytes.</p></li>
+<li><p><strong>dpi</strong> – Rendering resolution.</p></li>
+<li><p><strong>lang</strong> – Tesseract language pack(s).</p></li>
+<li><p><strong>md_inner_file_header</strong> – Header level used for the per-page headings.</p></li>
+<li><p><strong>max_workers</strong> – Concurrent OCR workers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Markdown text.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dn.ocr.OcrError" title="dn.ocr.OcrError"><strong>OcrError</strong></a> – If the OCR stack is not installed.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">md</span> <span class="o">=</span> <span class="n">ocr_pdf_to_markdown</span><span class="p">(</span><span class="n">scanned_pdf_bytes</span><span class="p">)</span>
+<span class="go">'### Page 1\n\nTHE VISUAL DISPLAY...'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ebook.html" class="btn btn-neutral float-left" title="dn.ebook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="repair.html" class="btn btn-neutral float-right" title="dn.repair" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

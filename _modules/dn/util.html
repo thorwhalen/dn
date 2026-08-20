@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dn.util &mdash; dn 0.0.10 documentation</title>
+  <title>dn.util &mdash; dn 0.0.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a83ce22a"></script>
+      <script src="../../_static/documentation_options.js?v=9fc46840"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,8 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn.html">dn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ebook.html">dn.ebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/ocr.html">dn.ocr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/repair.html">dn.repair</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/src.html">dn.src</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dn/to.html">dn.to</a></li>
@@ -78,7 +80,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dn.util</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">General utilities for dn</span>
 
 <span class="sd">This module provides core utility functions used throughout the dn package, including:</span>
@@ -86,7 +88,7 @@
 <span class="sd">- URL detection and content retrieval (is_url, url_to_contents)</span>
 <span class="sd">- File saving utilities (save_to_file_and_return_file)</span>
 <span class="sd">- Basic helper functions (identity)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
@@ -98,7 +100,7 @@
 <div class="viewcode-block" id="identity">
 <a class="viewcode-back" href="../../module_docs/dn/util.html#dn.util.identity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the input unchanged.</span>
 
 <span class="sd">    Args:</span>
@@ -106,7 +108,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The input unchanged</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">x</span></div>
 
 
@@ -114,7 +116,7 @@
 <div class="viewcode-block" id="fullpath">
 <a class="viewcode-back" href="../../module_docs/dn/util.html#dn.util.fullpath">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fullpath</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the full path of the given path.</span>
 
 <span class="sd">    Args:</span>
@@ -125,13 +127,13 @@
 
 <span class="sd">    Example:</span>
 
-<span class="sd">    &gt;&gt;&gt; fullpath(&#39;~/Downloads&#39;)  # doctest: +SKIP</span>
-<span class="sd">    &#39;/home/user/Downloads&#39;</span>
+<span class="sd">    &gt;&gt;&gt; fullpath('~/Downloads')  # doctest: +SKIP</span>
+<span class="sd">    '/home/user/Downloads'</span>
 
-<span class="sd">    &gt;&gt;&gt; fullpath(&#39;.&#39;)  # doctest: +SKIP</span>
-<span class="sd">    &#39;/home/user/python_projects/aix/aix&#39;</span>
+<span class="sd">    &gt;&gt;&gt; fullpath('.')  # doctest: +SKIP</span>
+<span class="sd">    '/home/user/python_projects/aix/aix'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
 
 
@@ -139,7 +141,7 @@
 <div class="viewcode-block" id="is_url">
 <a class="viewcode-back" href="../../module_docs/dn/util.html#dn.util.is_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_url</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if the given path is a URL.</span>
 
 <span class="sd">    Args:</span>
@@ -147,15 +149,15 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        bool: True if the path is a URL, False otherwise</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;http://&quot;</span><span class="p">,</span> <span class="s2">&quot;https://&quot;</span><span class="p">))</span></div>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"http://"</span><span class="p">,</span> <span class="s2">"https://"</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="url_to_contents">
 <a class="viewcode-back" href="../../module_docs/dn/util.html#dn.util.url_to_contents">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">url_to_contents</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fetch the content of a URL.</span>
 
 <span class="sd">    Args:</span>
@@ -166,7 +168,7 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        HTTPError: If the request fails</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span></div>
@@ -178,7 +180,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">save_to_file_and_return_file</span><span class="p">(</span>
     <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="n">identity</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save `encoder(obj)` to a file using a random name in `rootdir` (or a temp directory if not provided).</span>
 <span class="sd">    Returns the full path to the saved file.</span>
 <span class="sd">    If `obj` is None, returns a partial function with preconfigured `encoder` and</span>
@@ -189,10 +191,10 @@
 <span class="sd">        encoder: A function to encode the object into text or bytes. Defaults to identity.</span>
 <span class="sd">        key: The key (by default, filepath) to write to.</span>
 <span class="sd">            If None, a temporary file is created.</span>
-<span class="sd">            If a string starting with &#39;*&#39;, the &#39;*&#39; is replaced with a unique temporary filename.</span>
-<span class="sd">            If a string that has a &#39;*&#39; somewhere in the middle, what&#39;s on the left of if is used as a directory</span>
-<span class="sd">            and the &#39;*&#39; is replaced with a unique temporary filename. For example</span>
-<span class="sd">            &#39;/tmp/*_file.ext&#39; would be replaced with &#39;/tmp/oiu8fj9873_file.ext&#39;.</span>
+<span class="sd">            If a string starting with '*', the '*' is replaced with a unique temporary filename.</span>
+<span class="sd">            If a string that has a '*' somewhere in the middle, what's on the left of if is used as a directory</span>
+<span class="sd">            and the '*' is replaced with a unique temporary filename. For example</span>
+<span class="sd">            '/tmp/*_file.ext' would be replaced with '/tmp/oiu8fj9873_file.ext'.</span>
 <span class="sd">            If a callable, it will be called with obj as input to get the key. One use case</span>
 <span class="sd">            is to use a function that generates a key based on the object.</span>
 
@@ -202,18 +204,18 @@
 <span class="sd">    Examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; from pathlib import Path</span>
-<span class="sd">    &gt;&gt;&gt; filepath = save_to_file_and_return_file(&quot;hello world&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; filepath = save_to_file_and_return_file("hello world")</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
 <span class="sd">    &gt;&gt;&gt; Path(filepath).read_text()</span>
-<span class="sd">    &#39;hello world&#39;</span>
+<span class="sd">    'hello world'</span>
 
 <span class="sd">    The default encoder is identity, so you can save binary data as well:</span>
 
-<span class="sd">    &gt;&gt;&gt; filepath = save_to_file_and_return_file(b&quot;binary data&quot;, encoder=lambda x: x)</span>
+<span class="sd">    &gt;&gt;&gt; filepath = save_to_file_and_return_file(b"binary data", encoder=lambda x: x)</span>
 <span class="sd">    &gt;&gt;&gt; Path(filepath).read_bytes()</span>
-<span class="sd">    b&#39;binary data&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Note: Yes, it&#39;s just written_key from dol, but with a context-sensitive name</span>
+<span class="sd">    b'binary data'</span>
+<span class="sd">    """</span>
+    <span class="c1"># Note: Yes, it's just written_key from dol, but with a context-sensitive name</span>
     <span class="k">return</span> <span class="n">written_key</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span></div>
 
 </pre></div>
@@ -225,7 +227,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
