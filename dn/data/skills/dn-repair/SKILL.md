@@ -32,19 +32,21 @@ fixed = repair_markdown(messy_markdown)
 from pathlib import Path
 from dn.repair import repair_markdown
 
-p = Path('messy.md')
+p = Path("messy.md")
 p.write_text(repair_markdown(p.read_text()))
 ```
 
 ### Clean up AI-generated text
 ```python
 from dn.repair import remove_hyperlink_crap
+
 clean = remove_hyperlink_crap(chatgpt_output)
 ```
 
 ### Compose custom repair pipeline
 ```python
 from dn.repair import fix_multiline_links, remove_hyperlink_crap
+
 
 def my_repair(md):
     md = fix_multiline_links(md)

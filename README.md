@@ -75,6 +75,7 @@ You can also install these when installing `dn`, like so:
     def greet(name):
         return f"Hello, {name}!"
 
+
     print(greet("Jupyter"))
     ```
 
@@ -92,10 +93,7 @@ print(f"Created notebook with {len(notebook['cells'])} cells")
 Test with file output
 
 ```python
-output_path = markdown_to_notebook(
-    sample_markdown,
-    egress="./sample_notebook.ipynb"
-)
+output_path = markdown_to_notebook(sample_markdown, egress="./sample_notebook.ipynb")
 print(f"Saved notebook to: {output_path}")
 ```
 
@@ -176,6 +174,7 @@ to get the rest:
 
 ```python
 from dn import check_ebook_requirements
+
 check_ebook_requirements()
 ```
 
@@ -183,7 +182,8 @@ Then convert a path, a URL, or bytes:
 
 ```python
 from dn import ebook_to_markdown
-md = ebook_to_markdown('book.mobi')
+
+md = ebook_to_markdown("book.mobi")
 ```
 
 Ebook formats also route through the generic entry point, detected from the
@@ -191,7 +191,8 @@ filename or from the file's own leading bytes:
 
 ```python
 from dn import bytes_to_markdown
-md = bytes_to_markdown(epub_bytes, key='book.epub')
+
+md = bytes_to_markdown(epub_bytes, key="book.epub")
 md = bytes_to_markdown(epub_bytes)  # format sniffed from the bytes
 ```
 
@@ -216,7 +217,8 @@ returns nothing. `dn` notices and runs OCR on exactly those pages:
 
 ```python
 from dn import pdf_to_markdown
-md = pdf_to_markdown(scanned_pdf_bytes)   # OCRs the pages that have no text
+
+md = pdf_to_markdown(scanned_pdf_bytes)  # OCRs the pages that have no text
 md = pdf_to_markdown(pdf_bytes, ocr=False)  # opt out (OCR costs ~1s/page)
 ```
 
@@ -226,7 +228,7 @@ pays the OCR cost, not even one with blank or figure-only pages. For a PDF
 that's mostly text with a few scanned inserts, ask explicitly:
 
 ```python
-md = pdf_to_markdown(pdf_bytes, ocr=True)   # OCR every text-less page
+md = pdf_to_markdown(pdf_bytes, ocr=True)  # OCR every text-less page
 ```
 
 `'auto'` is also opportunistic: if OCR is unavailable or fails, you still get
@@ -236,6 +238,7 @@ This needs the Tesseract binary plus `pip install dn[ocr]`:
 
 ```python
 from dn import check_ocr_requirements
+
 check_ocr_requirements()
 ```
 
@@ -275,12 +278,13 @@ supported_files = [
     "test.ipynb",
 ]
 
-print(f"\nSupported files (given what packages are installed here): {supported_files}\n")
+print(
+    f"\nSupported files (given what packages are installed here): {supported_files}\n"
+)
 
 for filename in supported_files:
     assert f"{filename}.md" in target_store, f"{filename} not found in target_store"
     assert len(target_store[f"{filename}.md"]) > 0, f"{filename} conversion failed"
-
 ```
 
     invalid pdf header: b'PK\x03\x04\n'
@@ -305,7 +309,9 @@ for filename in supported_files:
 ```python
 from dn import notebook_to_markdown
 
-notebook_to_markdown('~/Dropbox/py/proj/t/dn/misc/dn_readme.ipynb', target_file='../README.md')
+notebook_to_markdown(
+    "~/Dropbox/py/proj/t/dn/misc/dn_readme.ipynb", target_file="../README.md"
+)
 ```
 
     HTML output truncated. (Data removed)
