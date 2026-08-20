@@ -33,6 +33,12 @@ from dn.util import (
     url_to_contents,
     save_to_file_and_return_file,
 )
+from dn.ebook import (
+    EBOOK_FORMATS,
+    ebook_to_markdown,
+    register_ebook_converters,
+    sniff_ebook_format,
+)
 
 # Import libraries with error suppression
 ignore_import_errors = contextlib.suppress(ImportError)
@@ -517,10 +523,15 @@ def _detect_content_type(
         _log("Detected HTML via content pattern")
         return "html"
 
+    ebook_format = sniff_ebook_format(data)
+    if ebook_format is not None:
+        _log(f"Detected {ebook_format} via signature")
+        return ebook_format
+
     # Try to use extension from the key if available
     if key:
         extension = Path(key).suffix.lstrip(".").lower()
-        if extension in (
+        if extension in EBOOK_FORMATS or extension in (
             "pdf",
             "docx",
             "doc",
@@ -899,3 +910,14 @@ def bytes_store_to_markdown_store(
         )
 
     return target_store_egress(target_store)
+
+
+# --------------------------------------------------------------------------------------
+# Ebook Conversion (EPUB, MOBI, AZW3, ...)
+#
+# Ebook backends lean on external binaries (calibre, pandoc) rather than importable
+# packages, so unlike the converters above they can't be gated behind an ImportError
+# suppressor. They are registered unconditionally; dn.ebook raises an error naming
+# what to install if none of its backends is available. See dn/ebook.py.
+
+register_ebook_converters(dflt_converters)

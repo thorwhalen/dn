@@ -22,6 +22,16 @@ from dn.src import (
     dflt_converters,
 )
 
+from dn.ebook import (
+    ebook_to_markdown,  # Convert an ebook (EPUB, MOBI, AZW3, ...) to markdown
+    EBOOK_FORMATS,  # Ebook formats dn offers markdown conversion for
+    EbookConversionError,  # Raised when an ebook could not be converted
+    check_ebook_requirements,  # Report available backends and how to install the rest
+    ebook_backends,  # Registered ebook backends, in preference order
+    available_ebook_backends,  # ...restricted to those whose requirements are met
+    register_ebook_backend,  # Add your own ebook-to-markdown strategy
+)
+
 
 # --------------------------------------------------------------------------------------
 from contextlib import suppress as _suppress

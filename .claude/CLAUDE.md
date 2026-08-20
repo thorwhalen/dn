@@ -8,6 +8,7 @@ markdown, and provides markdown repair/cleanup utilities.
 ```
 dn/
   src.py     # Format converters: bytes_to_markdown, pdf_to_markdown, etc.
+  ebook.py   # Ebook (EPUB/MOBI/AZW3/...) to markdown, via a backend registry
   to.py      # Reverse: markdown_to_notebook
   repair.py  # Markdown repair: repair_markdown, remove_hyperlink_crap, etc.
   util.py    # Utilities: path handling, URL fetching
@@ -20,7 +21,15 @@ dn/
 - `remove_hyperlink_crap(text)` — strip ChatGPT/Claude citation artifacts
 - `remove_improperly_double_newlines(text)` — fix spurious whitespace-only blank lines
 - `notebook_to_markdown(nb_source)` — Jupyter notebook to markdown
+- `ebook_to_markdown(src)` — ebook (path, URL or bytes) to markdown
+- `check_ebook_requirements()` — which ebook backends work here, and how to fix the rest
 
 ## Dependencies
 
-Core: `dol`. Optional extras: `dn[pdf]`, `dn[word]`, `dn[html]`, `dn[all]`.
+Core: `dol`. Optional extras: `dn[pdf]`, `dn[word]`, `dn[html]`, `dn[ebook]`, `dn[all]`.
+
+Ebook conversion prefers *system* tools over pip packages: calibre's
+`ebook-convert` plus `pandoc` give by far the best markdown, because calibre
+resolves the publisher's CSS into real character formatting before pandoc
+renders it. `dn/ebook.py` degrades to pandoc-only, calibre-only, then pure-python
+(`ebooklib`) when those are missing.
