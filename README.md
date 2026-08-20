@@ -18,6 +18,8 @@ This package supports converting various file formats to Markdown, with each for
     PowerPoint  python-pptx
     HTML        html2text
     Notebooks   nbconvert, nbformat
+    Ebooks      calibre and/or pandoc (system tools) -- see below
+    Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
 
 **Installation Options**
 
@@ -36,6 +38,8 @@ You can also install these when installing `dn`, like so:
     pip install dn[powerpoint]        # PowerPoint support
     pip install dn[html]              # HTML conversion
     pip install dn[notebook]          # Jupyter Notebook support
+    pip install dn[ebook]             # EPUB (pure-python backend)
+    pip install dn[ocr]               # OCR for scanned PDFs
 
     # Install multiple format support
     pip install dn[pdf,word,excel]    # Multiple formats
@@ -154,6 +158,70 @@ from dn import pptx_to_markdown  # requires python-pptx
 ```python
 from dn import html_to_markdown  # requires html2text
 ```
+
+## Ebooks (EPUB, MOBI, AZW3, ...)
+
+`dn` converts ebooks to markdown through a registry of interchangeable backends,
+tried best-first:
+
+    Backend          Needs                  Notes
+    ---------------- ---------------------- ------------------------------------
+    calibre_pandoc   calibre + pandoc       Best fidelity; all ebook formats
+    pandoc           pandoc                 EPUB/FB2/ODT/RTF; loses CSS emphasis
+    calibre_txt      calibre                All formats; noisier output
+    ebooklib         pip install dn[ebook]  EPUB only; no external binary
+
+Calibre and pandoc are system tools, not pip packages. Ask what you have, and how
+to get the rest:
+
+```python
+from dn import check_ebook_requirements
+check_ebook_requirements()
+```
+
+Then convert a path, a URL, or bytes:
+
+```python
+from dn import ebook_to_markdown
+md = ebook_to_markdown('book.mobi')
+```
+
+Ebook formats also route through the generic entry point, detected from the
+filename or from the file's own leading bytes:
+
+```python
+from dn import bytes_to_markdown
+md = bytes_to_markdown(epub_bytes, key='book.epub')
+md = bytes_to_markdown(epub_bytes)  # format sniffed from the bytes
+```
+
+Add your own strategy with `register_ebook_backend`.
+
+**What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM
+EPUB) are encrypted: no backend can read them, and you must remove the DRM
+yourself — where you are legally entitled to — before converting. Image-only
+containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from
+`EBOOK_FORMATS`. Scanned *PDFs* are handled -- see the OCR section below.
+
+## Scanned PDFs (OCR)
+
+A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction
+returns nothing. `dn` notices and runs OCR on exactly those pages:
+
+```python
+from dn import pdf_to_markdown
+md = pdf_to_markdown(scanned_pdf_bytes)   # OCRs the pages that have no text
+md = pdf_to_markdown(pdf_bytes, ocr=False)  # opt out (OCR costs ~1s/page)
+```
+
+This needs the Tesseract binary plus `pip install dn[ocr]`:
+
+```python
+from dn import check_ocr_requirements
+check_ocr_requirements()
+```
+
+PDFs that already carry a text layer never pay the OCR cost.
 
 # Markdown stores
 

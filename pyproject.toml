@@ -47,6 +47,15 @@ notebook = [
     "nbconvert",
     "nbformat",
 ]
+ebook = [
+    "EbookLib",
+    "html2text",
+]
+ocr = [
+    "pytesseract",
+    "PyMuPDF",
+    "Pillow",
+]
 all = [
     "pypdf",
     "mammoth",
@@ -57,6 +66,10 @@ all = [
     "html2text",
     "nbconvert",
     "nbformat",
+    "EbookLib",
+    "pytesseract",
+    "PyMuPDF",
+    "Pillow",
 ]
 # Alias used by wads CI (install-deps-uv defaults to extras=dev). Pulling in
 # all converters lets the test suite exercise every converter path.
@@ -70,6 +83,10 @@ dev = [
     "html2text",
     "nbconvert",
     "nbformat",
+    "EbookLib",
+    "pytesseract",
+    "PyMuPDF",
+    "Pillow",
 ]
 
 [tool.ruff]

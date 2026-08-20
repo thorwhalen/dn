@@ -22,6 +22,24 @@ from dn.src import (
     dflt_converters,
 )
 
+from dn.ebook import (
+    ebook_to_markdown,  # Convert an ebook (EPUB, MOBI, AZW3, ...) to markdown
+    EBOOK_FORMATS,  # Ebook formats dn offers markdown conversion for
+    EbookConversionError,  # Raised when an ebook could not be converted
+    check_ebook_requirements,  # Report available backends and how to install the rest
+    ebook_backends,  # Registered ebook backends, in preference order
+    available_ebook_backends,  # ...restricted to those whose requirements are met
+    register_ebook_backend,  # Add your own ebook-to-markdown strategy
+)
+
+from dn.ocr import (
+    ocr_pdf_to_markdown,  # OCR a scanned (text-layer-less) PDF into markdown
+    ocr_pdf_pages,  # OCR selected pages of a PDF
+    ocr_is_available,  # Whether the OCR stack is installed
+    check_ocr_requirements,  # Report OCR requirements and how to install them
+    OcrError,  # Raised when OCR could not be performed
+)
+
 
 # --------------------------------------------------------------------------------------
 from contextlib import suppress as _suppress

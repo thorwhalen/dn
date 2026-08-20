@@ -33,6 +33,16 @@ from dn.util import (
     url_to_contents,
     save_to_file_and_return_file,
 )
+from dn.ebook import (
+    EBOOK_FORMATS,
+    register_ebook_converters,
+    sniff_ebook_format,
+)
+from dn.ocr import (
+    DFLT_MIN_CHARS_PER_PAGE,
+    ocr_is_available,
+    ocr_pdf_pages,
+)
 
 # Import libraries with error suppression
 ignore_import_errors = contextlib.suppress(ImportError)
@@ -47,15 +57,55 @@ with ignore_import_errors:
     import pypdf
 
     def pdf_to_markdown(
-        pdf_bytes: bytes, *, md_inner_file_header=dflt_md_inner_file_header
+        pdf_bytes: bytes,
+        *,
+        md_inner_file_header=dflt_md_inner_file_header,
+        ocr: Union[bool, str] = "auto",
+        ocr_min_chars_per_page: int = DFLT_MIN_CHARS_PER_PAGE,
+        **ocr_kwargs,
     ) -> str:
-        """Convert PDF to markdown text."""
+        """Convert PDF to markdown text.
+
+        Args:
+            pdf_bytes: The PDF file's bytes.
+            md_inner_file_header: Header level for the per-page headings.
+            ocr: What to do about pages with no extractable text -- a scanned
+                book has none at all, so without OCR it converts to headings and
+                nothing else. ``'auto'`` (the default) OCRs only those pages, and
+                only when the OCR stack is installed; ``True`` OCRs them and
+                raises if it can't; ``False`` never OCRs.
+            ocr_min_chars_per_page: Below this many extracted characters, a page
+                is considered to have no text layer.
+            **ocr_kwargs: Passed to :func:`dn.ocr.ocr_pdf_pages` (``dpi``,
+                ``lang``, ``max_workers``).
+
+        Returns:
+            Markdown text.
+
+        Note:
+            OCR takes roughly a second per page, so ``'auto'`` can make a long
+            scanned book slow. Pass ``ocr=False`` to opt out.
+        """
         pdf_reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in pdf_reader.pages:
-            text = page.extract_text()
-            pages.append(f"{md_inner_file_header} Page {len(pages) + 1}\n\n{text}")
-        return "\n\n".join(pages)
+        texts = [page.extract_text() or "" for page in pdf_reader.pages]
+
+        if ocr:
+            empty = [
+                i
+                for i, text in enumerate(texts)
+                if len(text.strip()) < ocr_min_chars_per_page
+            ]
+            # 'auto' means "improve it if you can"; True means "you must".
+            if empty and (ocr != "auto" or ocr_is_available()):
+                for page_number, text in ocr_pdf_pages(
+                    pdf_bytes, pages=empty, **ocr_kwargs
+                ).items():
+                    texts[page_number] = text
+
+        return "\n\n".join(
+            f"{md_inner_file_header} Page {i + 1}\n\n{text}"
+            for i, text in enumerate(texts)
+        )
 
     dflt_converters["pdf"] = pdf_to_markdown
 
@@ -517,10 +567,15 @@ def _detect_content_type(
         _log("Detected HTML via content pattern")
         return "html"
 
+    ebook_format = sniff_ebook_format(data)
+    if ebook_format is not None:
+        _log(f"Detected {ebook_format} via signature")
+        return ebook_format
+
     # Try to use extension from the key if available
     if key:
         extension = Path(key).suffix.lstrip(".").lower()
-        if extension in (
+        if extension in EBOOK_FORMATS or extension in (
             "pdf",
             "docx",
             "doc",
@@ -899,3 +954,14 @@ def bytes_store_to_markdown_store(
         )
 
     return target_store_egress(target_store)
+
+
+# --------------------------------------------------------------------------------------
+# Ebook Conversion (EPUB, MOBI, AZW3, ...)
+#
+# Ebook backends lean on external binaries (calibre, pandoc) rather than importable
+# packages, so unlike the converters above they can't be gated behind an ImportError
+# suppressor. They are registered unconditionally; dn.ebook raises an error naming
+# what to install if none of its backends is available. See dn/ebook.py.
+
+register_ebook_converters(dflt_converters)
