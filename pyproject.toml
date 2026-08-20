@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dn"
-"0.0.13"
+version = "0.0.13"
 description = "Tools for markdown parsing and generation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -52,6 +52,7 @@ ebook = [
     "html2text",
 ]
 ocr = [
+    "pypdf",
     "pytesseract",
     "PyMuPDF",
     "Pillow",
@@ -71,8 +72,8 @@ all = [
     "PyMuPDF",
     "Pillow",
 ]
-# Alias used by wads CI (install-deps-uv defaults to extras=dev). Pulling in
-# all converters lets the test suite exercise every converter path.
+# Installed by CI via [tool.wads.ci.install].extras below. Pulling in all
+# converters lets the test suite exercise every converter path.
 dev = [
     "pypdf",
     "mammoth",
@@ -139,6 +140,13 @@ doctest_optionflags = [
 
 [tool.wads.ci]
 project_name = "dn"
+
+[tool.wads.ci.install]
+# Must be declared explicitly. The install-deps-uv action defaults to "dev",
+# but the reusable workflow always passes this value through, and an unset
+# value arrives as an empty string that overrides that default -- leaving CI
+# with core deps only and every converter test failing on a missing import.
+extras = "dev"
 
 [tool.wads.ci.commands]
 pre_test = []

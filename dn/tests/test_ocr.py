@@ -30,7 +30,7 @@ def _scanned_pdf_bytes(lines=_SCANNED_LINES) -> bytes:
     pytest.importorskip("PIL")
     from PIL import Image, ImageDraw, ImageFont
 
-    image = Image.new("L", (1700, 200 + 140 * len(lines)), color=255)
+    image = Image.new("L", (1700, 200 + 140 * max(len(lines), 1)), color=255)
     draw = ImageDraw.Draw(image)
     try:
         font = ImageFont.load_default(size=64)
@@ -116,6 +116,24 @@ def test_ocr_pdf_pages_selects_pages(scanned_pdf):
 
 
 @needs_ocr
+@pytest.mark.parametrize(
+    "kwargs, match",
+    [
+        ({"max_workers": 0}, "max_workers"),
+        ({"max_workers": -1}, "max_workers"),
+        ({"dpi": 0}, "dpi"),
+        ({"pages": [-1]}, "out of range"),
+        ({"pages": [99]}, "out of range"),
+    ],
+)
+def test_ocr_pdf_pages_validates_its_arguments(scanned_pdf, kwargs, match):
+    """Bad arguments raise OcrError, as documented -- not a bare ValueError,
+    and never a silently wrong page (pages=[-1] used to OCR the last page)."""
+    with pytest.raises(OcrError, match=match):
+        ocr_pdf_pages(scanned_pdf, **kwargs)
+
+
+@needs_ocr
 def test_pdf_to_markdown_ocrs_automatically(scanned_pdf):
     """The point of the wiring: callers get text without asking for OCR."""
     from dn import pdf_to_markdown
@@ -133,11 +151,79 @@ def test_pdf_to_markdown_ocr_can_be_turned_off(scanned_pdf):
     assert "### Page 1" in md  # structure still there, just no text
 
 
-def test_pdf_to_markdown_ocr_false_never_needs_the_ocr_stack(scanned_pdf):
+def test_pdf_to_markdown_ocr_false_never_needs_the_ocr_stack(scanned_pdf, monkeypatch):
     """ocr=False must work on a machine with no tesseract at all."""
+    monkeypatch.setattr("dn.ocr.find_tesseract", lambda: None)
     from dn import pdf_to_markdown
 
     assert "### Page 1" in pdf_to_markdown(scanned_pdf, ocr=False)
+
+
+@pytest.mark.parametrize("bad", ["off", "no", "never", "yes", "maybe"])
+def test_pdf_to_markdown_rejects_ambiguous_ocr_values(scanned_pdf, bad):
+    """'off' reads like "disable" but is truthy; refuse rather than do the opposite."""
+    from dn import pdf_to_markdown
+
+    with pytest.raises(ValueError, match="must be 'auto', True, or False"):
+        pdf_to_markdown(scanned_pdf, ocr=bad)
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"md_inner_file_headr": "#"}, {"dpl": 400}, {"pages": [0]}]
+)
+def test_pdf_to_markdown_rejects_unknown_kwargs(scanned_pdf, kwargs):
+    """A misspelled option must fail loudly, not be silently ignored."""
+    from dn import pdf_to_markdown
+
+    with pytest.raises(TypeError):
+        pdf_to_markdown(scanned_pdf, **kwargs)
+
+
+def test_auto_ocr_survives_a_broken_ocr_stack(scanned_pdf, monkeypatch):
+    """'auto' is opportunistic: an OCR blow-up must not sink the conversion.
+
+    The realistic trigger is tesseract installed without its language data --
+    ocr_is_available() says yes, then image_to_string raises.
+    """
+    from dn import pdf_to_markdown
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("Error opening data file eng.traineddata")
+
+    monkeypatch.setattr("dn.src.ocr_pdf_pages", boom)
+
+    md = pdf_to_markdown(scanned_pdf)  # auto: degrades to plain extraction
+    assert "### Page 1" in md
+
+    with pytest.raises(RuntimeError, match="traineddata"):
+        pdf_to_markdown(scanned_pdf, ocr=True)  # demanded: must surface
+
+
+def test_auto_ocr_leaves_text_pdfs_with_blank_pages_alone(monkeypatch):
+    """A text PDF with figure-only pages must not pay the OCR cost by default."""
+    import io
+    import pypdf
+    from dol import Files
+    from dn import pdf_to_markdown
+    from dn.tests.utils_for_testing_dn import test_data_dir
+
+    writer = pypdf.PdfWriter()
+    writer.append(io.BytesIO(Files(test_data_dir)["test.pdf"]))
+    writer.append(io.BytesIO(_scanned_pdf_bytes(lines=())))  # a blank image page
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    mixed = buffer.getvalue()
+
+    calls = []
+    monkeypatch.setattr(
+        "dn.src.ocr_pdf_pages", lambda b, **kw: calls.append(kw.get("pages")) or {}
+    )
+
+    pdf_to_markdown(mixed)
+    assert calls == [], "auto OCR fired on a PDF that already has a text layer"
+
+    pdf_to_markdown(mixed, ocr=True)
+    assert calls, "ocr=True should still OCR the text-less pages"
 
 
 def test_ocr_required_but_missing_raises_informatively(scanned_pdf, monkeypatch):

@@ -12,7 +12,10 @@ from io import BytesIO
 import pytest
 
 from dn.ebook import (
+    AUTOWIRED_EBOOK_FORMATS,
     EBOOK_FORMATS,
+    ebook_formats,
+    _no_backend_message,
     EbookBackend,
     EbookConversionError,
     available_ebook_backends,
@@ -165,12 +168,77 @@ def test_unavailable_backends_are_skipped(epub_bytes):
         lambda src, fmt: pytest.fail("unavailable backend was called"),
         is_available=lambda: False,
         formats=["epub"],
-        priority=0,
+        priority=0,  # first in line, so only availability can stop it
     )
     try:
         assert "broken" not in available_ebook_backends("epub")
+        if available_ebook_backends("epub"):
+            # The assertion that matters: dispatching must skip it entirely.
+            assert _CHAPTER_TEXT in ebook_to_markdown(epub_bytes)
     finally:
         del _ebook_backends["broken"]
+
+
+def test_failed_backend_falls_through_to_the_next(epub_bytes):
+    """User story: my preferred converter chokes; dn should try the next one."""
+    register_ebook_backend(
+        "explodes",
+        lambda src, fmt: (_ for _ in ()).throw(RuntimeError("kaboom")),
+        is_available=lambda: True,
+        formats=["epub"],
+        priority=0,
+    )
+    register_ebook_backend(
+        "works",
+        lambda src, fmt: "RECOVERED",
+        is_available=lambda: True,
+        formats=["epub"],
+        priority=1,
+    )
+    try:
+        assert ebook_to_markdown(epub_bytes) == "RECOVERED"
+        # ...unless the caller opted out of falling back
+        with pytest.raises(EbookConversionError, match="kaboom"):
+            ebook_to_markdown(epub_bytes, fallback=False)
+    finally:
+        del _ebook_backends["explodes"]
+        del _ebook_backends["works"]
+
+
+def test_all_backends_failing_reports_every_attempt(epub_bytes):
+    """The aggregated error must name each backend and why it failed."""
+    for i in (1, 2):
+        register_ebook_backend(
+            f"dud{i}",
+            lambda src, fmt, i=i: (_ for _ in ()).throw(RuntimeError(f"dud{i} died")),
+            is_available=lambda: True,
+            formats=["zzz"],  # a format nothing else claims
+            priority=i,
+        )
+    try:
+        with pytest.raises(EbookConversionError) as excinfo:
+            ebook_to_markdown(epub_bytes, input_format="zzz")
+        message = str(excinfo.value)
+        assert "dud1 died" in message and "dud2 died" in message
+    finally:
+        del _ebook_backends["dud1"]
+        del _ebook_backends["dud2"]
+
+
+def test_named_backend_failure_is_an_ebook_conversion_error(epub_bytes):
+    """Callers catching EbookConversionError shouldn't see a backend's own type."""
+    register_ebook_backend(
+        "raises_valueerror",
+        lambda src, fmt: (_ for _ in ()).throw(ValueError("raw")),
+        is_available=lambda: True,
+        formats=["epub"],
+        priority=0,
+    )
+    try:
+        with pytest.raises(EbookConversionError, match="raw"):
+            ebook_to_markdown(epub_bytes, backend="raises_valueerror")
+    finally:
+        del _ebook_backends["raises_valueerror"]
 
 
 def test_sniff_ebook_format(epub_bytes):
@@ -182,8 +250,51 @@ def test_sniff_ebook_format(epub_bytes):
 def test_register_ebook_converters_populates_a_registry():
     registry = {}
     register_ebook_converters(registry)
-    assert EBOOK_FORMATS <= set(registry)
+    assert AUTOWIRED_EBOOK_FORMATS <= set(registry)
     assert callable(registry["mobi"])
+
+
+@pytest.mark.parametrize("ext", ["rb", "pdb", "opf", "prc", "snb", "tcr", "textile"])
+def test_ambiguous_extensions_are_not_auto_claimed(ext):
+    """.rb is Ruby far more often than Rocket eBook; don't hijack those files."""
+    from dn.src import dflt_converters, _detect_content_type
+
+    assert ext in EBOOK_FORMATS  # still convertible on explicit request
+    assert ext not in AUTOWIRED_EBOOK_FORMATS
+    assert ext not in dflt_converters
+    assert _detect_content_type(b"class Foo\nend\n", f"x.{ext}") != ext
+
+
+def test_source_files_do_not_get_routed_through_calibre(monkeypatch):
+    """A Ruby file must convert as text, without spawning any external tool."""
+    import dn.ebook
+    from dn.src import bytes_to_markdown
+
+    monkeypatch.setattr(
+        dn.ebook,
+        "_run",
+        lambda *a, **kw: pytest.fail("an external converter was spawned for .rb"),
+    )
+    assert "class Foo" in bytes_to_markdown(b"class Foo\nend\n", key="script.rb")
+
+
+def test_custom_format_backend_is_fully_wired():
+    """Registering a backend for a NEW format must reach the whole pipeline."""
+    register_ebook_backend(
+        "cbz_reader",
+        lambda src, fmt: "COMIC TEXT",
+        is_available=lambda: True,
+        formats=["cbz"],
+        priority=0,
+    )
+    try:
+        assert "cbz" in ebook_formats()
+        registry = {}
+        register_ebook_converters(registry)
+        assert "cbz" in registry
+        assert "cbz" in _no_backend_message("cbz")
+    finally:
+        del _ebook_backends["cbz_reader"]
 
 
 def test_register_ebook_converters_does_not_clobber_without_force():
@@ -198,7 +309,7 @@ def test_dn_dflt_converters_include_ebook_formats():
     """The whole point of the wiring: bytes_to_markdown must know about ebooks."""
     from dn.src import dflt_converters
 
-    assert EBOOK_FORMATS <= set(dflt_converters)
+    assert AUTOWIRED_EBOOK_FORMATS <= set(dflt_converters)
 
 
 def test_unhandled_format_raises_a_helpful_error():
