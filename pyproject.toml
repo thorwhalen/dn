@@ -52,6 +52,7 @@ ebook = [
     "html2text",
 ]
 ocr = [
+    "pypdf",
     "pytesseract",
     "PyMuPDF",
     "Pillow",

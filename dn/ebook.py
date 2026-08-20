@@ -58,6 +58,8 @@ from dn.util import is_url, url_to_contents
 
 __all__ = [
     "EBOOK_FORMATS",
+    "AUTOWIRED_EBOOK_FORMATS",
+    "ebook_formats",
     "EbookBackend",
     "EbookConversionError",
     "ebook_to_markdown",
@@ -79,12 +81,15 @@ __all__ = [
 # --------------------------------------------------------------------------------------
 # Formats
 
-#: Ebook formats this module offers markdown conversion for.
+#: Formats :func:`ebook_to_markdown` will attempt when asked explicitly.
 #:
 #: Deliberately excludes formats ``dn`` already converts natively (``pdf``,
 #: ``docx``, ``html``, ``xlsx``, ``pptx``, ``ipynb``) so registering these
 #: converters never shadows a lighter-weight one, and excludes image containers
 #: (``cbz``, ``djvu``, ...) which hold no extractable text.
+#:
+#: Being in here does *not* mean the extension is auto-detected -- see
+#: :data:`AUTOWIRED_EBOOK_FORMATS`.
 EBOOK_FORMATS = frozenset(
     {
         "azw",
@@ -111,6 +116,40 @@ EBOOK_FORMATS = frozenset(
         "snb",
         "tcr",
         "textile",
+        "txtz",
+        "updb",
+    }
+)
+
+#: The subset of :data:`EBOOK_FORMATS` wired into ``dn``'s converter registry
+#: and filename-based content detection.
+#:
+#: Several extensions calibre reads are *predominantly* something else:
+#: ``.rb`` is Ruby source far more often than Rocket eBook, ``.pdb`` is a
+#: Protein Data Bank or debug-symbol file far more often than PalmDoc, ``.prc``
+#: and ``.snb`` and ``.tcr`` are ambiguous, ``.opf`` is a manifest rather than a
+#: book, and ``.textile`` is a markup language. Auto-claiming those would route
+#: ordinary source files through calibre -- slow, and failing where the plain
+#: text fallback used to succeed. They stay convertible on explicit request via
+#: ``ebook_to_markdown(src, input_format='rb')``.
+AUTOWIRED_EBOOK_FORMATS = frozenset(
+    {
+        "azw",
+        "azw3",
+        "azw4",
+        "chm",
+        "epub",
+        "fb2",
+        "fbz",
+        "htmlz",
+        "kepub",
+        "lit",
+        "lrf",
+        "mobi",
+        "odt",
+        "pmlz",
+        "pobi",
+        "rtf",
         "txtz",
         "updb",
     }
@@ -212,10 +251,20 @@ def _tail(text: str, *, n_lines: int = 6) -> str:
     return "\n".join(lines[-n_lines:])
 
 
-def _run(cmd: list, *, what: str) -> subprocess.CompletedProcess:
-    """Run a command, raising an :class:`EbookConversionError` that says what broke."""
+def _run(
+    cmd: list, *, what: str, timeout: Optional[float] = None
+) -> subprocess.CompletedProcess:
+    """Run a command, raising an :class:`EbookConversionError` that says what broke.
+
+    ``stdin`` is closed: a tool that decides to prompt should fail rather than
+    silently consume the caller's stdin and hang.
+    """
     try:
-        result = subprocess.run(cmd, capture_output=True)
+        result = subprocess.run(
+            cmd, capture_output=True, stdin=subprocess.DEVNULL, timeout=timeout
+        )
+    except subprocess.TimeoutExpired as e:
+        raise EbookConversionError(f"{what} timed out after {timeout}s") from e
     except OSError as e:
         raise EbookConversionError(f"Could not run {what}: {e}") from e
     if result.returncode != 0:
@@ -500,10 +549,11 @@ def register_ebook_backend(
     ...     formats=['epub'],
     ...     priority=99,
     ... )
-    >>> backend.handles('epub'), backend.handles('mobi')
+    >>> try:
+    ...     backend.handles('epub'), backend.handles('mobi')
+    ... finally:
+    ...     _ = _ebook_backends.pop('shouty')
     (True, False)
-    >>> _ebook_backends.pop('shouty') is backend  # cleanup
-    True
     """
     if name in _ebook_backends and not force:
         raise ValueError(
@@ -555,6 +605,21 @@ def available_ebook_backends(input_format: str | None = None) -> tuple:
     )
 
 
+def ebook_formats() -> frozenset:
+    """Every format some registered backend claims, right now.
+
+    :data:`EBOOK_FORMATS` is the built-in baseline; registering a backend with
+    an explicit ``formats`` adds to it. Derived live rather than snapshotted, so
+    a custom backend for a new format is visible to
+    :func:`register_ebook_converters` and to error messages.
+
+    >>> 'epub' in ebook_formats()
+    True
+    """
+    extra = (b.formats for b in _ebook_backends.values() if b.formats is not None)
+    return EBOOK_FORMATS.union(*extra) if _ebook_backends else EBOOK_FORMATS
+
+
 def _sorted_backends(input_format: str | None = None) -> list:
     """Registered backends in try-order, optionally filtered by format."""
     backends = _ebook_backends.values()
@@ -573,6 +638,18 @@ def _safe_is_available(backend: EbookBackend) -> bool:
 
 # --------------------------------------------------------------------------------------
 # Format sniffing
+
+
+def _zip_declares_epub(data: bytes) -> bool:
+    """Whether ``data`` is a zip whose ``mimetype`` entry declares an EPUB."""
+    import io
+    import zipfile
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as zf:
+            return zf.read("mimetype").strip() == b"application/epub+zip"
+    except (zipfile.BadZipFile, KeyError, OSError, RuntimeError):
+        return False
 
 
 def sniff_ebook_format(data: bytes) -> str | None:
@@ -594,8 +671,12 @@ def sniff_ebook_format(data: bytes) -> str | None:
     >>> sniff_ebook_format(b'\\x00' * 60 + b'BOOKMOBI' + b'rest')
     'mobi'
     """
-    if data[:4] == b"PK\x03\x04" and b"application/epub+zip" in data[:100]:
-        return "epub"
+    if data[:4] == b"PK\x03\x04":
+        # The spec puts an uncompressed "mimetype" entry first, so the cheap
+        # substring check catches conforming files. Plenty of real EPUBs violate
+        # that, so fall back to actually reading the entry.
+        if b"application/epub+zip" in data[:100] or _zip_declares_epub(data):
+            return "epub"
     if data[60:68] in (b"BOOKMOBI", b"TEXtREAd"):
         # The MOBI/AZW/AZW3 family shares this PalmDB type. Calibre reads them all
         # through the same code path, so reporting 'mobi' is enough to convert.
@@ -679,7 +760,10 @@ def ebook_to_markdown(
             except Exception as e:
                 errors.append(f"  {candidate.name}: {e}")
                 if not fallback or backend is not None:
-                    raise
+                    raise EbookConversionError(
+                        f"Backend {candidate.name!r} failed converting "
+                        f"{resolved_format!r} to markdown: {e}"
+                    ) from e
 
     tried = "\n".join(errors)
     raise EbookConversionError(
@@ -710,7 +794,7 @@ def _no_backend_message(input_format: str) -> str:
     if not handlers:
         return (
             f"No backend handles the {input_format!r} format. "
-            f"Formats with backends: {sorted(EBOOK_FORMATS)}"
+            f"Formats with backends: {sorted(ebook_formats())}"
         )
     needed = sorted({req for b in handlers for req in b.requires})
     hints = "\n".join(f"  - {_install_hint(req)}" for req in needed)
@@ -836,7 +920,7 @@ register_ebook_backend(
 def register_ebook_converters(
     converters: MutableMapping,
     *,
-    formats: Iterable[str] = EBOOK_FORMATS,
+    formats: Optional[Iterable[str]] = None,
     force: bool = False,
 ) -> MutableMapping:
     """Add ``format -> (bytes -> markdown)`` entries for ebook formats.
@@ -862,6 +946,10 @@ def register_ebook_converters(
     >>> 'mobi' in registry and 'epub' in registry
     True
     """
+    if formats is None:
+        # The autowired baseline, plus any format a custom backend has claimed
+        # since import (those are opt-in by definition, so no ambiguity risk).
+        formats = AUTOWIRED_EBOOK_FORMATS | (ebook_formats() - EBOOK_FORMATS)
     for fmt in formats:
         fmt = fmt.lower()
         if force or fmt not in converters:

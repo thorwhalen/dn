@@ -234,18 +234,32 @@ def ocr_pdf_pages(
         ``{page_number: text}`` for the requested pages.
 
     Raises:
-        OcrError: If Tesseract, pytesseract, or PyMuPDF is missing.
+        OcrError: If Tesseract, pytesseract, or PyMuPDF is missing, if
+            ``max_workers`` or ``dpi`` is not positive, or if a page number is
+            out of range.
     """
     fitz, pytesseract = _require_ocr()
 
     if max_workers is None:
         max_workers = min(8, os.cpu_count() or 1)
+    if max_workers < 1:
+        raise OcrError(f"max_workers must be at least 1; got {max_workers}")
+    if dpi < 1:
+        raise OcrError(f"dpi must be positive; got {dpi}")
 
     ocr_one = partial(_image_to_text, pytesseract=pytesseract, lang=lang)
     texts = {}
 
     with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
         page_numbers = list(range(doc.page_count) if pages is None else pages)
+        out_of_range = [n for n in page_numbers if not 0 <= n < doc.page_count]
+        if out_of_range:
+            # Negative indices would silently OCR a page from the end and file
+            # it under a nonsense key, so reject rather than guess.
+            raise OcrError(
+                f"page numbers out of range for a {doc.page_count}-page "
+                f"document: {out_of_range}"
+            )
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             for batch in _chunked(page_numbers, max_workers * 2):
                 # Render on this thread (PyMuPDF documents aren't thread-safe),

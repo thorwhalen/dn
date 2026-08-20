@@ -37,5 +37,15 @@ renders it. `dn/ebook.py` degrades to pandoc-only, calibre-only, then pure-pytho
 (`ebooklib`) when those are missing.
 
 `dn/ocr.py` exists because `pdf_to_markdown` on a scanned book used to emit page
-headers and no text — an empty result that looked like success. It now OCRs only
-the pages that extract nothing, so text PDFs never pay the ~1s/page cost.
+headers and no text — an empty result that looked like success. `ocr='auto'`
+(the default) engages only when the *whole* document is text-less, so a text PDF
+with figure pages never pays the ~1s/page cost; `ocr=True` OCRs every text-less
+page. `'auto'` swallows OCR failures (a missing language pack must not sink a
+directory-wide conversion); `ocr=True` raises.
+
+Two format sets in `dn/ebook.py`, deliberately: `EBOOK_FORMATS` is what
+`ebook_to_markdown` will attempt on request, `AUTOWIRED_EBOOK_FORMATS` is the
+narrower set wired into `dflt_converters` and filename detection. Extensions
+calibre reads but that usually mean something else (`.rb`, `.pdb`, `.opf`,
+`.prc`, `.textile`) are in the first and not the second — auto-claiming them
+routed ordinary source files through calibre.

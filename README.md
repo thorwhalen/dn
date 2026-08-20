@@ -195,7 +195,13 @@ md = bytes_to_markdown(epub_bytes, key='book.epub')
 md = bytes_to_markdown(epub_bytes)  # format sniffed from the bytes
 ```
 
-Add your own strategy with `register_ebook_backend`.
+Add your own strategy — or a whole new format — with `register_ebook_backend`.
+
+Note that only unambiguous ebook extensions are auto-detected. Several formats
+calibre reads are usually something else entirely (`.rb` is Ruby far more often
+than Rocket eBook, `.pdb` is usually a Protein Data Bank file), so those never
+get claimed from a filename; convert them by asking:
+`ebook_to_markdown(src, input_format='rb')`.
 
 **What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM
 EPUB) are encrypted: no backend can read them, and you must remove the DRM
@@ -214,14 +220,24 @@ md = pdf_to_markdown(scanned_pdf_bytes)   # OCRs the pages that have no text
 md = pdf_to_markdown(pdf_bytes, ocr=False)  # opt out (OCR costs ~1s/page)
 ```
 
+`'auto'` engages only when the document has *no* text layer anywhere — the
+scanned-book case, where the alternative is an empty result. A text PDF never
+pays the OCR cost, not even one with blank or figure-only pages. For a PDF
+that's mostly text with a few scanned inserts, ask explicitly:
+
+```python
+md = pdf_to_markdown(pdf_bytes, ocr=True)   # OCR every text-less page
+```
+
+`'auto'` is also opportunistic: if OCR is unavailable or fails, you still get
+the plain-extraction result. `ocr=True` raises instead.
+
 This needs the Tesseract binary plus `pip install dn[ocr]`:
 
 ```python
 from dn import check_ocr_requirements
 check_ocr_requirements()
 ```
-
-PDFs that already carry a text layer never pay the OCR cost.
 
 # Markdown stores
 

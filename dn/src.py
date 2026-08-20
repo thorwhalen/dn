@@ -34,6 +34,7 @@ from dn.util import (
     save_to_file_and_return_file,
 )
 from dn.ebook import (
+    AUTOWIRED_EBOOK_FORMATS,
     EBOOK_FORMATS,
     register_ebook_converters,
     sniff_ebook_format,
@@ -62,45 +63,90 @@ with ignore_import_errors:
         md_inner_file_header=dflt_md_inner_file_header,
         ocr: Union[bool, str] = "auto",
         ocr_min_chars_per_page: int = DFLT_MIN_CHARS_PER_PAGE,
-        **ocr_kwargs,
+        ocr_dpi: Optional[int] = None,
+        ocr_lang: Optional[str] = None,
+        ocr_max_workers: Optional[int] = None,
     ) -> str:
         """Convert PDF to markdown text.
 
         Args:
             pdf_bytes: The PDF file's bytes.
             md_inner_file_header: Header level for the per-page headings.
-            ocr: What to do about pages with no extractable text -- a scanned
-                book has none at all, so without OCR it converts to headings and
-                nothing else. ``'auto'`` (the default) OCRs only those pages, and
-                only when the OCR stack is installed; ``True`` OCRs them and
-                raises if it can't; ``False`` never OCRs.
+            ocr: What to do about pages with no extractable text.
+
+                ``'auto'`` (default)
+                    OCR only when the PDF has *no* text layer at all -- i.e. a
+                    scanned book, where the alternative is an empty result.
+                    Requires the OCR stack; without it, conversion proceeds
+                    without OCR rather than failing, and an OCR error is
+                    swallowed in favour of the plain-extraction result.
+                ``True``
+                    OCR every text-less page, even in a PDF that is mostly text
+                    (scanned plates, inserts). Raises if OCR is unavailable or
+                    fails.
+                ``False``
+                    Never OCR.
+
             ocr_min_chars_per_page: Below this many extracted characters, a page
-                is considered to have no text layer.
-            **ocr_kwargs: Passed to :func:`dn.ocr.ocr_pdf_pages` (``dpi``,
-                ``lang``, ``max_workers``).
+                counts as having no text layer.
+            ocr_dpi: Rendering resolution, defaults to :data:`dn.ocr.DFLT_OCR_DPI`.
+            ocr_lang: Tesseract language pack(s), e.g. ``'eng+fra'``.
+            ocr_max_workers: Concurrent OCR workers.
 
         Returns:
             Markdown text.
 
+        Raises:
+            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``.
+            dn.ocr.OcrError: If ``ocr=True`` and OCR is unavailable or fails.
+
         Note:
-            OCR takes roughly a second per page, so ``'auto'`` can make a long
-            scanned book slow. Pass ``ocr=False`` to opt out.
+            OCR costs roughly a second per page. Under ``'auto'`` a text PDF
+            never pays it -- not even one with blank or figure-only pages, since
+            the whole document must be text-less for OCR to engage.
         """
+        if ocr not in (True, False, "auto"):
+            raise ValueError(
+                f"ocr must be 'auto', True, or False; got {ocr!r}. "
+                "(A truthy string is not a way to disable OCR.)"
+            )
+
         pdf_reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
         texts = [page.extract_text() or "" for page in pdf_reader.pages]
 
-        if ocr:
+        if ocr is not False:
             empty = [
                 i
                 for i, text in enumerate(texts)
                 if len(text.strip()) < ocr_min_chars_per_page
             ]
-            # 'auto' means "improve it if you can"; True means "you must".
-            if empty and (ocr != "auto" or ocr_is_available()):
-                for page_number, text in ocr_pdf_pages(
-                    pdf_bytes, pages=empty, **ocr_kwargs
-                ).items():
-                    texts[page_number] = text
+            # 'auto' targets scanned documents only: every page text-less. A
+            # text PDF with a few plate pages is left alone, because OCRing it
+            # would cost minutes for a handful of figure captions.
+            engage = bool(empty) and (
+                len(empty) == len(texts) if ocr == "auto" else True
+            )
+            if engage and (ocr is True or ocr_is_available()):
+                ocr_kwargs = {
+                    key: value
+                    for key, value in (
+                        ("dpi", ocr_dpi),
+                        ("lang", ocr_lang),
+                        ("max_workers", ocr_max_workers),
+                    )
+                    if value is not None
+                }
+                try:
+                    for page_number, text in ocr_pdf_pages(
+                        pdf_bytes, pages=empty, **ocr_kwargs
+                    ).items():
+                        texts[page_number] = text
+                except Exception:
+                    # 'auto' is opportunistic: a missing language pack or a
+                    # render failure must not take down a whole directory
+                    # conversion. ocr=True asked for it, so it gets the error.
+                    if ocr is True:
+                        raise
 
         return "\n\n".join(
             f"{md_inner_file_header} Page {i + 1}\n\n{text}"
@@ -575,7 +621,7 @@ def _detect_content_type(
     # Try to use extension from the key if available
     if key:
         extension = Path(key).suffix.lstrip(".").lower()
-        if extension in EBOOK_FORMATS or extension in (
+        if extension in AUTOWIRED_EBOOK_FORMATS or extension in (
             "pdf",
             "docx",
             "doc",
