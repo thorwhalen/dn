@@ -59,4 +59,4 @@ with _ignore_import_errors:
     from dn.src import pptx_to_markdown  # requires python-pptx
 
 with _ignore_import_errors:
-    from dn.src import html_to_markdown  # requires html2text
+    from dn.src import html_to_markdown  # requires markdownify

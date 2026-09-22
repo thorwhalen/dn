@@ -16,7 +16,7 @@ This package supports converting various file formats to Markdown, with each for
     Word        mammoth
     Excel       pandas, openpyxl, tabulate
     PowerPoint  python-pptx
-    HTML        html2text
+    HTML        markdownify
     Notebooks   nbconvert, nbformat
     Ebooks      calibre and/or pandoc (system tools) -- see below
     Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
@@ -154,7 +154,7 @@ from dn import pptx_to_markdown  # requires python-pptx
 
 
 ```python
-from dn import html_to_markdown  # requires html2text
+from dn import html_to_markdown  # requires markdownify
 ```
 
 ## Ebooks (EPUB, MOBI, AZW3, ...)

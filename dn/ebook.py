@@ -32,7 +32,7 @@ Backends shipped, in default preference order:
     Calibre's own markdown-flavored TXT output. No pandoc needed, but it escapes
     punctuation aggressively and flattens nested blockquotes.
 ``ebooklib``
-    Pure python (``ebooklib`` + ``html2text``). EPUB only, but needs no external
+    Pure python (``ebooklib`` + ``markdownify``). EPUB only, but needs no external
     binary.
 
 Neither calibre nor pandoc is a python package. Call :func:`check_ebook_requirements`
@@ -438,7 +438,7 @@ def ebooklib_to_markdown(
     *,
     item_separator: str = "\n\n",
 ) -> str:
-    """Convert an EPUB to markdown in pure python, via ``ebooklib`` and ``html2text``.
+    """Convert an EPUB to markdown in pure python, via ``ebooklib`` and ``markdownify``.
 
     Needs no external binary, but only reads EPUB, and cannot resolve class-based
     emphasis (the CSS is never applied), so styled italics and bold are lost.
@@ -454,21 +454,22 @@ def ebooklib_to_markdown(
     try:
         import ebooklib  # pip install EbookLib
         from ebooklib import epub
-        import html2text  # pip install html2text
+        from markdownify import MarkdownConverter  # pip install markdownify
     except ImportError as e:
         raise EbookConversionError(
-            "The 'ebooklib' backend needs ebooklib and html2text. "
+            "The 'ebooklib' backend needs ebooklib and markdownify. "
             + _install_hint("ebooklib")
         ) from e
 
+    from dn.src import HTML_TO_MARKDOWN_DEFAULTS, _collapse_blank_runs
+
     book = epub.read_epub(str(src))
-    converter = html2text.HTML2Text()
-    converter.ignore_links = False
-    converter.ignore_images = False
-    converter.body_width = 0  # don't hard-wrap
+    converter = MarkdownConverter(**HTML_TO_MARKDOWN_DEFAULTS)
 
     chunks = (
-        converter.handle(item.get_content().decode("utf-8", "replace"))
+        _collapse_blank_runs(
+            converter.convert(item.get_content().decode("utf-8", "replace"))
+        )
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT)
     )
     return item_separator.join(chunk.strip() for chunk in chunks if chunk.strip())
@@ -820,7 +821,7 @@ _INSTALL_HINTS = {
         "      macOS: brew install pandoc  |  "
         "Linux: sudo apt install pandoc  |  Windows: winget install JohnMacFarlane.Pandoc"
     ),
-    "ebooklib": "pip install 'dn[ebook]'  (installs EbookLib and html2text)",
+    "ebooklib": "pip install 'dn[ebook]'  (installs EbookLib and markdownify)",
 }
 
 
@@ -906,7 +907,7 @@ register_ebook_backend(
 register_ebook_backend(
     "ebooklib",
     ebooklib_to_markdown,
-    is_available=lambda: _importable("ebooklib") and _importable("html2text"),
+    is_available=lambda: _importable("ebooklib") and _importable("markdownify"),
     formats=("epub",),
     priority=40,
     requires=("ebooklib",),

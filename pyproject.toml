@@ -41,7 +41,7 @@ powerpoint = [
     "python-pptx",
 ]
 html = [
-    "html2text",
+    "markdownify>=1.0",
 ]
 notebook = [
     "nbconvert",
@@ -49,7 +49,7 @@ notebook = [
 ]
 ebook = [
     "EbookLib",
-    "html2text",
+    "markdownify>=1.0",
 ]
 ocr = [
     "pypdf",
@@ -64,7 +64,7 @@ all = [
     "openpyxl",
     "tabulate",
     "python-pptx",
-    "html2text",
+    "markdownify>=1.0",
     "nbconvert",
     "nbformat",
     "EbookLib",
@@ -81,7 +81,7 @@ dev = [
     "openpyxl",
     "tabulate",
     "python-pptx",
-    "html2text",
+    "markdownify>=1.0",
     "nbconvert",
     "nbformat",
     "EbookLib",
