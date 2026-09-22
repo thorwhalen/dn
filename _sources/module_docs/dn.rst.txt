@@ -1,4 +1,0 @@
-dn
-==
-.. automodule:: dn
-   :members:

@@ -1,0 +1,29 @@
+dn.ocr
+======
+
+.. automodule:: dn.ocr
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      DFLT_OCR_DPI
+      DFLT_OCR_LANG
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ocr_pdf_to_markdown
+      ocr_pdf_pages
+      check_ocr_requirements
+      find_tesseract
+      ocr_is_available
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      OcrError
+   

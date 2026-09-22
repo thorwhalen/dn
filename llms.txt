@@ -1,0 +1,26 @@
+# dn
+
+> Tools for markdown parsing and generation
+
+
+## Pages
+
+- [dn](index.html.md): Markdown parsing and generation
+- [API reference](api.html.md): | &#96;dn&#96;   | Tools for markdown parsing and generation.   |
+- [dn](_autosummary/dn.html.md): Tools for markdown parsing and generation.
+- [dn.ebook](_autosummary/dn.ebook.html.md): Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, …) to markdown.
+- [dn.ocr](_autosummary/dn.ocr.html.md): Read text out of PDFs that have no text layer, by OCR.
+- [dn.repair](_autosummary/dn.repair.html.md): Markdown repair and cleanup utilities.
+- [dn.src](_autosummary/dn.src.html.md): Converting things to markdown
+- [dn.to](_autosummary/dn.to.html.md): Converting markdown to other formats
+- [dn.util](_autosummary/dn.util.html.md): General utilities for dn
+- [For AI agents](ai-agents.html.md): &#96;dn&#96; ships artifacts for coding agents alongside its code. This page lists
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-09-22 14:51 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+
+## Optional
+
+- [dn.md](dn.md): Complete documentation in a single file.
+
+## Build
+
+- [build_info.json](build_info.json): build provenance (commit, version, tool versions, whether the docs match the package)

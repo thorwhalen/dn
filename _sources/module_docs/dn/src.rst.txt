@@ -1,4 +1,0 @@
-dn.src
-======
-.. automodule:: dn.src
-   :members:

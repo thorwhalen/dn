@@ -1,198 +1,612 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="index.html.md">
+<link rel="describedby" href="llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="index.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="API reference" href="api.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>dn</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
 
 
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="./">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to dn’s documentation! &mdash; dn 0.0.13 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #5c5d00;
+  --color-brand-content: #5c5d00;
   
-      <script src="_static/jquery.js?v=5d32c60e"></script>
-      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9fc46840"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-      <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
-      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
-      <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="dn" href="module_docs/dn.html" /> 
-</head>
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #bbbf54;
+  --color-brand-content: #bbbf54;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #bbbf54;
+  --color-brand-content: #bbbf54;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
 
-          
-          
-          <a href="#" class="icon icon-home">
-            dn
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn.html">dn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ebook.html">dn.ebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ocr.html">dn.ocr</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/repair.html">dn.repair</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/src.html">dn.src</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/to.html">dn.to</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/util.html">dn.util</a></li>
-</ul>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">dn</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome to dn’s documentation!</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="welcome-to-dn-s-documentation">
-<h1>Welcome to dn’s documentation!<a class="headerlink" href="#welcome-to-dn-s-documentation" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn.html">dn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ebook.html">dn.ebook</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.AUTOWIRED_EBOOK_FORMATS"><code class="docutils literal notranslate"><span class="pre">AUTOWIRED_EBOOK_FORMATS</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EBOOK_FORMATS"><code class="docutils literal notranslate"><span class="pre">EBOOK_FORMATS</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EbookBackend"><code class="docutils literal notranslate"><span class="pre">EbookBackend</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.EbookConversionError"><code class="docutils literal notranslate"><span class="pre">EbookConversionError</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.available_ebook_backends"><code class="docutils literal notranslate"><span class="pre">available_ebook_backends()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.calibre_pandoc_to_markdown"><code class="docutils literal notranslate"><span class="pre">calibre_pandoc_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.calibre_txt_to_markdown"><code class="docutils literal notranslate"><span class="pre">calibre_txt_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.check_ebook_requirements"><code class="docutils literal notranslate"><span class="pre">check_ebook_requirements()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_backends"><code class="docutils literal notranslate"><span class="pre">ebook_backends()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_formats"><code class="docutils literal notranslate"><span class="pre">ebook_formats()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebook_to_markdown"><code class="docutils literal notranslate"><span class="pre">ebook_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.ebooklib_to_markdown"><code class="docutils literal notranslate"><span class="pre">ebooklib_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.find_ebook_convert"><code class="docutils literal notranslate"><span class="pre">find_ebook_convert()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.find_pandoc"><code class="docutils literal notranslate"><span class="pre">find_pandoc()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.pandoc_to_markdown"><code class="docutils literal notranslate"><span class="pre">pandoc_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.register_ebook_backend"><code class="docutils literal notranslate"><span class="pre">register_ebook_backend()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.register_ebook_converters"><code class="docutils literal notranslate"><span class="pre">register_ebook_converters()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ebook.html#dn.ebook.sniff_ebook_format"><code class="docutils literal notranslate"><span class="pre">sniff_ebook_format()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/ocr.html">dn.ocr</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_DPI"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_DPI</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.DFLT_OCR_LANG"><code class="docutils literal notranslate"><span class="pre">DFLT_OCR_LANG</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.OcrError"><code class="docutils literal notranslate"><span class="pre">OcrError</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.check_ocr_requirements"><code class="docutils literal notranslate"><span class="pre">check_ocr_requirements()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.find_tesseract"><code class="docutils literal notranslate"><span class="pre">find_tesseract()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_is_available"><code class="docutils literal notranslate"><span class="pre">ocr_is_available()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_pages"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_pages()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/ocr.html#dn.ocr.ocr_pdf_to_markdown"><code class="docutils literal notranslate"><span class="pre">ocr_pdf_to_markdown()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/repair.html">dn.repair</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.fix_empty_links"><code class="docutils literal notranslate"><span class="pre">fix_empty_links()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.fix_multiline_links"><code class="docutils literal notranslate"><span class="pre">fix_multiline_links()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.remove_hyperlink_crap"><code class="docutils literal notranslate"><span class="pre">remove_hyperlink_crap()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.remove_improperly_double_newlines"><code class="docutils literal notranslate"><span class="pre">remove_improperly_double_newlines()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.repair_markdown"><code class="docutils literal notranslate"><span class="pre">repair_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/repair.html#dn.repair.strip_repeated_lines"><code class="docutils literal notranslate"><span class="pre">strip_repeated_lines()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/src.html">dn.src</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.add_dflt_converter"><code class="docutils literal notranslate"><span class="pre">add_dflt_converter()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.bytes_store_to_markdown_store"><code class="docutils literal notranslate"><span class="pre">bytes_store_to_markdown_store()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.bytes_to_markdown"><code class="docutils literal notranslate"><span class="pre">bytes_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.default_fallback"><code class="docutils literal notranslate"><span class="pre">default_fallback()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.extensions_not_supported_by_converters"><code class="docutils literal notranslate"><span class="pre">extensions_not_supported_by_converters()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.get_extension"><code class="docutils literal notranslate"><span class="pre">get_extension()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.notebook_to_markdown"><code class="docutils literal notranslate"><span class="pre">notebook_to_markdown()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/src.html#dn.src.try_to_convert_to_markdown"><code class="docutils literal notranslate"><span class="pre">try_to_convert_to_markdown()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/to.html">dn.to</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/to.html#dn.to.markdown_to_notebook"><code class="docutils literal notranslate"><span class="pre">markdown_to_notebook()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="module_docs/dn/util.html">dn.util</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/util.html#dn.util.fullpath"><code class="docutils literal notranslate"><span class="pre">fullpath()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/util.html#dn.util.identity"><code class="docutils literal notranslate"><span class="pre">identity()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/util.html#dn.util.is_url"><code class="docutils literal notranslate"><span class="pre">is_url()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/util.html#dn.util.save_to_file_and_return_file"><code class="docutils literal notranslate"><span class="pre">save_to_file_and_return_file()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/dn/util.html#dn.util.url_to_contents"><code class="docutils literal notranslate"><span class="pre">url_to_contents()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<p>Release: 0.0.13</p>
-<p>Last change: Aug 20, 2026</p>
-</section>
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="module_docs/dn.html" class="btn btn-neutral float-right" title="dn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
     </div>
+    <div class="header-center">
+      <a href="#"><div class="brand">dn</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+  
+  <span class="sidebar-brand-text">dn</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input aria-label="Toggle navigation of API reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/dn.html">dn</a><input aria-label="Toggle navigation of dn" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ebook.html">dn.ebook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ocr.html">dn.ocr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.repair.html">dn.repair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.src.html">dn.src</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.to.html">dn.to</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.util.html">dn.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ai-agents.html">For AI agents</a></li>
+</ul>
 
-  <hr/>
+</div>
+</div>
 
-  <div role="contentinfo">
-    <p></p>
-  </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/index.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <!-- generated by epythet -->
+<section id="dn">
+<h1>dn<a class="headerlink" href="#dn" title="Link to this heading">¶</a></h1>
+<p>Markdown parsing and generation</p>
+<p>To install: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dn</span></code></p>
+<section id="optional-dependencies">
+<h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h2>
+<p>This package supports converting various file formats to Markdown, with each format requiring specific dependencies:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Format      Required Package(s)
+----------- -----------------
+PDF         pypdf
+Word        mammoth
+Excel       pandas, openpyxl, tabulate
+PowerPoint  python-pptx
+HTML        markdownify
+Notebooks   nbconvert, nbformat
+Ebooks      calibre and/or pandoc (system tools) -- see below
+Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
+</pre></div>
+</div>
+<p><strong>Installation Options</strong></p>
+<p>You can install these dependencies after the fact, if and when package complains it needs some specific resource.</p>
+<p>You can also install these when installing <code class="docutils literal notranslate"><span class="pre">dn</span></code>, like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1"># Install with minimal dependencies</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+<span class="w">    </span><span class="c1"># Install with support for specific formats</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>pdf<span class="o">]</span><span class="w">               </span><span class="c1"># PDF conversion support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>word<span class="o">]</span><span class="w">              </span><span class="c1"># Word document support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>excel<span class="o">]</span><span class="w">             </span><span class="c1"># Excel support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>powerpoint<span class="o">]</span><span class="w">        </span><span class="c1"># PowerPoint support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>html<span class="o">]</span><span class="w">              </span><span class="c1"># HTML conversion</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>notebook<span class="o">]</span><span class="w">          </span><span class="c1"># Jupyter Notebook support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>ebook<span class="o">]</span><span class="w">             </span><span class="c1"># EPUB (pure-python backend)</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>ocr<span class="o">]</span><span class="w">               </span><span class="c1"># OCR for scanned PDFs</span>
 
-</footer>
+<span class="w">    </span><span class="c1"># Install multiple format support</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>pdf,word,excel<span class="o">]</span><span class="w">    </span><span class="c1"># Multiple formats</span>
+
+<span class="w">    </span><span class="c1"># Install all optional dependencies</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>all<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<section id="to-and-from-jupyter-notebooks">
+<h2>To and from jupyter notebooks<a class="headerlink" href="#to-and-from-jupyter-notebooks" title="Link to this heading">¶</a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>from dn import markdown_to_notebook
+
+sample_markdown = """# Sample Notebook
+
+This is a markdown cell with some explanation.
+
+```python
+# This is a code cell
+print("Hello, World!")
+x = 42
+print(f"The answer is {x}")
+```
+
+## Another Section
+
+More markdown content here.
+
+```python
+# Another code cell
+def greet(name):
+    return f"Hello, {name}!"
+
+
+print(greet("Jupyter"))
+```
+
+Final markdown cell."""
+</pre></div>
+</div>
+<p>Test basic functionality</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">notebook</span> <span class="o">=</span> <span class="n">markdown_to_notebook</span><span class="p">(</span><span class="n">sample_markdown</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Created notebook with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">notebook</span><span class="p">[</span><span class="s1">'cells'</span><span class="p">])</span><span class="si">}</span><span class="s2"> cells"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Test with file output</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">markdown_to_notebook</span><span class="p">(</span><span class="n">sample_markdown</span><span class="p">,</span> <span class="n">egress</span><span class="o">=</span><span class="s2">"./sample_notebook.ipynb"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Saved notebook to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Created notebook with 5 cells
+Saved notebook to: /Users/thorwhalen/Dropbox/py/proj/t/dn/misc/sample_notebook.ipynb
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">notebook_to_markdown</span>
+
+<span class="n">md_string</span> <span class="o">=</span> <span class="n">notebook_to_markdown</span><span class="p">(</span><span class="n">notebook</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">md_string</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Sample Notebook
+
+This is a markdown cell with some explanation.
+
+
+
+```python
+# This is a code cell
+print("Hello, World!")
+x = 42
+print(f"The answer 
+...
+nt(greet("Jupyter"))
+
+```
+
+Final markdown cell.
+</pre></div>
+</div>
+</section>
+<section id="and-other-formats">
+<h2>… and other formats<a class="headerlink" href="#and-other-formats" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdf_to_markdown</span>  <span class="c1"># requires pypdf</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">docx_to_markdown</span>  <span class="c1"># requires mammoth</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">excel_to_markdown</span>  <span class="c1"># requires pandas</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pptx_to_markdown</span>  <span class="c1"># requires python-pptx</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">html_to_markdown</span>  <span class="c1"># requires markdownify</span>
+</pre></div>
+</div>
+</section>
+<section id="ebooks-epub-mobi-azw3">
+<h2>Ebooks (EPUB, MOBI, AZW3, …)<a class="headerlink" href="#ebooks-epub-mobi-azw3" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">dn</span></code> converts ebooks to markdown through a registry of interchangeable backends,
+tried best-first:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Backend          Needs                  Notes
+---------------- ---------------------- ------------------------------------
+calibre_pandoc   calibre + pandoc       Best fidelity; all ebook formats
+pandoc           pandoc                 EPUB/FB2/ODT/RTF; loses CSS emphasis
+calibre_txt      calibre                All formats; noisier output
+ebooklib         pip install dn[ebook]  EPUB only; no external binary
+</pre></div>
+</div>
+<p>Calibre and pandoc are system tools, not pip packages. Ask what you have, and how
+to get the rest:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_ebook_requirements</span>
+
+<span class="n">check_ebook_requirements</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then convert a path, a URL, or bytes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">ebook_to_markdown</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">ebook_to_markdown</span><span class="p">(</span><span class="s2">"book.mobi"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Ebook formats also route through the generic entry point, detected from the
+filename or from the file’s own leading bytes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">bytes_to_markdown</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span><span class="n">epub_bytes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"book.epub"</span><span class="p">)</span>
+<span class="n">md</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span><span class="n">epub_bytes</span><span class="p">)</span>  <span class="c1"># format sniffed from the bytes</span>
+</pre></div>
+</div>
+<p>Add your own strategy — or a whole new format — with <code class="docutils literal notranslate"><span class="pre">register_ebook_backend</span></code>.</p>
+<p>Note that only unambiguous ebook extensions are auto-detected. Several formats
+calibre reads are usually something else entirely (<code class="docutils literal notranslate"><span class="pre">.rb</span></code> is Ruby far more often
+than Rocket eBook, <code class="docutils literal notranslate"><span class="pre">.pdb</span></code> is usually a Protein Data Bank file), so those never
+get claimed from a filename; convert them by asking:
+<code class="docutils literal notranslate"><span class="pre">ebook_to_markdown(src,</span> <span class="pre">input_format='rb')</span></code>.</p>
+<p><strong>What cannot be converted.</strong> DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM
+EPUB) are encrypted: no backend can read them, and you must remove the DRM
+yourself — where you are legally entitled to — before converting. Image-only
+containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from
+<code class="docutils literal notranslate"><span class="pre">EBOOK_FORMATS</span></code>. Scanned <em>PDFs</em> are handled – see the OCR section below.</p>
+</section>
+<section id="scanned-pdfs-ocr">
+<h2>Scanned PDFs (OCR)<a class="headerlink" href="#scanned-pdfs-ocr" title="Link to this heading">¶</a></h2>
+<p>A scanned book is a PDF full of <em>pictures</em> of pages, so ordinary text extraction
+returns nothing. <code class="docutils literal notranslate"><span class="pre">dn</span></code> notices and runs OCR on exactly those pages:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdf_to_markdown</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span><span class="p">(</span><span class="n">scanned_pdf_bytes</span><span class="p">)</span>  <span class="c1"># OCRs the pages that have no text</span>
+<span class="n">md</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">ocr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># opt out (OCR costs ~1s/page)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'auto'</span></code> engages only when the document has <em>no</em> text layer anywhere — the
+scanned-book case, where the alternative is an empty result. A text PDF never
+pays the OCR cost, not even one with blank or figure-only pages. For a PDF
+that’s mostly text with a few scanned inserts, ask explicitly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">md</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="n">ocr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># OCR every text-less page</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'auto'</span></code> is also opportunistic: if OCR is unavailable or fails, you still get
+the plain-extraction result. <code class="docutils literal notranslate"><span class="pre">ocr=True</span></code> raises instead.</p>
+<p>This needs the Tesseract binary plus <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dn[ocr]</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_ocr_requirements</span>
+
+<span class="n">check_ocr_requirements</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="markdown-stores">
+<h1>Markdown stores<a class="headerlink" href="#markdown-stores" title="Link to this heading">¶</a></h1>
+<p>User story: I have a directory with multiple files in different formats.</p>
+<p>I want to batch convert all supported files to markdown and store them in memory.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">Files</span><span class="p">,</span> <span class="n">bytes_store_to_markdown_store</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dn.tests.utils_for_testing_dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_data_dir</span>
+
+<span class="c1"># Setup source files from test directory</span>
+<span class="n">src_files</span> <span class="o">=</span> <span class="n">Files</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">)</span>
+
+<span class="c1"># Setup target store as an in-memory dictionary</span>
+<span class="n">target_store</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Convert all files in directory to markdown</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">bytes_store_to_markdown_store</span><span class="p">(</span><span class="n">src_files</span><span class="p">,</span> <span class="n">target_store</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Check that the result is the target_store</span>
+<span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="n">target_store</span>
+
+<span class="c1"># Verify that the supported file types were converted correctly</span>
+<span class="n">supported_files</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"test.docx"</span><span class="p">,</span>
+    <span class="s2">"test.pptx"</span><span class="p">,</span>
+    <span class="s2">"test.pdf"</span><span class="p">,</span>
+    <span class="s2">"test.html"</span><span class="p">,</span>
+    <span class="s2">"test.xlsx"</span><span class="p">,</span>
+    <span class="s2">"test.txt"</span><span class="p">,</span>
+    <span class="s2">"test.md"</span><span class="p">,</span>
+    <span class="s2">"test.ipynb"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Supported files (given what packages are installed here): </span><span class="si">{</span><span class="n">supported_files</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">supported_files</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.md"</span> <span class="ow">in</span> <span class="n">target_store</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> not found in target_store"</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_store</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.md"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> conversion failed"</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>invalid pdf header: b'PK\x03\x04\n'
+EOF marker not found
+EOF marker not found
+invalid pdf header: b'PK\x03\x04\x14'
+EOF marker not found
+invalid pdf h
+...
+df header: b'PK\x03\x04\x14'
+EOF marker not found
+
+
+
+Supported files (given what packages are installed here): ['test.docx', 'test.pptx', 'test.pdf', 'test.html', 'test.xlsx', 'test.txt', 'test.md', 'test.ipynb']
+</pre></div>
+</div>
+</section>
+<section id="convert-this-notebook-into-a-markdown-for-the-readme-md">
+<h1>Convert this notebook into a markdown for the README.md<a class="headerlink" href="#convert-this-notebook-into-a-markdown-for-the-readme-md" title="Link to this heading">¶</a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">notebook_to_markdown</span>
+
+<span class="n">notebook_to_markdown</span><span class="p">(</span>
+    <span class="s2">"~/Dropbox/py/proj/t/dn/misc/dn_readme.ipynb"</span><span class="p">,</span> <span class="n">target_file</span><span class="o">=</span><span class="s2">"../README.md"</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>HTML output truncated. (Data removed)
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p class="epythet-aggregates">This documentation as a single file: <a href="dn.md">dn.md</a> (Markdown, for agents).</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-09-22 14:51 UTC from <a href="https://github.com/thorwhalen/dn/commit/25dfc1d14329949c792e8b6cd82fff4d33ea1a7d">25dfc1d</a> (main) · dn 0.0.14 · <a href="about-this-build.html">about this build</a></p>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="api.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">API reference</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">dn</a><ul>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#to-and-from-jupyter-notebooks">To and from jupyter notebooks</a></li>
+<li><a class="reference internal" href="#and-other-formats">… and other formats</a></li>
+<li><a class="reference internal" href="#ebooks-epub-mobi-azw3">Ebooks (EPUB, MOBI, AZW3, …)</a></li>
+<li><a class="reference internal" href="#scanned-pdfs-ocr">Scanned PDFs (OCR)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#markdown-stores">Markdown stores</a></li>
+<li><a class="reference internal" href="#convert-this-notebook-into-a-markdown-for-the-readme-md">Convert this notebook into a markdown for the README.md</a></li>
+</ul>
+
+          </div>
         </div>
       </div>
-    </section>
+      
+      
+    </aside>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+</div><script src="_static/documentation_options.js?v=832ae8cf"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=fd10adb8"></script>
+    </body>
 </html>

@@ -1,0 +1,44 @@
+dn.ebook
+========
+
+.. automodule:: dn.ebook
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      EBOOK_FORMATS
+      AUTOWIRED_EBOOK_FORMATS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ebook_formats
+      ebook_to_markdown
+      ebook_backends
+      available_ebook_backends
+      register_ebook_backend
+      register_ebook_converters
+      check_ebook_requirements
+      sniff_ebook_format
+      find_ebook_convert
+      find_pandoc
+      calibre_pandoc_to_markdown
+      pandoc_to_markdown
+      calibre_txt_to_markdown
+      ebooklib_to_markdown
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EbookBackend
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      EbookConversionError
+   

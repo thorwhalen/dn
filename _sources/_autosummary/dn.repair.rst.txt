@@ -1,0 +1,17 @@
+dn.repair
+=========
+
+.. automodule:: dn.repair
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      fix_empty_links
+      fix_multiline_links
+      remove_hyperlink_crap
+      remove_improperly_double_newlines
+      repair_markdown
+      strip_repeated_lines
+   
