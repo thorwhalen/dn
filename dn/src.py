@@ -12,6 +12,7 @@ to markdown format. It includes:
 # TODO: Keep in sync and centralize when makes sense
 
 import json
+import re
 from functools import partial
 import contextlib
 import base64
@@ -217,20 +218,86 @@ with ignore_import_errors:
     dflt_converters["ppt"] = pptx_to_markdown
 
 # HTML Conversion
-with ignore_import_errors:
-    import html2text  # pip install html2text
+# Defaults for the HTML->Markdown conversion (markdownify's MarkdownConverter
+# options). Kept module-level and named the same as the equivalent constant in
+# thorwhalen/scraped and thorwhalen/citeget, which replaced html2text (GPL-3.0-
+# or-later) with markdownify (MIT) the same way -- see thorwhalen/dn#3.
+HTML_TO_MARKDOWN_DEFAULTS = {
+    "heading_style": "ATX",  # "# Title", not the underlined setext form
+    "bullets": "*",
+    "escape_underscores": False,  # keeps identifiers like ``foo_bar`` readable
+    "escape_asterisks": False,
+}
 
-    def html_to_markdown(html_bytes: bytes) -> str:
-        """Convert HTML to markdown."""
+# An opening (or closing) fence of a fenced code block, allowing markdown's
+# three spaces of leading indentation.
+_CODE_FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+def _outside_code_fences(markdown: str) -> Iterable[tuple]:
+    """Split *markdown* into ``(is_fenced_code, text)`` chunks.
+
+    An unterminated fence keeps everything after it marked as code, which is
+    the conservative choice: whitespace inside code is content.
+
+    >>> list(_outside_code_fences("a\\n```\\nb\\n```\\nc\\n"))
+    [(False, 'a\\n'), (True, '```\\nb\\n```\\n'), (False, 'c\\n')]
+    """
+    chunk: list = []
+    fence = ""
+    for line in markdown.splitlines(keepends=True):
+        match = _CODE_FENCE_RE.match(line)
+        if not fence:
+            if match:
+                yield False, "".join(chunk)
+                chunk, fence = [line], match.group(1)[0] * 3
+            else:
+                chunk.append(line)
+        else:
+            chunk.append(line)
+            if match and match.group(1)[0] * 3 == fence:
+                yield True, "".join(chunk)
+                chunk, fence = [], ""
+    yield bool(fence), "".join(chunk)
+
+
+def _collapse_blank_runs(markdown: str) -> str:
+    """Collapse runs of blank lines to a single one, *outside code blocks*.
+
+    Two blank lines between top-level ``def``s is PEP 8, so a global
+    ``re.sub(r"\\n{3,}", "\\n\\n", ...)`` would silently rewrite the source code
+    on every technical page converted. Fenced regions pass through untouched.
+
+    >>> _collapse_blank_runs("a\\n\\n\\n\\nb\\n")
+    'a\\n\\nb\\n'
+    >>> _collapse_blank_runs("```\\na\\n\\n\\n\\nb\\n```\\n")
+    '```\\na\\n\\n\\n\\nb\\n```\\n'
+    """
+    return "".join(
+        text if is_code else re.sub(r"\n{3,}", "\n\n", text)
+        for is_code, text in _outside_code_fences(markdown)
+    )
+
+
+with ignore_import_errors:
+    from markdownify import MarkdownConverter  # pip install markdownify
+
+    def html_to_markdown(html_bytes: bytes, **markdownify_options) -> str:
+        """Convert HTML to markdown.
+
+        Args:
+            html_bytes: Raw HTML bytes.
+            markdownify_options: Options overriding
+                :data:`HTML_TO_MARKDOWN_DEFAULTS`, passed to ``markdownify``'s
+                ``MarkdownConverter``.
+        """
         # Decode bytes to string
         html_str = html_bytes.decode("utf-8", errors="ignore")
 
-        # Create HTML to Markdown converter
-        h = html2text.HTML2Text()
-        h.ignore_links = False
-        h.ignore_images = False
-
-        return h.handle(html_str)
+        converter = MarkdownConverter(
+            **{**HTML_TO_MARKDOWN_DEFAULTS, **markdownify_options}
+        )
+        return _collapse_blank_runs(converter.convert(html_str))
 
     dflt_converters["html"] = html_to_markdown
 
