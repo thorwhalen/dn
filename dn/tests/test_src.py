@@ -41,7 +41,15 @@ def test_bytes_to_markdown_with_explicit_format():
 
     # Verify it worked correctly
     assert "Page 1" in markdown_content, f"md conversion of {test_key} not as expected"
-    assert "This  is  a  title" in markdown_content, f"md conversion of {test_key} not as expected"
+    # Whitespace-normalized: pypdf's extract_text() word-spacing (single space,
+    # double space, or a line break between words) is a pypdf-version/layout
+    # detail, not content this test cares about -- pinning to one exact form
+    # made this test break on every pypdf upgrade even though the extracted
+    # text was fully intact. See thorwhalen/dn#5.
+    normalized = " ".join(markdown_content.split())
+    assert (
+        "This is a title" in normalized
+    ), f"md conversion of {test_key} not as expected: {markdown_content!r}"
 
 
 def test_bytes_to_markdown_with_key_detection():
