@@ -4,7 +4,7 @@ Tools for markdown parsing and generation.
 
 from dol import Files  # just to have it ready in the namespace
 
-from dn.to import markdown_to_notebook
+from dn.to import markdown_to_notebook, markdown_to_mrkdwn, to_mrkdwn
 from dn.repair import (
     repair_markdown,
     fix_multiline_links,
