@@ -30,9 +30,6 @@ Individual fixers can be used standalone or composed.
 
 Remove empty links like `[](url)`.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ### Examples
 
 ```pycon
@@ -41,6 +38,9 @@ Remove empty links like `[](url)`.
 >>> fix_empty_links('[real](http://x.com)')
 '[real](http://x.com)'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dn.repair.fix_multiline_links(md)
 

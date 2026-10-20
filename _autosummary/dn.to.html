@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="dn.to.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dn.util" href="dn.util.html"><link rel="prev" title="dn.src" href="dn.src.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>dn.to - dn</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -256,16 +257,53 @@
           <section id="module-dn.to">
 <span id="dn-to"></span><h1>dn.to<a class="headerlink" href="#module-dn.to" title="Link to this heading">¶</a></h1>
 <p>Converting markdown to other formats</p>
-<p class="rubric">Functions</p>
+<p class="rubric">Module Attributes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dn.to.markdown_to_notebook" title="dn.to.markdown_to_notebook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markdown_to_notebook</span></code></a>(markdown, *[, egress])</p></td>
-<td><p>Convert markdown content to Jupyter notebook format.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.to.to_mrkdwn" title="dn.to.to_mrkdwn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mrkdwn</span></code></a>(markdown)</p></td>
+<td><p>Short alias, the name this converter had in <code class="docutils literal notranslate"><span class="pre">correspond</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.to.markdown_to_mrkdwn" title="dn.to.markdown_to_mrkdwn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markdown_to_mrkdwn</span></code></a>(markdown)</p></td>
+<td><p>Common Markdown as Slack <code class="docutils literal notranslate"><span class="pre">mrkdwn</span></code>: bold, italic, strike, links, headings, lists, code, quotes, tables as code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dn.to.markdown_to_notebook" title="dn.to.markdown_to_notebook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markdown_to_notebook</span></code></a>(markdown, *[, egress])</p></td>
+<td><p>Convert markdown content to Jupyter notebook format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.to.to_mrkdwn" title="dn.to.to_mrkdwn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mrkdwn</span></code></a>(markdown)</p></td>
+<td><p>Short alias, the name this converter had in <code class="docutils literal notranslate"><span class="pre">correspond</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.to.markdown_to_mrkdwn">
+<span class="sig-prename descclassname"><span class="pre">dn.to.</span></span><span class="sig-name descname"><span class="pre">markdown_to_mrkdwn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">markdown</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/to.html#markdown_to_mrkdwn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.to.markdown_to_mrkdwn" title="Link to this definition">¶</a></dt>
+<dd><p>Common Markdown as Slack <code class="docutils literal notranslate"><span class="pre">mrkdwn</span></code>: bold, italic, strike, links, headings, lists, code, quotes, tables as code.</p>
+<p>Only <code class="docutils literal notranslate"><span class="pre">http</span></code>, <code class="docutils literal notranslate"><span class="pre">https</span></code> and <code class="docutils literal notranslate"><span class="pre">mailto</span></code> targets become links: a Markdown link to
+<code class="docutils literal notranslate"><span class="pre">!channel</span></code> or <code class="docutils literal notranslate"><span class="pre">&#64;U123</span></code> stays text, so no draft can notify a channel or a person.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">markdown_to_mrkdwn</span><span class="p">(</span><span class="s2">"# Release</span><span class="se">\n</span><span class="s2">- **new**: _faster_ export</span><span class="se">\n</span><span class="s2">- ~~old~~ gone"</span><span class="p">)</span>
+<span class="go">'*Release*\n• *new*: _faster_ export\n• ~old~ gone'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">markdown_to_mrkdwn</span><span class="p">(</span><span class="s2">"&gt; quoted &lt;b&gt; &amp; `a &lt; b`"</span><span class="p">)</span>
+<span class="go">'&gt; quoted &amp;lt;b&amp;gt; &amp;amp; `a &amp;lt; b`'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">markdown_to_mrkdwn</span><span class="p">(</span><span class="s2">"[ping](!channel)"</span><span class="p">)</span>
+<span class="go">'ping (!channel)'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dn.to.markdown_to_notebook">
 <span class="sig-prename descclassname"><span class="pre">dn.to.</span></span><span class="sig-name descname"><span class="pre">markdown_to_notebook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">markdown</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">egress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/to.html#markdown_to_notebook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.to.markdown_to_notebook" title="Link to this definition">¶</a></dt>
@@ -273,12 +311,12 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>markdown</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span>) – Markdown content as string, file path, or bytes</p></li>
-<li><p><strong>egress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Optional output handler - callable or filepath string</p></li>
+<li><p><strong>markdown</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span>) – Markdown content as string, file path, or bytes</p></li>
+<li><p><strong>egress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – Optional output handler - callable or filepath string</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Notebook dict or result of egress function</p>
@@ -291,6 +329,17 @@
 <span class="go">2</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dn.to.to_mrkdwn">
+<span class="sig-prename descclassname"><span class="pre">dn.to.</span></span><span class="sig-name descname"><span class="pre">to_mrkdwn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">markdown</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dn.to.to_mrkdwn" title="Link to this definition">¶</a></dt>
+<dd><p>Short alias, the name this converter had in <code class="docutils literal notranslate"><span class="pre">correspond</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -347,7 +396,9 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dn.to</a><ul>
+<li><a class="reference internal" href="#dn.to.markdown_to_mrkdwn"><code class="docutils literal notranslate"><span class="pre">markdown_to_mrkdwn()</span></code></a></li>
 <li><a class="reference internal" href="#dn.to.markdown_to_notebook"><code class="docutils literal notranslate"><span class="pre">markdown_to_notebook()</span></code></a></li>
+<li><a class="reference internal" href="#dn.to.to_mrkdwn"><code class="docutils literal notranslate"><span class="pre">to_mrkdwn()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -359,7 +410,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=832ae8cf"></script>
+</div><script src="../_static/documentation_options.js?v=2a6a9ca9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

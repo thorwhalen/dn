@@ -122,39 +122,57 @@ A strategy for turning an ebook file into markdown.
 
 Registry key.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### convert
 
 `(src_path, input_format) -> markdown`.
+
+* **Type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 #### is_available
 
 `() -> bool`, whether this backend’s requirements are met.
 
+* **Type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
 #### formats
 
 Formats handled, or `None` for “everything in EBOOK_FORMATS”.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)]
+
 #### priority
 
 Backends are tried in ascending priority (lowest first).
+
+* **Type:**
+  [`int`](https://docs.python.org/3/builtins/functions.html#int)
 
 #### requires
 
 Human-readable requirement names, used by
 [`check_ebook_requirements()`](#dn.ebook.check_ebook_requirements).
 
+* **Type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
+
 #### handles(input_format)
 
 Whether this backend claims support for `input_format`.
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> backend = EbookBackend('x', lambda s, f: '', lambda: True)
 >>> backend.handles('mobi'), backend.handles('cbz')
 (True, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### *exception* dn.ebook.EbookConversionError
 
@@ -187,7 +205,7 @@ character formatting, so italics and bold survive as `*emphasis*` instead of
 being dropped with the `<span class="calibre3">` wrappers that carried them.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Unused here (calibre dispatches on the file
     extension); accepted so backends share one signature.
   * **to_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Pandoc output target.
@@ -207,7 +225,7 @@ emphasis survives, but it escapes punctuation aggressively (`\(` for `(`)
 and flattens nested blockquotes onto one line.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Unused (calibre dispatches on the extension).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
@@ -260,13 +278,13 @@ an explicit `formats` adds to it. Derived live rather than snapshotted, so
 a custom backend for a new format is visible to
 [`register_ebook_converters()`](#dn.ebook.register_ebook_converters) and to error messages.
 
-* **Return type:**
-  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)
-
 ```pycon
 >>> 'epub' in ebook_formats()
 True
 ```
+
+* **Return type:**
+  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)
 
 ### dn.ebook.ebook_to_markdown(src, , input_format=None, backend=None, fallback=True)
 
@@ -276,7 +294,7 @@ Accepts whatever you have on hand – raw bytes, a file path, or a URL – and
 picks the best available backend unless you name one.
 
 * **Parameters:**
-  * **src** (`Union`[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Ebook bytes, a path to an ebook file, or a URL to fetch one from.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Ebook bytes, a path to an ebook file, or a URL to fetch one from.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format (e.g. `'mobi'`). Inferred from the file
     extension, then from the leading bytes, when not given.
   * **backend** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Name of the backend to use. When `None`, backends are tried in
@@ -301,7 +319,7 @@ picks the best available backend unless you name one.
 '...'
 ```
 
-### dn.ebook.ebooklib_to_markdown(src, input_format=None, , item_separator='\\\\n\\\\n')
+### dn.ebook.ebooklib_to_markdown(src, input_format=None, , item_separator='\\n\\n')
 
 Convert an EPUB to markdown in pure python, via `ebooklib` and `markdownify`.
 
@@ -309,7 +327,7 @@ Needs no external binary, but only reads EPUB, and cannot resolve class-based
 emphasis (the CSS is never applied), so styled italics and bold are lost.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the EPUB file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the EPUB file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Only `'epub'` is supported.
   * **item_separator** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Text placed between successive document items.
 * **Return type:**
@@ -321,32 +339,32 @@ emphasis (the CSS is never applied), so styled italics and bold are lost.
 
 Find Calibre’s `ebook-convert` binary, or `None` if it isn’t installed.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
 ```pycon
 >>> find_ebook_convert()
 '/Applications/calibre.app/Contents/MacOS/ebook-convert'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.ebook.find_pandoc()
 
 Find the `pandoc` binary, or `None` if it isn’t installed.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> find_pandoc()
 '/opt/homebrew/bin/pandoc'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.ebook.pandoc_to_markdown(src, input_format=None, , to_format='gfm-raw_html', extract_media=None)
 
 Convert an ebook to markdown with pandoc alone (no calibre).
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format, used as pandoc’s `-f`. Inferred from the
     file extension when `None`.
   * **to_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Pandoc output target.

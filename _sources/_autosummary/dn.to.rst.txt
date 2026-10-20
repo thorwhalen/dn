@@ -4,9 +4,17 @@ dn.to
 .. automodule:: dn.to
 
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      to_mrkdwn
+   
    .. rubric:: Functions
 
    .. autosummary::
    
+      markdown_to_mrkdwn
       markdown_to_notebook
+      to_mrkdwn
    

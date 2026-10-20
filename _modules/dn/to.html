@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="to.html.md">
 <link rel="describedby" href="../../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>dn.to - dn</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -410,6 +411,143 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"egress must be callable, string, or None"</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># --- Markdown -&gt; Slack mrkdwn ---------------------------------------------------------</span>
+<span class="c1"># Slack's mrkdwn is not Markdown (``*bold*``, ``&lt;url|text&gt;``, no headings or tables, and</span>
+<span class="c1"># ``&amp;``, ``&lt;``, ``&gt;`` escaped). Stdlib only; every pattern is bounded, no output carries a</span>
+<span class="c1"># live Slack mention, and input cannot forge the internal placeholders.</span>
+
+<span class="n">_FENCE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^(```|~~~)[^\n]*\n(.*?)^\1[ \t]*$"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+<span class="n">_CODE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"`([^`\n]{1,2000})`"</span><span class="p">)</span>
+<span class="c1">#: Link text has no brackets, so a run of ``[`` is scanned once; a URL may hold one level of parentheses.</span>
+<span class="n">_IMAGE_OR_LINK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"!?\[([^\[\]\n]{0,1000})\]\(([^()\s&lt;&gt;]{1,2000}(?:\([^()\s&lt;&gt;]{0,200}\)[^()\s&lt;&gt;]{0,2000})*)(?:\s+</span><span class="se">\"</span><span class="s2">[^</span><span class="se">\"</span><span class="s2">\n]{0,200}</span><span class="se">\"</span><span class="s2">)?\)"</span>
+<span class="p">)</span>
+<span class="n">_AUTOLINK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"&lt;((?:https?://|mailto:)[^&lt;&gt;\s]{1,2000})&gt;"</span><span class="p">)</span>
+<span class="c1">#: Link targets Slack is given as links; anything else (``!channel``, ``@U123``, ``#C1``) stays text.</span>
+<span class="n">_LINK_SCHEME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^(?:https?://|mailto:)"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="n">_BACKSLASH_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"</span><span class="se">\\</span><span class="s2">([</span><span class="se">\\</span><span class="s2">`*_</span><span class="si">{}</span><span class="s2">\[\]()#+\-.!~|&gt;])"</span><span class="p">)</span>
+<span class="n">_HEADING_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^#{1,6}[ \t]+([^\n]{1,1000}?)[ \t]*#*[ \t]*$"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">_BOLD_ITALIC_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\*\*\*(?=\S)([^*\n]{1,1000}?)(?&lt;=\S)\*\*\*"</span><span class="p">)</span>
+<span class="n">_BOLD_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(\*\*|__)(?=\S)([^\n]{1,1000}?)(?&lt;=\S)\1"</span><span class="p">)</span>
+<span class="n">_ITALIC_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(?&lt;![\w*])\*(?=\S)([^*\n]{1,1000}?)(?&lt;=\S)\*(?![\w*])"</span><span class="p">)</span>
+<span class="n">_STRIKE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"~~(?=\S)([^\n]{1,1000}?)(?&lt;=\S)~~"</span><span class="p">)</span>
+<span class="n">_RULE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"^[ \t]*(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span>
+<span class="p">)</span>
+<span class="n">_BULLET_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^([ \t]*)[-*+][ \t]+"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">_TABLE_ROW_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[ \t]*\|.*\|[ \t]*$"</span><span class="p">)</span>
+<span class="n">_TABLE_SEPARATOR_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"^[ \t]*\|?[ \t]*:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)*\|?[ \t]*$"</span>
+<span class="p">)</span>
+<span class="n">_SLOT_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">"</span><span class="se">\x00</span><span class="s2">(</span><span class="se">\\</span><span class="s2">d+)</span><span class="se">\x00</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_escape</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Slack's three control characters escaped; an entity already written (``&amp;amp;``) is read as its character first."""</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&amp;lt;"</span><span class="p">,</span> <span class="s2">"&lt;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&amp;gt;"</span><span class="p">,</span> <span class="s2">"&gt;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&amp;amp;"</span><span class="p">,</span> <span class="s2">"&amp;"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&amp;"</span><span class="p">,</span> <span class="s2">"&amp;amp;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">"&amp;lt;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">"&amp;gt;"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A link target safe inside ``&lt;...|...&gt;``: ``&lt;``, ``&gt;``, ``|`` and spaces percent-encoded."""</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"|"</span><span class="p">,</span> <span class="s2">"%7C"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">"%3C"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">"</span><span class="si">%3E</span><span class="s2">"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="s2">"%20"</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="markdown_to_mrkdwn">
+<a class="viewcode-back" href="../../_autosummary/dn.to.html#dn.to.markdown_to_mrkdwn">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">markdown_to_mrkdwn</span><span class="p">(</span><span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Common Markdown as Slack ``mrkdwn``: bold, italic, strike, links, headings, lists, code, quotes, tables as code.</span>
+
+<span class="sd">    Only ``http``, ``https`` and ``mailto`` targets become links: a Markdown link to</span>
+<span class="sd">    ``!channel`` or ``@U123`` stays text, so no draft can notify a channel or a person.</span>
+
+<span class="sd">    &gt;&gt;&gt; markdown_to_mrkdwn("# Release\\n- **new**: _faster_ export\\n- ~~old~~ gone")</span>
+<span class="sd">    '*Release*\\n• *new*: _faster_ export\\n• ~old~ gone'</span>
+<span class="sd">    &gt;&gt;&gt; markdown_to_mrkdwn("&gt; quoted &lt;b&gt; &amp; `a &lt; b`")</span>
+<span class="sd">    '&gt; quoted &amp;lt;b&amp;gt; &amp;amp; `a &amp;lt; b`'</span>
+<span class="sd">    &gt;&gt;&gt; markdown_to_mrkdwn("[ping](!channel)")</span>
+<span class="sd">    'ping (!channel)'</span>
+<span class="sd">    """</span>
+    <span class="n">slots</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">keep</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">slots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x00</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">slots</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\x00</span><span class="s2">"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># A slot refers only to slots made before it, so this ends.</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">slots</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">"</span><span class="se">\x00</span><span class="s2">"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">_SLOT_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">slots</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))],</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\x00</span><span class="s2">"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">link</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">label</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_LINK_SCHEME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">keep</span><span class="p">(</span><span class="n">_escape</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="n">label</span> <span class="k">else</span> <span class="n">target</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">keep</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">_url</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">_escape</span><span class="p">(</span><span class="n">label</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span> <span class="k">if</span> <span class="n">label</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">_url</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">table</span><span class="p">(</span><span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">keep</span><span class="p">(</span><span class="s2">"```</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">_escape</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">```"</span><span class="p">)</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="n">markdown</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\x00</span><span class="s2">"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\r\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_FENCE_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"```</span><span class="se">\n</span><span class="si">{</span><span class="n">_escape</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="si">}</span><span class="s2">```"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">lines</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span> <span class="p">[],</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>  <span class="c1"># a table is a header row, a separator row, then rows</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">_TABLE_ROW_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">_TABLE_SEPARATOR_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="p">):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_TABLE_ROW_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">j</span><span class="p">]):</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]))</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_CODE_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">_escape</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="si">}</span><span class="s2">`"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_BACKSLASH_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="n">_escape</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_AUTOLINK_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">_url</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="si">}</span><span class="s2">&gt;"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_IMAGE_OR_LINK_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">quoted</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
+        <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[ \t]*&gt;"</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># Slack quotes a line starting with "&gt;"</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_escape</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">quoted</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^([ \t]*)&amp;gt;"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\1&gt;"</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_RULE_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="s2">"──────────"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">heading</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="n">_BOLD_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="n">_ITALIC_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">it</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">it</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">_"</span><span class="p">,</span> <span class="n">inner</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"*</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="s2">*"</span><span class="p">)</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_HEADING_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">heading</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_BOLD_ITALIC_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"*_</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">_*"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_BOLD_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"*</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">*"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_STRIKE_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">keep</span><span class="p">(</span><span class="sa">f</span><span class="s2">"~</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">~"</span><span class="p">),</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_ITALIC_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">_"</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_BULLET_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\1• "</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resolve</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1">#: Short alias, the name this converter had in ``correspond``.</span>
+<span class="n">to_mrkdwn</span> <span class="o">=</span> <span class="n">markdown_to_mrkdwn</span>
 </pre></div>
         </article>
       </div>
@@ -438,7 +576,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=832ae8cf"></script>
+</div><script src="../../_static/documentation_options.js?v=2a6a9ca9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

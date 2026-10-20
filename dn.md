@@ -1,4 +1,4 @@
-> built 2026-09-22 14:51 UTC from 25dfc1d (main) · dn 0.0.14. Details: build_info.json
+> built 2026-10-20 07:00 UTC from ea40ff8 (main) · dn 0.0.15. Details: build_info.json
 
 # index.html.md
 
@@ -450,39 +450,57 @@ A strategy for turning an ebook file into markdown.
 
 Registry key.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### convert
 
 `(src_path, input_format) -> markdown`.
+
+* **Type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 #### is_available
 
 `() -> bool`, whether this backend’s requirements are met.
 
+* **Type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
 #### formats
 
 Formats handled, or `None` for “everything in EBOOK_FORMATS”.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)]
+
 #### priority
 
 Backends are tried in ascending priority (lowest first).
+
+* **Type:**
+  [`int`](https://docs.python.org/3/builtins/functions.html#int)
 
 #### requires
 
 Human-readable requirement names, used by
 [`check_ebook_requirements()`](_autosummary/dn.ebook.html.md#dn.ebook.check_ebook_requirements).
 
+* **Type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
+
 #### handles(input_format)
 
 Whether this backend claims support for `input_format`.
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> backend = EbookBackend('x', lambda s, f: '', lambda: True)
 >>> backend.handles('mobi'), backend.handles('cbz')
 (True, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### *exception* dn.ebook.EbookConversionError
 
@@ -515,7 +533,7 @@ character formatting, so italics and bold survive as `*emphasis*` instead of
 being dropped with the `<span class="calibre3">` wrappers that carried them.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Unused here (calibre dispatches on the file
     extension); accepted so backends share one signature.
   * **to_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Pandoc output target.
@@ -535,7 +553,7 @@ emphasis survives, but it escapes punctuation aggressively (`\(` for `(`)
 and flattens nested blockquotes onto one line.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Unused (calibre dispatches on the extension).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
@@ -588,13 +606,13 @@ an explicit `formats` adds to it. Derived live rather than snapshotted, so
 a custom backend for a new format is visible to
 [`register_ebook_converters()`](_autosummary/dn.ebook.html.md#dn.ebook.register_ebook_converters) and to error messages.
 
-* **Return type:**
-  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)
-
 ```pycon
 >>> 'epub' in ebook_formats()
 True
 ```
+
+* **Return type:**
+  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)
 
 ### dn.ebook.ebook_to_markdown(src, , input_format=None, backend=None, fallback=True)
 
@@ -604,7 +622,7 @@ Accepts whatever you have on hand – raw bytes, a file path, or a URL – and
 picks the best available backend unless you name one.
 
 * **Parameters:**
-  * **src** (`Union`[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Ebook bytes, a path to an ebook file, or a URL to fetch one from.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Ebook bytes, a path to an ebook file, or a URL to fetch one from.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format (e.g. `'mobi'`). Inferred from the file
     extension, then from the leading bytes, when not given.
   * **backend** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Name of the backend to use. When `None`, backends are tried in
@@ -629,7 +647,7 @@ picks the best available backend unless you name one.
 '...'
 ```
 
-### dn.ebook.ebooklib_to_markdown(src, input_format=None, , item_separator='\\\\n\\\\n')
+### dn.ebook.ebooklib_to_markdown(src, input_format=None, , item_separator='\\n\\n')
 
 Convert an EPUB to markdown in pure python, via `ebooklib` and `markdownify`.
 
@@ -637,7 +655,7 @@ Needs no external binary, but only reads EPUB, and cannot resolve class-based
 emphasis (the CSS is never applied), so styled italics and bold are lost.
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the EPUB file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the EPUB file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format. Only `'epub'` is supported.
   * **item_separator** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Text placed between successive document items.
 * **Return type:**
@@ -649,32 +667,32 @@ emphasis (the CSS is never applied), so styled italics and bold are lost.
 
 Find Calibre’s `ebook-convert` binary, or `None` if it isn’t installed.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
 ```pycon
 >>> find_ebook_convert()
 '/Applications/calibre.app/Contents/MacOS/ebook-convert'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.ebook.find_pandoc()
 
 Find the `pandoc` binary, or `None` if it isn’t installed.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> find_pandoc()
 '/opt/homebrew/bin/pandoc'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.ebook.pandoc_to_markdown(src, input_format=None, , to_format='gfm-raw_html', extract_media=None)
 
 Convert an ebook to markdown with pandoc alone (no calibre).
 
 * **Parameters:**
-  * **src** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
+  * **src** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]) – Path to the ebook file.
   * **input_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Ebook format, used as pandoc’s `-f`. Inferred from the
     file extension when `None`.
   * **to_format** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Pandoc output target.
@@ -885,25 +903,25 @@ True
 
 Find the `tesseract` binary, or `None` if it isn’t installed.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
 ```pycon
 >>> find_tesseract()
 '/opt/homebrew/bin/tesseract'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.ocr.ocr_is_available()
 
 Whether everything needed to OCR a PDF is present.
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> isinstance(ocr_is_available(), bool)
 True
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dn.ocr.ocr_pdf_pages(pdf_bytes, , pages=None, dpi=300, lang='eng', max_workers=None)
 
@@ -988,9 +1006,6 @@ Individual fixers can be used standalone or composed.
 
 Remove empty links like `[](url)`.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ### Examples
 
 ```pycon
@@ -999,6 +1014,9 @@ Remove empty links like `[](url)`.
 >>> fix_empty_links('[real](http://x.com)')
 '[real](http://x.com)'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dn.repair.fix_multiline_links(md)
 
@@ -1319,10 +1337,36 @@ using appropriate converters from dn.src.
 
 Converting markdown to other formats
 
+### Module Attributes
+
+| [`to_mrkdwn`](_autosummary/dn.to.html.md#dn.to.to_mrkdwn)(markdown)   | Short alias, the name this converter had in `correspond`.   |
+|------------------------------------------------------------------------|-------------------------------------------------------------|
+
 ### Functions
 
-| [`markdown_to_notebook`](_autosummary/dn.to.html.md#dn.to.markdown_to_notebook)(markdown, \*[, egress])   | Convert markdown content to Jupyter notebook format.   |
-|-------------------------------------------------------------------------------------------------|--------------------------------------------------------|
+| [`markdown_to_mrkdwn`](_autosummary/dn.to.html.md#dn.to.markdown_to_mrkdwn)(markdown)                 | Common Markdown as Slack `mrkdwn`: bold, italic, strike, links, headings, lists, code, quotes, tables as code.   |
+|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| [`markdown_to_notebook`](_autosummary/dn.to.html.md#dn.to.markdown_to_notebook)(markdown, \*[, egress]) | Convert markdown content to Jupyter notebook format.                                                             |
+| [`to_mrkdwn`](_autosummary/dn.to.html.md#dn.to.to_mrkdwn)(markdown)                          | Short alias, the name this converter had in `correspond`.                                                        |
+
+### dn.to.markdown_to_mrkdwn(markdown)
+
+Common Markdown as Slack `mrkdwn`: bold, italic, strike, links, headings, lists, code, quotes, tables as code.
+
+Only `http`, `https` and `mailto` targets become links: a Markdown link to
+`!channel` or `@U123` stays text, so no draft can notify a channel or a person.
+
+```pycon
+>>> markdown_to_mrkdwn("# Release\n- **new**: _faster_ export\n- ~~old~~ gone")
+'*Release*\n• *new*: _faster_ export\n• ~old~ gone'
+>>> markdown_to_mrkdwn("> quoted <b> & `a < b`")
+'> quoted &lt;b&gt; &amp; `a &lt; b`'
+>>> markdown_to_mrkdwn("[ping](!channel)")
+'ping (!channel)'
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dn.to.markdown_to_notebook(markdown, , egress=None)
 
@@ -1343,6 +1387,13 @@ Convert markdown content to Jupyter notebook format.
 >>> len(nb['cells'])
 2
 ```
+
+### dn.to.to_mrkdwn(markdown)
+
+Short alias, the name this converter had in `correspond`.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/dn.util.html.md
@@ -1471,16 +1522,18 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-09-22 14:51 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/25dfc1d14329949c792e8b6cd82fff4d33ea1a7d"><code>25dfc1d</code></a> on branch <code>main</code>, for **dn 0.0.14** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 07:00 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/ea40ff8141c4fbbc1d19ccfa8274812070bc776d"><code>ea40ff8</code></a> on branch <code>main</code>, for **dn 0.0.15** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.15) is behind the latest release on PyPI (0.0.16): `pip install dn` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/25dfc1d14329949c792e8b6cd82fff4d33ea1a7d"><code>25dfc1d14329949c792e8b6cd82fff4d33ea1a7d</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/ea40ff8141c4fbbc1d19ccfa8274812070bc776d"><code>ea40ff8141c4fbbc1d19ccfa8274812070bc776d</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1491,18 +1544,18 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/35743069599">35743069599</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/39383602970">39383602970</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>25dfc1d14329949c792e8b6cd82fff4d33ea1a7d</code> (in the history of the built commit) |
+| Event commit | <code>ea40ff8141c4fbbc1d19ccfa8274812070bc776d</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.12  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.18  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
-| Python   | 3.12.14 |
+| Python   | 3.12.15 |
 
 ## Configuration as resolved
 
@@ -1518,14 +1571,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.14/">0.0.14</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.16/">0.0.16</a>, newer than the documented version (0.0.15).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout 25dfc1d14329949c792e8b6cd82fff4d33ea1a7d
-pip install "epythet==0.2.12"
+git checkout ea40ff8141c4fbbc1d19ccfa8274812070bc776d
+pip install "epythet==0.2.18"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
