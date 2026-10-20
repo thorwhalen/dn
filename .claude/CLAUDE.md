@@ -10,7 +10,7 @@ dn/
   src.py     # Format converters: bytes_to_markdown, pdf_to_markdown, etc.
   ebook.py   # Ebook (EPUB/MOBI/AZW3/...) to markdown, via a backend registry
   ocr.py     # OCR for scanned (text-layer-less) PDFs
-  to.py      # Reverse: markdown_to_notebook
+  to.py      # Reverse: markdown_to_notebook, markdown_to_mrkdwn (Slack)
   repair.py  # Markdown repair: repair_markdown, remove_hyperlink_crap, etc.
   util.py    # Utilities: path handling, URL fetching
 ```
