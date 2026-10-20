@@ -291,6 +291,5 @@ def markdown_to_mrkdwn(markdown: str) -> str:
     return resolve(text)
 
 
-
 #: Short alias, the name this converter had in ``correspond``.
 to_mrkdwn = markdown_to_mrkdwn
