@@ -10,6 +10,7 @@ dn/
   src.py     # Format converters: bytes_to_markdown, pdf_to_markdown, etc.
   ebook.py   # Ebook (EPUB/MOBI/AZW3/...) to markdown, via a backend registry
   ocr.py     # OCR for scanned (text-layer-less) PDFs
+  sections.py  # Cut a PDF (at its outline) or markdown (at its headings) into sections
   to.py      # Reverse: markdown_to_notebook, markdown_to_mrkdwn (Slack)
   repair.py  # Markdown repair: repair_markdown, remove_hyperlink_crap, etc.
   util.py    # Utilities: path handling, URL fetching
@@ -24,6 +25,7 @@ dn/
 - `notebook_to_markdown(nb_source)` — Jupyter notebook to markdown
 - `ebook_to_markdown(src)` — ebook (path, URL or bytes) to markdown
 - `check_ebook_requirements()` — which ebook backends work here, and how to fix the rest
+- `pdf_sections(pdf)` / `markdown_sections(md)` — the document as a list of `Section` (key, title, path, text, page or line range); `pdf_outline(pdf)` for the bookmarks alone
 - `ocr_pdf_to_markdown(pdf_bytes)` — OCR a scanned PDF; `pdf_to_markdown` calls it automatically
 
 ## Dependencies
