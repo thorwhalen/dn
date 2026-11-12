@@ -13,6 +13,7 @@
    ebook
    ocr
    repair
+   sections
    src
    to
    util

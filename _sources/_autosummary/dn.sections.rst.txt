@@ -1,0 +1,28 @@
+dn.sections
+===========
+
+.. automodule:: dn.sections
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      DFLT_HEADER_CHARS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      markdown_sections
+      pdf_outline
+      pdf_sections
+      slugify
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OutlineEntry
+      Section
+   

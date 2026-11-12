@@ -11,11 +11,12 @@
 - [dn.ebook](_autosummary/dn.ebook.html.md): Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, …) to markdown.
 - [dn.ocr](_autosummary/dn.ocr.html.md): Read text out of PDFs that have no text layer, by OCR.
 - [dn.repair](_autosummary/dn.repair.html.md): Markdown repair and cleanup utilities.
+- [dn.sections](_autosummary/dn.sections.html.md): Split a document into addressable sections.
 - [dn.src](_autosummary/dn.src.html.md): Converting things to markdown
 - [dn.to](_autosummary/dn.to.html.md): Converting markdown to other formats
 - [dn.util](_autosummary/dn.util.html.md): General utilities for dn
 - [For AI agents](ai-agents.html.md): &#96;dn&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-20 07:00 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-12 09:08 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
 ## Optional
 

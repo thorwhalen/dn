@@ -208,6 +208,7 @@
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ebook.html">dn.ebook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ocr.html">dn.ocr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.repair.html">dn.repair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.sections.html">dn.sections</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.src.html">dn.src</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.to.html">dn.to</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.util.html">dn.util</a></li>
@@ -373,7 +374,7 @@ Final markdown cell.
 </div>
 </section>
 <section id="and-other-formats">
-<h2>… and other formats<a class="headerlink" href="#and-other-formats" title="Link to this heading">¶</a></h2>
+<span id="-and-other-formats"></span><h2>… and other formats<a class="headerlink" href="#and-other-formats" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdf_to_markdown</span>  <span class="c1"># requires pypdf</span>
 </pre></div>
 </div>
@@ -391,7 +392,7 @@ Final markdown cell.
 </div>
 </section>
 <section id="ebooks-epub-mobi-azw3">
-<h2>Ebooks (EPUB, MOBI, AZW3, …)<a class="headerlink" href="#ebooks-epub-mobi-azw3" title="Link to this heading">¶</a></h2>
+<span id="ebooks-epub-mobi-azw3-"></span><h2>Ebooks (EPUB, MOBI, AZW3, …)<a class="headerlink" href="#ebooks-epub-mobi-azw3" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">dn</span></code> converts ebooks to markdown through a registry of interchangeable backends,
 tried best-first:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Backend          Needs                  Notes
@@ -434,6 +435,22 @@ EPUB) are encrypted: no backend can read them, and you must remove the DRM
 yourself — where you are legally entitled to — before converting. Image-only
 containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from
 <code class="docutils literal notranslate"><span class="pre">EBOOK_FORMATS</span></code>. Scanned <em>PDFs</em> are handled – see the OCR section below.</p>
+</section>
+<section id="sections-a-long-document-as-addressable-pieces">
+<h2>Sections: a long document as addressable pieces<a class="headerlink" href="#sections-a-long-document-as-addressable-pieces" title="Link to this heading">¶</a></h2>
+<p>A book or a report is easier to search, cite and read as a list of sections than as one string. <code class="docutils literal notranslate"><span class="pre">pdf_sections</span></code> cuts a PDF’s text at its outline (its bookmarks); <code class="docutils literal notranslate"><span class="pre">markdown_sections</span></code> cuts markdown at its headings. Both return the same <code class="docutils literal notranslate"><span class="pre">Section</span></code> records, in reading order, and a section’s own text stops where its first sub-section starts, so the sections together hold the whole text.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdf_sections</span><span class="p">,</span> <span class="n">markdown_sections</span><span class="p">,</span> <span class="n">pdf_outline</span>
+
+<span class="n">sections</span> <span class="o">=</span> <span class="n">pdf_sections</span><span class="p">(</span><span class="s1">'book.pdf'</span><span class="p">)</span>          <span class="c1"># needs dn[pdf]</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">sections</span><span class="p">[</span><span class="mi">40</span><span class="p">]</span>
+<span class="n">s</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">page_start</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">label_start</span>   <span class="c1"># ('0040-the-repository-pattern', ('Part I', 'The Repository Pattern'), 61, '33')</span>
+<span class="n">s</span><span class="o">.</span><span class="n">text</span>                                       <span class="c1"># that section only, with &lt;!-- page 34 --&gt; markers inside</span>
+
+<span class="n">pdf_outline</span><span class="p">(</span><span class="s1">'book.pdf'</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>         <span class="c1"># the chapters: (level, title, page, label)</span>
+<span class="n">markdown_sections</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">'report.md'</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>  <span class="c1"># line_start / line_end instead of pages</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">max_level</span></code> (default 3) sets how deep the cut goes; deeper headings stay inside their parent. Keys are stable for the same input and <code class="docutils literal notranslate"><span class="pre">max_level</span></code>: outline entry number <em>k</em> is always <code class="docutils literal notranslate"><span class="pre">seq</span></code> <em>k</em>, and <code class="docutils literal notranslate"><span class="pre">seq</span></code> 0 is reserved for the text before the first entry. For an ebook, compose: <code class="docutils literal notranslate"><span class="pre">markdown_sections(ebook_to_markdown('book.epub'))</span></code>. A PDF with no bookmarks raises and says what to pass: <code class="docutils literal notranslate"><span class="pre">outline=[OutlineEntry(level,</span> <span class="pre">title,</span> <span class="pre">page),</span> <span class="pre">...]</span></code> for the headings you know. <code class="docutils literal notranslate"><span class="pre">page_text=</span></code> swaps the text extractor (an OCR result, another library).</p>
 </section>
 <section id="scanned-pdfs-ocr">
 <h2>Scanned PDFs (OCR)<a class="headerlink" href="#scanned-pdfs-ocr" title="Link to this heading">¶</a></h2>
@@ -520,7 +537,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 </div>
 </section>
 <section id="convert-this-notebook-into-a-markdown-for-the-readme-md">
-<h1>Convert this notebook into a markdown for the README.md<a class="headerlink" href="#convert-this-notebook-into-a-markdown-for-the-readme-md" title="Link to this heading">¶</a></h1>
+<span id="convert-this-notebook-into-a-markdown-for-the-readmemd"></span><h1>Convert this notebook into a markdown for the README.md<a class="headerlink" href="#convert-this-notebook-into-a-markdown-for-the-readme-md" title="Link to this heading">¶</a></h1>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn</span><span class="w"> </span><span class="kn">import</span> <span class="n">notebook_to_markdown</span>
 
 <span class="n">notebook_to_markdown</span><span class="p">(</span>
@@ -539,7 +556,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 </div>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-20 07:00 UTC from <a href="https://github.com/thorwhalen/dn/commit/ea40ff8141c4fbbc1d19ccfa8274812070bc776d">ea40ff8</a> (main) · dn 0.0.15 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-12 09:08 UTC from <a href="https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8">d08c048</a> (main) · dn 0.0.16 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -589,6 +606,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 <li><a class="reference internal" href="#to-and-from-jupyter-notebooks">To and from jupyter notebooks</a></li>
 <li><a class="reference internal" href="#and-other-formats">… and other formats</a></li>
 <li><a class="reference internal" href="#ebooks-epub-mobi-azw3">Ebooks (EPUB, MOBI, AZW3, …)</a></li>
+<li><a class="reference internal" href="#sections-a-long-document-as-addressable-pieces">Sections: a long document as addressable pieces</a></li>
 <li><a class="reference internal" href="#scanned-pdfs-ocr">Scanned PDFs (OCR)</a></li>
 </ul>
 </li>
@@ -603,7 +621,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=2a6a9ca9"></script>
+</div><script src="_static/documentation_options.js?v=0adb0642"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
