@@ -212,7 +212,7 @@ containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded fro
 
 ## Sections: a long document as addressable pieces
 
-A book or a report is easier to search, cite and read as a list of sections than as one string. `pdf_sections` cuts a PDF's text at its outline (its bookmarks); `markdown_sections` cuts markdown at its headings. Both return the same `Section` records and both partition the text, so nothing is lost or repeated.
+A book or a report is easier to search, cite and read as a list of sections than as one string. `pdf_sections` cuts a PDF's text at its outline (its bookmarks); `markdown_sections` cuts markdown at its headings. Both return the same `Section` records, in reading order, and a section's own text stops where its first sub-section starts, so the sections together hold the whole text.
 
 ```python
 from dn import pdf_sections, markdown_sections, pdf_outline
@@ -226,7 +226,7 @@ pdf_outline('book.pdf', max_level=1)         # the chapters: (level, title, page
 markdown_sections(open('report.md').read())  # line_start / line_end instead of pages
 ```
 
-`max_level` (default 3) sets how deep the cut goes; deeper headings stay inside their parent. For an ebook, compose: `markdown_sections(ebook_to_markdown('book.epub'))`. A PDF with no outline raises with the alternative (`pdf_to_markdown`, then `markdown_sections`). `page_text=` swaps the text extractor.
+`max_level` (default 3) sets how deep the cut goes; deeper headings stay inside their parent. Keys are stable for the same input and `max_level`: outline entry number *k* is always `seq` *k*, and `seq` 0 is reserved for the text before the first entry. For an ebook, compose: `markdown_sections(ebook_to_markdown('book.epub'))`. A PDF with no bookmarks raises and says what to pass: `outline=[OutlineEntry(level, title, page), ...]` for the headings you know. `page_text=` swaps the text extractor (an OCR result, another library).
 
 ## Scanned PDFs (OCR)
 
