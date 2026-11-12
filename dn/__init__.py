@@ -32,6 +32,14 @@ from dn.ebook import (
     register_ebook_backend,  # Add your own ebook-to-markdown strategy
 )
 
+from dn.sections import (
+    markdown_sections,  # Cut markdown at its headings into addressable sections
+    pdf_sections,  # Cut a PDF's text at its outline (bookmark) entries
+    pdf_outline,  # A PDF's bookmarks as (level, title, page, label) entries
+    Section,  # One section: key, title, path, text, page or line range
+    OutlineEntry,  # One PDF bookmark
+)
+
 from dn.ocr import (
     ocr_pdf_to_markdown,  # OCR a scanned (text-layer-less) PDF into markdown
     ocr_pdf_pages,  # OCR selected pages of a PDF
