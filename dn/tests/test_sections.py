@@ -289,3 +289,128 @@ def test_bad_page_marker_fails_before_any_work(book_pdf):
 
 def test_accepts_a_stream(book_pdf):
     assert len(pdf_outline(io.BytesIO(book_pdf))) == 4
+
+
+# ---- setext headings and EPUB tables of contents (#9) ---------------------------------
+
+
+def test_setext_headings():
+    md = "Guide\n=====\nIntro.\n\nSetup\nsteps\n-----\nInstall.\n\n- item\n---\n\n```\nCode\n====\n```\n"
+    got = [(s.level, s.title, s.line_start) for s in markdown_sections(md)]
+    # A two-line paragraph is one title; a list item over --- is a list and a rule;
+    # underlines inside fenced code are code.
+    assert got == [(1, "Guide", 1), (2, "Setup steps", 5)]
+    assert [s.title for s in markdown_sections(md, max_level=1)] == ["Guide"]
+
+
+def test_setext_and_atx_mix_and_thematic_break():
+    md = "# A\ntext\n\n---\n\nB\n===\n## C\n"
+    assert [(s.level, s.title) for s in markdown_sections(md)] == [(1, "A"), (1, "B"), (2, "C")]
+
+
+def _epub(tmp_path):
+    epub = pytest.importorskip("ebooklib.epub")
+    book = epub.EpubBook()
+    book.set_identifier("dn-test")
+    book.set_title("A Guide")
+    book.set_language("en")
+    cover = epub.EpubHtml(title="Cover", file_name="cover.xhtml", content="<h1>A Guide</h1><p>By someone.</p>")
+    ch1 = epub.EpubHtml(
+        title="Start",
+        file_name="text/ch1.xhtml",
+        content='<h1>Start</h1><p>Why.</p><h2 id="setup">Setup</h2><p>Install it.</p><h2 id="use">Use</h2><p>Run it.</p>',
+    )
+    ch2 = epub.EpubHtml(title="End", file_name="text/ch2.xhtml", content="<h1>End</h1><p>Bye.</p>")
+    for c in (cover, ch1, ch2):
+        book.add_item(c)
+    book.toc = [
+        (epub.Section("Start", "text/ch1.xhtml"), [epub.Link("text/ch1.xhtml#setup", "Setup", "s"), epub.Link("text/ch1.xhtml#use", "Use", "u")]),
+        epub.Link("text/ch2.xhtml", "End", "e"),
+        epub.Link("text/missing.xhtml", "Lost", "l"),
+    ]
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+    book.spine = [cover, ch1, ch2]
+    path = tmp_path / "guide.epub"
+    epub.write_epub(str(path), book)
+    return path
+
+
+def test_ebook_sections_follow_the_table_of_contents(tmp_path):
+    from dn.sections import ebook_sections
+
+    path = _epub(tmp_path)
+    sections = ebook_sections(path)
+    got = [(s.seq, s.level, s.title, s.path) for s in sections]
+    assert got == [
+        (0, 1, "(front matter)", ("(front matter)",)),
+        (1, 1, "Start", ("Start",)),
+        (2, 2, "Setup", ("Start", "Setup")),
+        (3, 2, "Use", ("Start", "Use")),
+        (4, 1, "End", ("End",)),
+        (5, 1, "Lost", ("Lost",)),
+    ]
+    text = {s.title: s.text for s in sections}
+    assert "By someone" in text["(front matter)"]
+    assert "Why." in text["Start"] and "Install" not in text["Start"]  # cut inside the chapter
+    assert "Install it." in text["Setup"] and "Run it." in text["Use"]
+    assert "Bye." in text["End"] and text["Lost"] == ""  # a missing target keeps its key
+    assert sections[2].href == "text/ch1.xhtml#setup" and sections[2].key == "0002-setup"
+    assert [s.title for s in ebook_sections(path.read_bytes(), max_level=1)] == ["(front matter)", "Start", "End", "Lost"]
+
+
+def test_setext_review_cases():
+    def titles(md):
+        return [(s.level, s.title) for s in markdown_sections(md)]
+
+    # YAML front matter is not a heading: it stays the preamble, as before setext.
+    assert titles("---\ntitle: X\nauthor: Y\n---\n\n# Ch 1\ntext\n") == [(1, "(preamble)"), (1, "Ch 1")]
+    # A rule ends a block; the paragraph after it is the heading.
+    assert titles("x\n\n---\nscene two\n---\n") == [(1, "(preamble)"), (2, "scene two")]
+    # A list or a quote interrupts a paragraph: the --- below is a rule.
+    assert titles("Intro\n- a\n- b\n---\n") == [(1, "(preamble)")]
+    assert titles("Intro\n> q\n---\n") == [(1, "(preamble)")]
+    # Indented code and HTML blocks are not paragraphs.
+    assert titles("text\n\n    x = 1\n---\n") == [(1, "(preamble)")]
+    assert titles("<!-- c -->\n---\n") == [(1, "(preamble)")]
+    # A starred rule, then a real setext heading.
+    assert titles("* * *\nTitle\n===\n") == [(1, "(preamble)"), (1, "Title")]
+
+
+def test_ebook_sections_review_cases(tmp_path):
+    epub = pytest.importorskip("ebooklib.epub")
+    from dn.sections import ebook_sections
+
+    book = epub.EpubBook()
+    book.set_identifier("dn-test-2")
+    book.set_title("Edge cases")
+    book.set_language("en")
+    one = epub.EpubHtml(
+        title="One",
+        file_name="text/ch 1.xhtml",  # a space: the TOC href is percent-encoded
+        content='<h1>One</h1><p>First.</p><h2><a id="s1"></a>Inside</h2><p>Anchored.</p><p><a name="old"></a>Named.</p>',
+    )
+    two = epub.EpubHtml(title="Two", file_name="text/ch2.xhtml", content="<h1>Two</h1><p>Second.</p>")
+    book.add_item(one)
+    book.add_item(two)
+    book.toc = [
+        epub.Link("text/ch2.xhtml", "Two", "t"),  # TOC order differs from reading order
+        epub.Link("text/ch%201.xhtml", "One", "o"),
+        epub.Link("text/ch%201.xhtml#s1", "Inside", "i"),
+        epub.Link("text/ch%201.xhtml#old", "Named", "n"),
+    ]
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+    book.spine = [one, two]
+    path = tmp_path / "edge.epub"
+    epub.write_epub(str(path), book)
+
+    sections = ebook_sections(path)
+    by = {s.title: s for s in sections}
+    assert "(front matter)" not in by  # no XML declaration or <title> text leaks in
+    assert all("xml version" not in s.text for s in sections)
+    assert [s.title for s in sections] == ["One", "Inside", "Named", "Two"]  # reading order
+    assert by["Two"].seq == 1 and by["One"].seq == 2  # keys follow the TOC
+    assert "First." in by["One"].text and "Anchored" not in by["One"].text
+    assert by["Inside"].text.startswith("## Inside")  # cut before the heading, not inside it
+    assert by["Named"].text.strip().startswith("Named.") and "Named." not in by["Inside"].text

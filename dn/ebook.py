@@ -432,6 +432,33 @@ def calibre_txt_to_markdown(
         return out.read_text(encoding="utf-8", errors="replace")
 
 
+def body_soup(content: Union[bytes, str]):
+    """An EPUB document's ``<body>`` as BeautifulSoup, without the XML declaration,
+    the doctype or the ``<head>`` (whose ``<title>`` would otherwise come out as text).
+
+    >>> html = b"<?xml version='1.0'?><html><head><title>T</title></head><body><p>x</p></body></html>"
+    >>> str(body_soup(html))
+    '<p>x</p>'
+    """
+    from bs4 import BeautifulSoup, Doctype, ProcessingInstruction
+
+    if isinstance(content, bytes):
+        content = content.decode("utf-8", "replace")
+    soup = BeautifulSoup(content, "html.parser")
+    for node in soup.find_all(
+        string=lambda s: isinstance(s, (ProcessingInstruction, Doctype))
+    ):
+        node.extract()
+    if soup.body is None:
+        if soup.head is not None:
+            soup.head.decompose()
+        return soup
+    fresh = BeautifulSoup("", "html.parser")
+    for child in list(soup.body.contents):
+        fresh.append(child.extract())
+    return fresh
+
+
 def ebooklib_to_markdown(
     src: Union[str, Path],
     input_format: str | None = None,
@@ -467,9 +494,7 @@ def ebooklib_to_markdown(
     converter = MarkdownConverter(**HTML_TO_MARKDOWN_DEFAULTS)
 
     chunks = (
-        _collapse_blank_runs(
-            converter.convert(item.get_content().decode("utf-8", "replace"))
-        )
+        _collapse_blank_runs(converter.convert(str(body_soup(item.get_content()))))
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT)
     )
     return item_separator.join(chunk.strip() for chunk in chunks if chunk.strip())
