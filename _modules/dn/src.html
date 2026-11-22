@@ -317,6 +317,7 @@
         <span class="n">ocr_dpi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ocr_lang</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ocr_max_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">headings</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pages"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Convert PDF to markdown text.</span>
 
@@ -343,12 +344,18 @@
 <span class="sd">            ocr_dpi: Rendering resolution, defaults to :data:`dn.ocr.DFLT_OCR_DPI`.</span>
 <span class="sd">            ocr_lang: Tesseract language pack(s), e.g. ``'eng+fra'``.</span>
 <span class="sd">            ocr_max_workers: Concurrent OCR workers.</span>
+<span class="sd">            headings: ``'pages'`` (default) heads each page ``Page N``;</span>
+<span class="sd">                ``'outline'`` heads each of the PDF's bookmarks instead (``#`` per</span>
+<span class="sd">                outline level, cut as :func:`dn.sections.pdf_sections` cuts), with</span>
+<span class="sd">                an HTML comment where each new page starts. A PDF without</span>
+<span class="sd">                bookmarks falls back to ``'pages'``, with a warning.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Markdown text.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``.</span>
+<span class="sd">            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``, or</span>
+<span class="sd">                ``headings`` is not ``'pages'`` or ``'outline'``.</span>
 <span class="sd">            dn.ocr.OcrError: If ``ocr=True`` and OCR is unavailable or fails.</span>
 
 <span class="sd">        Note:</span>
@@ -361,6 +368,8 @@
                 <span class="sa">f</span><span class="s2">"ocr must be 'auto', True, or False; got </span><span class="si">{</span><span class="n">ocr</span><span class="si">!r}</span><span class="s2">. "</span>
                 <span class="s2">"(A truthy string is not a way to disable OCR.)"</span>
             <span class="p">)</span>
+        <span class="k">if</span> <span class="n">headings</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"pages"</span><span class="p">,</span> <span class="s2">"outline"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"headings must be 'pages' or 'outline'; got </span><span class="si">{</span><span class="n">headings</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">pdf_reader</span> <span class="o">=</span> <span class="n">pypdf</span><span class="o">.</span><span class="n">PdfReader</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">))</span>
         <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">""</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pdf_reader</span><span class="o">.</span><span class="n">pages</span><span class="p">]</span>
@@ -399,10 +408,50 @@
                     <span class="k">if</span> <span class="n">ocr</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
                         <span class="k">raise</span>
 
+        <span class="k">if</span> <span class="n">headings</span> <span class="o">==</span> <span class="s2">"outline"</span><span class="p">:</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="n">_outline_markdown</span><span class="p">(</span><span class="n">pdf_reader</span><span class="p">,</span> <span class="n">texts</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">md</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">md</span>
         <span class="k">return</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">md_inner_file_header</span><span class="si">}</span><span class="s2"> Page </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
         <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_outline_markdown</span><span class="p">(</span><span class="n">pdf_reader</span><span class="p">,</span> <span class="n">texts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The pages' ``texts`` cut at the PDF's bookmarks, one heading each; None</span>
+<span class="sd">        (with a warning) when the PDF has no bookmarks."""</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dn.sections</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">DFLT_HEADER_CHARS</span><span class="p">,</span>
+            <span class="n">FRONT_MATTER_TITLE</span><span class="p">,</span>
+            <span class="n">_find_title</span><span class="p">,</span>
+            <span class="n">pdf_outline</span><span class="p">,</span>
+            <span class="n">pdf_sections</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pdf_outline</span><span class="p">(</span><span class="n">pdf_reader</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"headings='outline': this PDF has no bookmarks; using page headings"</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">sections</span> <span class="o">=</span> <span class="n">pdf_sections</span><span class="p">(</span>
+            <span class="n">pdf_reader</span><span class="p">,</span> <span class="n">page_text</span><span class="o">=</span><span class="k">lambda</span> <span class="n">page</span><span class="p">:</span> <span class="n">texts</span><span class="p">[</span><span class="n">page</span><span class="o">.</span><span class="n">page_number</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">title</span> <span class="o">==</span> <span class="n">FRONT_MATTER_TITLE</span><span class="p">:</span>
+                <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">_find_title</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">[:</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="n">DFLT_HEADER_CHARS</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span>
+                    <span class="n">found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span>
+                <span class="p">]</span>  <span class="c1"># the heading says it (a running header goes too)</span>
+            <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'#'</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">level</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
     <span class="n">dflt_converters</span><span class="p">[</span><span class="s2">"pdf"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdf_to_markdown</span>
 
@@ -1380,7 +1429,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=01ec8363"></script>
+</div><script src="../../_static/documentation_options.js?v=a8acf705"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -1,4 +1,4 @@
-> built 2026-11-22 18:46 UTC from 106b914 (main) · dn 0.0.18. Details: build_info.json
+> built 2026-11-22 19:21 UTC from 62df3cd (main) · dn 0.0.19. Details: build_info.json
 
 # index.html.md
 
@@ -1342,8 +1342,9 @@ For an ebook without a usable table of contents, compose with the converter:
 
 ### Module Attributes
 
-| [`DFLT_HEADER_CHARS`](_autosummary/dn.sections.html.md#dn.sections.DFLT_HEADER_CHARS)   | Text above a section's title on its page is taken as a running header or a "CHAPTER 2" label, and kept with the section, when it is at most this long (about one printed line).   |
-|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_HEADER_CHARS`](_autosummary/dn.sections.html.md#dn.sections.DFLT_HEADER_CHARS)   | Text above a section's title on its page is taken as a running header or a "CHAPTER 2" label, and kept with the section, when it is at most this long (about one printed line) and it is a running header (it heads a neighbouring page too) or a chapter label.   |
+|----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_HEADER_SPAN`](_autosummary/dn.sections.html.md#dn.sections.DFLT_HEADER_SPAN)    | 2 covers books whose odd and even pages carry different headers.                                                                                                                                                                                                   |
 
 ### Functions
 
@@ -1356,7 +1357,7 @@ For an ebook without a usable table of contents, compose with the converter:
 
 ### Classes
 
-| [`OutlineEntry`](_autosummary/dn.sections.html.md#dn.sections.OutlineEntry)(level, title, page[, label, path])   | One bookmark of a PDF outline.   |
+| [`OutlineEntry`](_autosummary/dn.sections.html.md#dn.sections.OutlineEntry)(level, title, page[, label, ...])    | One bookmark of a PDF outline.   |
 |----------------------------------------------------------------------------------------------------|----------------------------------|
 | [`Section`](_autosummary/dn.sections.html.md#dn.sections.Section)(seq, level, title, path, text, \*[, ...]) | One section of a document.       |
 
@@ -1364,9 +1365,18 @@ For an ebook without a usable table of contents, compose with the converter:
 
 Text above a section’s title on its page is taken as a running header or a
 “CHAPTER 2” label, and kept with the section, when it is at most this long
-(about one printed line). Longer text is the end of the previous section.
+(about one printed line) and it is a running header (it heads a neighbouring
+page too) or a chapter label. Other text is the end of the previous section.
 
-### *class* dn.sections.OutlineEntry(level, title, page, label=None, path=())
+### dn.sections.DFLT_HEADER_SPAN *= 2*
+
+2 covers books
+whose odd and even pages carry different headers.
+
+* **Type:**
+  Pages either side of a page searched for its running header
+
+### *class* dn.sections.OutlineEntry(level, title, page, label=None, path=(), top=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -1375,7 +1385,10 @@ One bookmark of a PDF outline.
 `page` is the 1-based physical page; `label` is the number printed on
 that page (`'xii'`, `'37'`), which is the physical number as a string
 when the PDF declares no page labels. `path` holds the titles from the
-outermost ancestor bookmark down to this one.
+outermost ancestor bookmark down to this one. `top` is the vertical
+coordinate the bookmark points at (PDF points from the page’s bottom), when
+its destination gives one: [`pdf_sections()`](_autosummary/dn.sections.html.md#dn.sections.pdf_sections) cuts there when the title
+cannot be found in the text.
 
 ### *class* dn.sections.Section(seq, level, title, path, text, , page_start=None, page_end=None, label_start=None, label_end=None, line_start=None, line_end=None, href=None)
 
@@ -1488,15 +1501,17 @@ warning that says how many were. A PDF without bookmarks gives an empty list.
 [OutlineEntry(level=1, title='Preface', page=13, label='xi', path=('Preface',)), ...]
 ```
 
-### dn.sections.pdf_sections(pdf, , max_level=3, outline=None, page_text=None, page_marker='\\n\\n<!-- page {label} -->\\n\\n', header_chars=80)
+### dn.sections.pdf_sections(pdf, , max_level=3, outline=None, page_text=None, page_marker='\\n\\n<!-- page {label} -->\\n\\n', header_chars=80, header_span=2)
 
 Cut a PDF’s text at its outline entries.
 
 A section starts where its title is found on its outline page and ends
 where the next section starts. When the title cannot be located (it is an
-image, or the extractor garbled it) the section starts at the top of its
-page, or right after the previous section’s title when they share a page.
-Text before the first entry becomes a `'(front matter)'` section.
+image, or the extractor garbled it), the section starts at the line its
+bookmark points at, when the bookmark gives a `top` coordinate and the
+default extractor is used; else at the top of its page, or right after the
+previous section’s title when they share a page. Text before the first
+entry becomes a `'(front matter)'` section.
 
 * **Parameters:**
   * **pdf** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – PDF bytes, a path, a binary stream, or an open `pypdf.PdfReader`.
@@ -1512,7 +1527,12 @@ Text before the first entry becomes a `'(front matter)'` section.
     `None` for no markers.
   * **header_chars** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Text above a section’s title on its page stays with that
     section when it is at most this long (a running header, a “CHAPTER
-    2” label); longer text is the end of the previous section.
+    2” label, an epigraph), unless a line of it ends a sentence and is
+    not a running header (it does not also head a page within
+    `header_span` pages, digits aside): that is the previous section’s
+    last line spilling onto the page, and it ends that section.
+  * **header_span** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – How many pages either side are searched for a running
+    header.
 * **Return type:**
   [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 * **Returns:**
@@ -1901,7 +1921,7 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-22 18:46 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/106b914bcb351b8d1ad5fb57bfd06f9a4e222f78"><code>106b914</code></a> on branch <code>main</code>, for **dn 0.0.18** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 19:21 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/62df3cddf1338866cd59814b9e32ce192bd3daac"><code>62df3cd</code></a> on branch <code>main</code>, for **dn 0.0.19** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -1910,7 +1930,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/106b914bcb351b8d1ad5fb57bfd06f9a4e222f78"><code>106b914bcb351b8d1ad5fb57bfd06f9a4e222f78</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/62df3cddf1338866cd59814b9e32ce192bd3daac"><code>62df3cddf1338866cd59814b9e32ce192bd3daac</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1921,9 +1941,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45056784790">45056784790</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45060102946">45060102946</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>106b914bcb351b8d1ad5fb57bfd06f9a4e222f78</code> (in the history of the built commit) |
+| Event commit | <code>62df3cddf1338866cd59814b9e32ce192bd3daac</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -1948,13 +1968,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.18/">0.0.18</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.19/">0.0.19</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout 106b914bcb351b8d1ad5fb57bfd06f9a4e222f78
+git checkout 62df3cddf1338866cd59814b9e32ce192bd3daac
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

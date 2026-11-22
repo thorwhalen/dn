@@ -9,6 +9,7 @@ dn.sections
    .. autosummary::
    
       DFLT_HEADER_CHARS
+      DFLT_HEADER_SPAN
    
    .. rubric:: Functions
 

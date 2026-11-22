@@ -300,7 +300,10 @@ extractor moves boundaries but never renumbers.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.DFLT_HEADER_CHARS" title="dn.sections.DFLT_HEADER_CHARS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_HEADER_CHARS</span></code></a></p></td>
-<td><p>Text above a section's title on its page is taken as a running header or a &quot;CHAPTER 2&quot; label, and kept with the section, when it is at most this long (about one printed line).</p></td>
+<td><p>Text above a section's title on its page is taken as a running header or a &quot;CHAPTER 2&quot; label, and kept with the section, when it is at most this long (about one printed line) and it is a running header (it heads a neighbouring page too) or a chapter label.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.DFLT_HEADER_SPAN" title="dn.sections.DFLT_HEADER_SPAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_HEADER_SPAN</span></code></a></p></td>
+<td><p>2 covers books whose odd and even pages carry different headers.</p></td>
 </tr>
 </tbody>
 </table>
@@ -331,7 +334,7 @@ extractor moves boundaries but never renumbers.</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.OutlineEntry" title="dn.sections.OutlineEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a>(level, title, page[, label, path])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.OutlineEntry" title="dn.sections.OutlineEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a>(level, title, page[, label, ...])</p></td>
 <td><p>One bookmark of a PDF outline.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.Section" title="dn.sections.Section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Section</span></code></a>(seq, level, title, path, text, *[, ...])</p></td>
@@ -345,18 +348,34 @@ extractor moves boundaries but never renumbers.</p>
 <span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">DFLT_HEADER_CHARS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80</span></span><a class="headerlink" href="#dn.sections.DFLT_HEADER_CHARS" title="Link to this definition">¶</a></dt>
 <dd><p>Text above a section’s title on its page is taken as a running header or a
 “CHAPTER 2” label, and kept with the section, when it is at most this long
-(about one printed line). Longer text is the end of the previous section.</p>
+(about one printed line) and it is a running header (it heads a neighbouring
+page too) or a chapter label. Other text is the end of the previous section.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dn.sections.DFLT_HEADER_SPAN">
+<span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">DFLT_HEADER_SPAN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#dn.sections.DFLT_HEADER_SPAN" title="Link to this definition">¶</a></dt>
+<dd><p>2 covers books
+whose odd and even pages carry different headers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pages either side of a page searched for its running header</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dn.sections.OutlineEntry">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">OutlineEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#OutlineEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.OutlineEntry" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">OutlineEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#OutlineEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.OutlineEntry" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One bookmark of a PDF outline.</p>
 <p><code class="docutils literal notranslate"><span class="pre">page</span></code> is the 1-based physical page; <code class="docutils literal notranslate"><span class="pre">label</span></code> is the number printed on
 that page (<code class="docutils literal notranslate"><span class="pre">'xii'</span></code>, <code class="docutils literal notranslate"><span class="pre">'37'</span></code>), which is the physical number as a string
 when the PDF declares no page labels. <code class="docutils literal notranslate"><span class="pre">path</span></code> holds the titles from the
-outermost ancestor bookmark down to this one.</p>
+outermost ancestor bookmark down to this one. <code class="docutils literal notranslate"><span class="pre">top</span></code> is the vertical
+coordinate the bookmark points at (PDF points from the page’s bottom), when
+its destination gives one: <a class="reference internal" href="#dn.sections.pdf_sections" title="dn.sections.pdf_sections"><code class="xref py py-func docutils literal notranslate"><span class="pre">pdf_sections()</span></code></a> cuts there when the title
+cannot be found in the text.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -504,13 +523,15 @@ warning that says how many were. A PDF without bookmarks gives an empty list.</p
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dn.sections.pdf_sections">
-<span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">pdf_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'\n\n&lt;!--</span> <span class="pre">page</span> <span class="pre">{label}</span> <span class="pre">--&gt;\n\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#pdf_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.pdf_sections" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">pdf_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'\n\n&lt;!--</span> <span class="pre">page</span> <span class="pre">{label}</span> <span class="pre">--&gt;\n\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#pdf_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.pdf_sections" title="Link to this definition">¶</a></dt>
 <dd><p>Cut a PDF’s text at its outline entries.</p>
 <p>A section starts where its title is found on its outline page and ends
 where the next section starts. When the title cannot be located (it is an
-image, or the extractor garbled it) the section starts at the top of its
-page, or right after the previous section’s title when they share a page.
-Text before the first entry becomes a <code class="docutils literal notranslate"><span class="pre">'(front</span> <span class="pre">matter)'</span></code> section.</p>
+image, or the extractor garbled it), the section starts at the line its
+bookmark points at, when the bookmark gives a <code class="docutils literal notranslate"><span class="pre">top</span></code> coordinate and the
+default extractor is used; else at the top of its page, or right after the
+previous section’s title when they share a page. Text before the first
+entry becomes a <code class="docutils literal notranslate"><span class="pre">'(front</span> <span class="pre">matter)'</span></code> section.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -527,7 +548,12 @@ printed page number) and <code class="docutils literal notranslate"><span class=
 <code class="docutils literal notranslate"><span class="pre">None</span></code> for no markers.</p></li>
 <li><p><strong>header_chars</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Text above a section’s title on its page stays with that
 section when it is at most this long (a running header, a “CHAPTER
-2” label); longer text is the end of the previous section.</p></li>
+2” label, an epigraph), unless a line of it ends a sentence and is
+not a running header (it does not also head a page within
+<code class="docutils literal notranslate"><span class="pre">header_span</span></code> pages, digits aside): that is the previous section’s
+last line spilling onto the page, and it ends that section.</p></li>
+<li><p><strong>header_span</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – How many pages either side are searched for a running
+header.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -622,6 +648,7 @@ outline has <code class="docutils literal notranslate"><span class="pre">seq</sp
             <ul>
 <li><a class="reference internal" href="#">dn.sections</a><ul>
 <li><a class="reference internal" href="#dn.sections.DFLT_HEADER_CHARS"><code class="docutils literal notranslate"><span class="pre">DFLT_HEADER_CHARS</span></code></a></li>
+<li><a class="reference internal" href="#dn.sections.DFLT_HEADER_SPAN"><code class="docutils literal notranslate"><span class="pre">DFLT_HEADER_SPAN</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.OutlineEntry"><code class="docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.Section"><code class="docutils literal notranslate"><span class="pre">Section</span></code></a><ul>
 <li><a class="reference internal" href="#dn.sections.Section.href"><code class="docutils literal notranslate"><span class="pre">Section.href</span></code></a></li>
@@ -645,7 +672,7 @@ outline has <code class="docutils literal notranslate"><span class="pre">seq</sp
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=01ec8363"></script>
+</div><script src="../_static/documentation_options.js?v=a8acf705"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
