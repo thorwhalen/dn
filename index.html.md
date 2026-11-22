@@ -53,6 +53,7 @@ You can also install these when installing `dn`, like so:
 
 `dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
 
+<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
 ```python
 from dn.src import bytes_to_markdown
 from dn.docling_pdf import docling_converters
@@ -66,34 +67,37 @@ or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown
 
 ## To and from jupyter notebooks
 
-```none
+```python
 from dn import markdown_to_notebook
 
 sample_markdown = """# Sample Notebook
 
 This is a markdown cell with some explanation.
 
-```python
+~~~python
 # This is a code cell
 print("Hello, World!")
 x = 42
 print(f"The answer is {x}")
-```
+~~~
 
 ## Another Section
 
 More markdown content here.
 
-```python
+~~~python
 # Another code cell
 def greet(name):
     return f"Hello, {name}!"
 
 
 print(greet("Jupyter"))
-```
+~~~
 
 Final markdown cell."""
+
+# the sample uses ~~~ for code fences, so that it can sit inside this fenced block
+sample_markdown = sample_markdown.replace("~~~", "`" * 3)
 ```
 
 Test basic functionality
@@ -112,7 +116,7 @@ print(f"Saved notebook to: {output_path}")
 
 ```none
 Created notebook with 5 cells
-Saved notebook to: /Users/thorwhalen/Dropbox/py/proj/t/dn/misc/sample_notebook.ipynb
+Saved notebook to: /path/to/sample_notebook.ipynb
 ```
 
 ```python
@@ -189,6 +193,7 @@ check_ebook_requirements()
 
 Then convert a path, a URL, or bytes:
 
+<!-- wads-docs: skip - needs the reader's own file (book.mobi / book.pdf) -->
 ```python
 from dn import ebook_to_markdown
 
@@ -198,6 +203,7 @@ md = ebook_to_markdown("book.mobi")
 Ebook formats also route through the generic entry point, detected from the
 filename or from the file’s own leading bytes:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import bytes_to_markdown
 
@@ -223,6 +229,7 @@ containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded fro
 
 A book or a report is easier to search, cite and read as a list of sections than as one string. `pdf_sections` cuts a PDF’s text at its outline (its bookmarks); `markdown_sections` cuts markdown at its headings. Both return the same `Section` records, in reading order, and a section’s own text stops where its first sub-section starts, so the sections together hold the whole text.
 
+<!-- wads-docs: skip - needs the reader's own file (book.mobi / book.pdf) -->
 ```python
 from dn import pdf_sections, markdown_sections, pdf_outline
 
@@ -247,6 +254,7 @@ markdown_sections(open("report.md").read())  # line_start / line_end instead of 
 A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction
 returns nothing. `dn` notices and runs OCR on exactly those pages:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import pdf_to_markdown
 
@@ -259,6 +267,7 @@ scanned-book case, where the alternative is an empty result. A text PDF never
 pays the OCR cost, not even one with blank or figure-only pages. For a PDF
 that’s mostly text with a few scanned inserts, ask explicitly:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 md = pdf_to_markdown(pdf_bytes, ocr=True)  # OCR every text-less page
 ```
@@ -336,6 +345,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 
 # Convert this notebook into a markdown for the README.md
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import notebook_to_markdown
 

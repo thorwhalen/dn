@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-22T19:21:18Z",
+  "built_at": "2026-11-22T20:49:48Z",
   "package": {
     "name": "dn",
-    "version": "0.0.19",
+    "version": "0.0.20",
     "display_name": "dn",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "62df3cddf1338866cd59814b9e32ce192bd3daac",
-    "short_commit": "62df3cd",
+    "commit": "db430aad7d46a85b55cb9a6cac0017ec605439b9",
+    "short_commit": "db430aa",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/dn",
-    "commit_url": "https://github.com/thorwhalen/dn/commit/62df3cddf1338866cd59814b9e32ce192bd3daac",
+    "commit_url": "https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/dn",
-    "sha": "62df3cddf1338866cd59814b9e32ce192bd3daac",
+    "sha": "db430aad7d46a85b55cb9a6cac0017ec605439b9",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "45060102946",
-    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45060102946",
+    "run_id": "45068458515",
+    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45068458515",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -60,11 +60,11 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.19",
+    "latest": "0.0.20",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout 62df3cddf1338866cd59814b9e32ce192bd3daac\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout db430aad7d46a85b55cb9a6cac0017ec605439b9\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

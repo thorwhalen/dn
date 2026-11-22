@@ -1,4 +1,4 @@
-> built 2026-11-22 19:21 UTC from 62df3cd (main) · dn 0.0.19. Details: build_info.json
+> built 2026-11-22 20:49 UTC from db430aa (main) · dn 0.0.20. Details: build_info.json
 
 # index.html.md
 
@@ -57,6 +57,7 @@ You can also install these when installing `dn`, like so:
 
 `dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
 
+<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
 ```python
 from dn.src import bytes_to_markdown
 from dn.docling_pdf import docling_converters
@@ -70,34 +71,37 @@ or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown
 
 ## To and from jupyter notebooks
 
-```none
+```python
 from dn import markdown_to_notebook
 
 sample_markdown = """# Sample Notebook
 
 This is a markdown cell with some explanation.
 
-```python
+~~~python
 # This is a code cell
 print("Hello, World!")
 x = 42
 print(f"The answer is {x}")
-```
+~~~
 
 ## Another Section
 
 More markdown content here.
 
-```python
+~~~python
 # Another code cell
 def greet(name):
     return f"Hello, {name}!"
 
 
 print(greet("Jupyter"))
-```
+~~~
 
 Final markdown cell."""
+
+# the sample uses ~~~ for code fences, so that it can sit inside this fenced block
+sample_markdown = sample_markdown.replace("~~~", "`" * 3)
 ```
 
 Test basic functionality
@@ -116,7 +120,7 @@ print(f"Saved notebook to: {output_path}")
 
 ```none
 Created notebook with 5 cells
-Saved notebook to: /Users/thorwhalen/Dropbox/py/proj/t/dn/misc/sample_notebook.ipynb
+Saved notebook to: /path/to/sample_notebook.ipynb
 ```
 
 ```python
@@ -193,6 +197,7 @@ check_ebook_requirements()
 
 Then convert a path, a URL, or bytes:
 
+<!-- wads-docs: skip - needs the reader's own file (book.mobi / book.pdf) -->
 ```python
 from dn import ebook_to_markdown
 
@@ -202,6 +207,7 @@ md = ebook_to_markdown("book.mobi")
 Ebook formats also route through the generic entry point, detected from the
 filename or from the file’s own leading bytes:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import bytes_to_markdown
 
@@ -227,6 +233,7 @@ containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded fro
 
 A book or a report is easier to search, cite and read as a list of sections than as one string. `pdf_sections` cuts a PDF’s text at its outline (its bookmarks); `markdown_sections` cuts markdown at its headings. Both return the same `Section` records, in reading order, and a section’s own text stops where its first sub-section starts, so the sections together hold the whole text.
 
+<!-- wads-docs: skip - needs the reader's own file (book.mobi / book.pdf) -->
 ```python
 from dn import pdf_sections, markdown_sections, pdf_outline
 
@@ -251,6 +258,7 @@ markdown_sections(open("report.md").read())  # line_start / line_end instead of 
 A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction
 returns nothing. `dn` notices and runs OCR on exactly those pages:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import pdf_to_markdown
 
@@ -263,6 +271,7 @@ scanned-book case, where the alternative is an empty result. A text PDF never
 pays the OCR cost, not even one with blank or figure-only pages. For a PDF
 that’s mostly text with a few scanned inserts, ask explicitly:
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 md = pdf_to_markdown(pdf_bytes, ocr=True)  # OCR every text-less page
 ```
@@ -340,6 +349,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 
 # Convert this notebook into a markdown for the README.md
 
+<!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 from dn import notebook_to_markdown
 
@@ -1921,7 +1931,7 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-22 19:21 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/62df3cddf1338866cd59814b9e32ce192bd3daac"><code>62df3cd</code></a> on branch <code>main</code>, for **dn 0.0.19** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 20:49 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9"><code>db430aa</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -1930,7 +1940,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/62df3cddf1338866cd59814b9e32ce192bd3daac"><code>62df3cddf1338866cd59814b9e32ce192bd3daac</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9"><code>db430aad7d46a85b55cb9a6cac0017ec605439b9</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1941,9 +1951,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45060102946">45060102946</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45068458515">45068458515</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>62df3cddf1338866cd59814b9e32ce192bd3daac</code> (in the history of the built commit) |
+| Event commit | <code>db430aad7d46a85b55cb9a6cac0017ec605439b9</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -1968,13 +1978,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.19/">0.0.19</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.20/">0.0.20</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout 62df3cddf1338866cd59814b9e32ce192bd3daac
+git checkout db430aad7d46a85b55cb9a6cac0017ec605439b9
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
