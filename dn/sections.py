@@ -77,6 +77,8 @@ _NOT_PARAGRAPH_START = re.compile(r"^(?: {4}|\t| {0,3}<)")
 # below such a paragraph is a thematic break (or a table rule), not a heading.
 _NOT_SETEXT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>|]|\d{1,9}[.)])(?:\s|$)")
 _HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+# The end of a sentence: a line ending so, above a title, is the previous section's.
+_SENTENCE_END = re.compile(r"[.!?…][\"'”’)\]]*\s*$")
 # A chapter label printed alone above a title: "CHAPTER 2", "Part IV", "3", "A".
 _CHAPTER_LABEL = re.compile(
     r"^\s*(?:(?i:chapter|part|book|appendix|section|lecture|lesson)\s+)?"
@@ -393,10 +395,11 @@ def pdf_sections(
             printed page number) and ``{page}`` (the 1-based physical page).
             ``None`` for no markers.
         header_chars: Text above a section's title on its page stays with that
-            section when it is at most this long and every line of it is a
-            running header (it also heads a page within ``header_span`` pages,
-            digits aside) or a chapter label ("CHAPTER 2"). Other text above the
-            title (a last line spilling onto the page) ends the previous section.
+            section when it is at most this long (a running header, a "CHAPTER
+            2" label, an epigraph), unless a line of it ends a sentence and is
+            not a running header (it does not also head a page within
+            ``header_span`` pages, digits aside): that is the previous section's
+            last line spilling onto the page, and it ends that section.
         header_span: How many pages either side are searched for a running
             header.
 
@@ -475,11 +478,13 @@ def pdf_sections(
             start, search_from = found
             above = text_of(index)[:start]
             lines = [ln for ln in above.splitlines() if ln.strip()]
-            if (
-                not same_page
-                and len(above.strip()) <= header_chars
-                and all(is_header(ln, index) for ln in lines)
-            ):
+            # a short line ending a sentence, and not a running header, is the
+            # previous section spilling over; anything else short (a label, an
+            # epigraph, an ornament) belongs to this one
+            spill = any(
+                _SENTENCE_END.search(ln) and not is_header(ln, index) for ln in lines
+            )
+            if not same_page and len(above.strip()) <= header_chars and not spill:
                 start = 0  # a running header or chapter label: it belongs here
         starts.append((index, start))
 
@@ -748,6 +753,17 @@ def _offset_below(page, text: str, top: float, floor: int = 0) -> Optional[int]:
     """The offset in ``text`` (``page``'s default extraction) of the first text line
     at or below the coordinate ``top``: the line a bookmark pointing there names.
     None if no text sits below ``top`` at or after ``floor``."""
+    from pypdf.generic import ContentStream
+
+    contents = page.get_contents()
+    if contents is None:
+        return None
+    # pypdf's visitor misplaces lines moved by T*, ' and " (it scales the leading
+    # by the font size): on such a page the coordinates cannot be trusted
+    if any(
+        op in (b"T*", b"'", b'"') for _, op in ContentStream(contents, None).operations
+    ):
+        return None
     fragments: list = []
 
     def visit(chunk, cm, tm, font_dict, font_size):

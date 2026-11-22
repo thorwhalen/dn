@@ -534,3 +534,48 @@ def test_pdf_to_markdown_can_head_the_outline_instead_of_pages(book_pdf):
         assert "### Page 1" in to_md(no_outline, headings="outline", ocr=False)
     with pytest.raises(ValueError):
         to_md(book_pdf, headings="chapters")
+
+
+def test_review_labels_and_epigraphs_above_a_title_stay_and_tstar_pages_skip_coordinates():
+    for above in (
+        "CHAPTER ONE",
+        "Chapter iv",
+        "* * *",
+        "Fortune favours the bold. - Virgil",
+    ):
+        pdf = _make_pdf(
+            [["Alpha", "alpha text"], [above, "Beta", "beta text"]],
+            [("Alpha", 0, None), ("Beta", 1, None)],
+        )
+        alpha, beta = pdf_sections(pdf)
+        assert above not in alpha.text, above
+    # a page laid out with T*: pypdf's coordinates are wrong there, so no coordinate cut
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, NameObject
+
+    pdf = _make_pdf(
+        [["Intro", "intro body", "G4rbled H3ading", "section body"]],
+        [("Intro", 0, None), ("Clean Heading", 0, None)],
+    )
+    pdf = _with_tops(pdf, {"Intro": 732, "Clean Heading": 702})
+    writer = PdfWriter(clone_from=io.BytesIO(pdf))
+    stream = DecodedStreamObject()
+    stream.set_data(
+        b"BT /F1 12 Tf 14 TL 72 720 Td (Intro) Tj T* (intro body) Tj T* "
+        b"(G4rbled H3ading) Tj T* (section body) Tj ET"
+    )
+    writer.pages[0][NameObject("/Contents")] = writer._add_object(stream)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    intro, section = pdf_sections(buffer.getvalue())
+    assert intro.text.strip() == "Intro"  # the previous fallback: right after the title
+    assert section.text.split()[:2] == ["intro", "body"]
+
+
+def test_outline_markdown_does_not_repeat_a_title_under_a_running_header():
+    from dn.src import dflt_converters
+
+    pages = [["My Book", "Alpha", "a"], ["My Book", "Beta", "b"]]
+    pdf = _make_pdf(pages, [("Alpha", 0, None), ("Beta", 1, None)])
+    md = dflt_converters["pdf"](pdf, headings="outline", ocr=False)
+    assert "# Beta\n\nb" in md and md.count("Beta") == 1

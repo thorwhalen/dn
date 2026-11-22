@@ -172,18 +172,23 @@ with ignore_import_errors:
         (with a warning) when the PDF has no bookmarks."""
         import warnings
 
-        from dn.sections import FRONT_MATTER_TITLE, _find_title, pdf_sections
+        from dn.sections import (
+            DFLT_HEADER_CHARS,
+            FRONT_MATTER_TITLE,
+            _find_title,
+            pdf_outline,
+            pdf_sections,
+        )
 
-        try:
-            sections = pdf_sections(
-                pdf_reader, page_text=lambda page: texts[page.page_number]
-            )
-        except ValueError:  # no bookmarks
+        if not pdf_outline(pdf_reader):
             warnings.warn(
                 "headings='outline': this PDF has no bookmarks; using page headings",
                 stacklevel=3,
             )
             return None
+        sections = pdf_sections(
+            pdf_reader, page_text=lambda page: texts[page.page_number]
+        )
         blocks = []
         for s in sections:
             text = s.text
@@ -191,8 +196,10 @@ with ignore_import_errors:
                 blocks.append(text)
                 continue
             found = _find_title(text, s.title)
-            if found is not None and not text[: found[0]].strip():
-                text = text[found[1] :]  # the heading says it already
+            if found is not None and len(text[: found[0]].strip()) <= DFLT_HEADER_CHARS:
+                text = text[
+                    found[1] :
+                ]  # the heading says it (a running header goes too)
             blocks.append(f"{'#' * min(s.level, 6)} {s.title}\n\n{text.strip()}")
         return "\n\n".join(b for b in blocks if b.strip())
 
