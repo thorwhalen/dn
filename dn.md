@@ -1,4 +1,4 @@
-> built 2026-11-12 09:08 UTC from d08c048 (main) · dn 0.0.16. Details: build_info.json
+> built 2026-11-22 13:47 UTC from aea7f1a (main) · dn 0.0.17. Details: build_info.json
 
 # index.html.md
 
@@ -218,13 +218,18 @@ A book or a report is easier to search, cite and read as a list of sections than
 ```python
 from dn import pdf_sections, markdown_sections, pdf_outline
 
-sections = pdf_sections('book.pdf')          # needs dn[pdf]
+sections = pdf_sections("book.pdf")  # needs dn[pdf]
 s = sections[40]
-s.key, s.path, s.page_start, s.label_start   # ('0040-the-repository-pattern', ('Part I', 'The Repository Pattern'), 61, '33')
-s.text                                       # that section only, with <!-- page 34 --> markers inside
+(
+    s.key,
+    s.path,
+    s.page_start,
+    s.label_start,
+)  # ('0040-the-repository-pattern', ('Part I', 'The Repository Pattern'), 61, '33')
+s.text  # that section only, with <!-- page 34 --> markers inside
 
-pdf_outline('book.pdf', max_level=1)         # the chapters: (level, title, page, label)
-markdown_sections(open('report.md').read())  # line_start / line_end instead of pages
+pdf_outline("book.pdf", max_level=1)  # the chapters: (level, title, page, label)
+markdown_sections(open("report.md").read())  # line_start / line_end instead of pages
 ```
 
 `max_level` (default 3) sets how deep the cut goes; deeper headings stay inside their parent. Keys are stable for the same input and `max_level`: outline entry number *k* is always `seq` *k*, and `seq` 0 is reserved for the text before the first entry. For an ebook, compose: `markdown_sections(ebook_to_markdown('book.epub'))`. A PDF with no bookmarks raises and says what to pass: `outline=[OutlineEntry(level, title, page), ...]` for the headings you know. `page_text=` swaps the text extractor (an OCR result, another library).
@@ -1198,9 +1203,12 @@ when it is one big string. This module produces that sequence:
 
 - [`pdf_outline()`](_autosummary/dn.sections.html.md#dn.sections.pdf_outline): a PDF’s bookmarks as [`OutlineEntry`](_autosummary/dn.sections.html.md#dn.sections.OutlineEntry) records.
 - [`pdf_sections()`](_autosummary/dn.sections.html.md#dn.sections.pdf_sections): the PDF’s text, cut at its outline entries.
-- [`markdown_sections()`](_autosummary/dn.sections.html.md#dn.sections.markdown_sections): markdown text, cut at its ATX (`#`) headings.
+- [`markdown_sections()`](_autosummary/dn.sections.html.md#dn.sections.markdown_sections): markdown text, cut at its headings (ATX `#` and
+  setext underlines).
+- [`ebook_sections()`](_autosummary/dn.sections.html.md#dn.sections.ebook_sections): an EPUB’s text, cut at its own table of contents (the
+  publisher’s hierarchy, whatever headings the converter emits).
 
-Both `*_sections` functions return the same [`Section`](_autosummary/dn.sections.html.md#dn.sections.Section) records, in
+All `*_sections` functions return the same [`Section`](_autosummary/dn.sections.html.md#dn.sections.Section) records, in
 reading order, and a section’s own text stops where its first sub-section
 starts. Together the sections hold the whole text (give or take whitespace, and
 a markdown preamble made only of HTML comments, which is dropped).
@@ -1210,7 +1218,7 @@ outline entry number *k* always gets `seq` *k* (`seq` 0 is reserved for the
 text before the first entry, whether or not there is any), so a change of text
 extractor moves boundaries but never renumbers.
 
-For an ebook, compose with the converter:
+For an ebook without a usable table of contents, compose with the converter:
 `markdown_sections(dn.ebook_to_markdown('book.epub'))`.
 
 ```pycon
@@ -1235,11 +1243,12 @@ For an ebook, compose with the converter:
 
 ### Functions
 
-| [`markdown_sections`](_autosummary/dn.sections.html.md#dn.sections.markdown_sections)(markdown, \*[, max_level, ...])   | Cut markdown at its headings of level `max_level` or shallower.                                                       |
-|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| [`pdf_outline`](_autosummary/dn.sections.html.md#dn.sections.pdf_outline)(pdf, \*[, max_level])                   | Read a PDF's outline (its bookmarks) as a flat list of [`OutlineEntry`](_autosummary/dn.sections.html.md#dn.sections.OutlineEntry). |
-| [`pdf_sections`](_autosummary/dn.sections.html.md#dn.sections.pdf_sections)(pdf, \*[, max_level, outline, ...])    | Cut a PDF's text at its outline entries.                                                                              |
-| [`slugify`](_autosummary/dn.sections.html.md#dn.sections.slugify)(title, \*[, max_length])                    | Reduce `title` to lowercase ASCII letters, digits and hyphens.                                                        |
+| [`ebook_sections`](_autosummary/dn.sections.html.md#dn.sections.ebook_sections)(ebook, \*[, max_level, ...])       | Cut an EPUB at its own table of contents.                                                                             |
+|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| [`markdown_sections`](_autosummary/dn.sections.html.md#dn.sections.markdown_sections)(markdown, \*[, max_level, ...]) | Cut markdown at its headings of level `max_level` or shallower.                                                       |
+| [`pdf_outline`](_autosummary/dn.sections.html.md#dn.sections.pdf_outline)(pdf, \*[, max_level])                 | Read a PDF's outline (its bookmarks) as a flat list of [`OutlineEntry`](_autosummary/dn.sections.html.md#dn.sections.OutlineEntry). |
+| [`pdf_sections`](_autosummary/dn.sections.html.md#dn.sections.pdf_sections)(pdf, \*[, max_level, outline, ...])  | Cut a PDF's text at its outline entries.                                                                              |
+| [`slugify`](_autosummary/dn.sections.html.md#dn.sections.slugify)(title, \*[, max_length])                  | Reduce `title` to lowercase ASCII letters, digits and hyphens.                                                        |
 
 ### Classes
 
@@ -1264,7 +1273,7 @@ that page (`'xii'`, `'37'`), which is the physical number as a string
 when the PDF declares no page labels. `path` holds the titles from the
 outermost ancestor bookmark down to this one.
 
-### *class* dn.sections.Section(seq, level, title, path, text, , page_start=None, page_end=None, label_start=None, label_end=None, line_start=None, line_end=None)
+### *class* dn.sections.Section(seq, level, title, path, text, , page_start=None, page_end=None, label_start=None, label_end=None, line_start=None, line_end=None, href=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -1274,6 +1283,13 @@ One section of a document.
 its title, forms its `key`. `path` holds the titles from the outermost
 ancestor down to the section itself. The locator fields are keyword-only:
 page fields are set for PDFs, line fields (1-based, inclusive) for markdown.
+
+#### href *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]* *= None*
+
+the table-of-contents target (`'ch02.xhtml#s3'`).
+
+* **Type:**
+  For an EPUB section
 
 #### *property* key *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -1286,13 +1302,47 @@ page fields are set for PDFs, line fields (1-based, inclusive) for markdown.
 
 A filename-safe form of the title.
 
+### dn.sections.ebook_sections(ebook, , max_level=3, to_markdown=None)
+
+Cut an EPUB at its own table of contents.
+
+Each entry’s section starts at its target (a document, or an element inside
+it by `id`) and ends where the next section starts, in reading (spine)
+order, so a chapter holding several entries is cut inside. The hierarchy is
+the publisher’s, whatever headings the text has. Text before the first entry
+becomes a `'(front matter)'` section.
+
+* **Parameters:**
+  * **ebook** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – EPUB bytes, a path, or a binary stream.
+  * **max_level** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Deepest table-of-contents level that starts a section.
+  * **to_markdown** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]) – `html -> markdown` for each spine document; defaults to
+    markdownify with dn’s settings (as `dn.ebook_to_markdown`’s
+    `ebooklib` backend).
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
+* **Returns:**
+  A list of [`Section`](_autosummary/dn.sections.html.md#dn.sections.Section) (`href` set). Entry number *k* of the table
+  of contents has `seq` *k* (from 1); `seq` 0 is the front matter. An
+  entry whose target is not in the book gets an empty section, so keys
+  never shift.
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If the book has no table of contents; the message says what
+      to use instead.
+
+```pycon
+>>> sections = ebook_sections('book.epub')
+>>> sections[3].key, sections[3].path, sections[3].href
+('0003-setup', ('Guide', 'Setup'), 'ch01.xhtml#setup')
+```
+
 ### dn.sections.markdown_sections(markdown, , max_level=3, first_seq=0, parents=())
 
 Cut markdown at its headings of level `max_level` or shallower.
 
-Only ATX headings (`# Title`) count; underlined (setext) headings are not
-recognised. Deeper headings stay inside their parent section, and headings
-inside fenced code are ignored. Text before the first heading becomes a
+ATX headings (`# Title`) and setext headings (a paragraph underlined with
+`===` for level 1 or `---` for level 2) count; a setext heading’s title
+is its whole paragraph, on one line. Deeper headings stay inside their parent
+section, and headings inside fenced code are ignored. Text before the first heading becomes a
 `'(preamble)'` section unless it is blank or only HTML comments.
 
 * **Parameters:**
@@ -1310,6 +1360,8 @@ inside fenced code are ignored. Text before the first heading becomes a
 ```pycon
 >>> [s.title for s in markdown_sections('hello\n# A\n#### deep\n# B')]
 ['(preamble)', 'A', 'B']
+>>> [(s.level, s.title) for s in markdown_sections('Title\n=====\ntext\n\nPart\n----')]
+[(1, 'Title'), (2, 'Part')]
 ```
 
 ### dn.sections.pdf_outline(pdf, , max_level=None)
@@ -1745,16 +1797,18 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-12 09:08 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8"><code>d08c048</code></a> on branch <code>main</code>, for **dn 0.0.16** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 13:47 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a</code></a> on branch <code>main</code>, for **dn 0.0.17** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.17) is behind the latest release on PyPI (0.0.18): `pip install dn` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8"><code>d08c048277f38c31a0494d713ae93a79ea812ea8</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a87000a992767fe81e0dce71b677958c46</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1765,15 +1819,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/43188583172">43188583172</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45029179250">45029179250</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>d08c048277f38c31a0494d713ae93a79ea812ea8</code> (in the history of the built commit) |
+| Event commit | <code>aea7f1a87000a992767fe81e0dce71b677958c46</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.22  |
+| epythet  | 0.2.23  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -1792,14 +1846,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.16/">0.0.16</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.18/">0.0.18</a>, newer than the documented version (0.0.17).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout d08c048277f38c31a0494d713ae93a79ea812ea8
-pip install "epythet==0.2.22"
+git checkout aea7f1a87000a992767fe81e0dce71b677958c46
+pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

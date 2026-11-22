@@ -5,17 +5,19 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-11-12 09:08 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8"><code>d08c048</code></a> on branch <code>main</code>, for **dn 0.0.16** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 13:47 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a</code></a> on branch <code>main</code>, for **dn 0.0.17** (from <code>pyproject.toml</code>).
 
-:::{note}
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+:::{warning}
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.17) is behind the latest release on PyPI (0.0.18): `pip install dn` gives newer code than these docs describe.
 :::
 
 ## Source
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8"><code>d08c048277f38c31a0494d713ae93a79ea812ea8</code></a> |
+| Commit | <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a87000a992767fe81e0dce71b677958c46</code></a> |
 | Branch | <code>main</code> |
 | Tags at this commit | none |
 | Working tree | clean |
@@ -26,15 +28,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | | |
 |---|---|
 | Repository | <code>thorwhalen/dn</code> |
-| Run | <a href="https://github.com/thorwhalen/dn/actions/runs/43188583172">43188583172</a> |
+| Run | <a href="https://github.com/thorwhalen/dn/actions/runs/45029179250">45029179250</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>d08c048277f38c31a0494d713ae93a79ea812ea8</code> (in the history of the built commit) |
+| Event commit | <code>aea7f1a87000a992767fe81e0dce71b677958c46</code> (in the history of the built commit) |
 
 ## Tools
 
 | | |
 |---|---|
-| epythet | 0.2.22 |
+| epythet | 0.2.23 |
 | Sphinx | 9.1.1 |
 | docutils | 0.22.4 |
 | Python | 3.12.16 |
@@ -53,14 +55,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.16/">0.0.16</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.18/">0.0.18</a>, newer than the documented version (0.0.17).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout d08c048277f38c31a0494d713ae93a79ea812ea8
-pip install "epythet==0.2.22"
+git checkout aea7f1a87000a992767fe81e0dce71b677958c46
+pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

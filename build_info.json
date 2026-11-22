@@ -1,36 +1,36 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-12T09:08:47Z",
+  "built_at": "2026-11-22T13:47:25Z",
   "package": {
     "name": "dn",
-    "version": "0.0.16",
+    "version": "0.0.17",
     "display_name": "dn",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "d08c048277f38c31a0494d713ae93a79ea812ea8",
-    "short_commit": "d08c048",
+    "commit": "aea7f1a87000a992767fe81e0dce71b677958c46",
+    "short_commit": "aea7f1a",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/dn",
-    "commit_url": "https://github.com/thorwhalen/dn/commit/d08c048277f38c31a0494d713ae93a79ea812ea8",
+    "commit_url": "https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/dn",
-    "sha": "d08c048277f38c31a0494d713ae93a79ea812ea8",
+    "sha": "aea7f1a87000a992767fe81e0dce71b677958c46",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "43188583172",
-    "run_url": "https://github.com/thorwhalen/dn/actions/runs/43188583172",
+    "run_id": "45029179250",
+    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45029179250",
     "server_url": "https://github.com"
   },
   "tools": {
-    "epythet": "0.2.22",
+    "epythet": "0.2.23",
     "sphinx": "9.1.1",
     "docutils": "0.22.4",
     "python": "3.12.16"
@@ -56,18 +56,20 @@
   },
   "site": {
     "modules_documented": 8,
-    "objects_documented": 64
+    "objects_documented": 66
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.16",
-    "relation": "same",
+    "latest": "0.0.18",
+    "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout d08c048277f38c31a0494d713ae93a79ea812ea8\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout aea7f1a87000a992767fe81e0dce71b677958c46\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": true,
-    "notes": []
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.17) is behind the latest release on PyPI (0.0.18): `pip install dn` gives newer code than these docs describe."
+    ]
   }
 }

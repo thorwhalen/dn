@@ -265,9 +265,12 @@ when it is one big string. This module produces that sequence:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#dn.sections.pdf_outline" title="dn.sections.pdf_outline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pdf_outline()</span></code></a>: a PDF’s bookmarks as <a class="reference internal" href="#dn.sections.OutlineEntry" title="dn.sections.OutlineEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a> records.</p></li>
 <li><p><a class="reference internal" href="#dn.sections.pdf_sections" title="dn.sections.pdf_sections"><code class="xref py py-func docutils literal notranslate"><span class="pre">pdf_sections()</span></code></a>: the PDF’s text, cut at its outline entries.</p></li>
-<li><p><a class="reference internal" href="#dn.sections.markdown_sections" title="dn.sections.markdown_sections"><code class="xref py py-func docutils literal notranslate"><span class="pre">markdown_sections()</span></code></a>: markdown text, cut at its ATX (<code class="docutils literal notranslate"><span class="pre">#</span></code>) headings.</p></li>
+<li><p><a class="reference internal" href="#dn.sections.markdown_sections" title="dn.sections.markdown_sections"><code class="xref py py-func docutils literal notranslate"><span class="pre">markdown_sections()</span></code></a>: markdown text, cut at its headings (ATX <code class="docutils literal notranslate"><span class="pre">#</span></code> and
+setext underlines).</p></li>
+<li><p><a class="reference internal" href="#dn.sections.ebook_sections" title="dn.sections.ebook_sections"><code class="xref py py-func docutils literal notranslate"><span class="pre">ebook_sections()</span></code></a>: an EPUB’s text, cut at its own table of contents (the
+publisher’s hierarchy, whatever headings the converter emits).</p></li>
 </ul>
-<p>Both <code class="docutils literal notranslate"><span class="pre">*_sections</span></code> functions return the same <a class="reference internal" href="#dn.sections.Section" title="dn.sections.Section"><code class="xref py py-class docutils literal notranslate"><span class="pre">Section</span></code></a> records, in
+<p>All <code class="docutils literal notranslate"><span class="pre">*_sections</span></code> functions return the same <a class="reference internal" href="#dn.sections.Section" title="dn.sections.Section"><code class="xref py py-class docutils literal notranslate"><span class="pre">Section</span></code></a> records, in
 reading order, and a section’s own text stops where its first sub-section
 starts. Together the sections hold the whole text (give or take whitespace, and
 a markdown preamble made only of HTML comments, which is dropped).</p>
@@ -275,7 +278,7 @@ a markdown preamble made only of HTML comments, which is dropped).</p>
 outline entry number <em>k</em> always gets <code class="docutils literal notranslate"><span class="pre">seq</span></code> <em>k</em> (<code class="docutils literal notranslate"><span class="pre">seq</span></code> 0 is reserved for the
 text before the first entry, whether or not there is any), so a change of text
 extractor moves boundaries but never renumbers.</p>
-<p>For an ebook, compose with the converter:
+<p>For an ebook without a usable table of contents, compose with the converter:
 <code class="docutils literal notranslate"><span class="pre">markdown_sections(dn.ebook_to_markdown('book.epub'))</span></code>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">md</span> <span class="o">=</span> <span class="s1">'''# Guide</span>
 <span class="gp">... </span><span class="s1">Intro.</span>
@@ -305,16 +308,19 @@ extractor moves boundaries but never renumbers.</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.markdown_sections" title="dn.sections.markdown_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markdown_sections</span></code></a>(markdown, *[, max_level, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.ebook_sections" title="dn.sections.ebook_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ebook_sections</span></code></a>(ebook, *[, max_level, ...])</p></td>
+<td><p>Cut an EPUB at its own table of contents.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.markdown_sections" title="dn.sections.markdown_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">markdown_sections</span></code></a>(markdown, *[, max_level, ...])</p></td>
 <td><p>Cut markdown at its headings of level <code class="docutils literal notranslate"><span class="pre">max_level</span></code> or shallower.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.pdf_outline" title="dn.sections.pdf_outline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf_outline</span></code></a>(pdf, *[, max_level])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.pdf_outline" title="dn.sections.pdf_outline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf_outline</span></code></a>(pdf, *[, max_level])</p></td>
 <td><p>Read a PDF's outline (its bookmarks) as a flat list of <a class="reference internal" href="#dn.sections.OutlineEntry" title="dn.sections.OutlineEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.pdf_sections" title="dn.sections.pdf_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf_sections</span></code></a>(pdf, *[, max_level, outline, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.pdf_sections" title="dn.sections.pdf_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pdf_sections</span></code></a>(pdf, *[, max_level, outline, ...])</p></td>
 <td><p>Cut a PDF's text at its outline entries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dn.sections.slugify" title="dn.sections.slugify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slugify</span></code></a>(title, *[, max_length])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dn.sections.slugify" title="dn.sections.slugify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slugify</span></code></a>(title, *[, max_length])</p></td>
 <td><p>Reduce <code class="docutils literal notranslate"><span class="pre">title</span></code> to lowercase ASCII letters, digits and hyphens.</p></td>
 </tr>
 </tbody>
@@ -356,7 +362,7 @@ outermost ancestor bookmark down to this one.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dn.sections.Section">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#Section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.Section" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">href</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#Section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.Section" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One section of a document.</p>
 <p><code class="docutils literal notranslate"><span class="pre">seq</span></code> is the section’s position in reading order and, with the slug of
@@ -365,6 +371,17 @@ ancestor down to the section itself. The locator fields are keyword-only:
 page fields are set for PDFs, line fields (1-based, inclusive) for markdown.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dn.sections.Section.href">
+<span class="sig-name descname"><span class="pre">href</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dn.sections.Section.href" title="Link to this definition">¶</a></dt>
+<dd><p>the table-of-contents target (<code class="docutils literal notranslate"><span class="pre">'ch02.xhtml#s3'</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>For an EPUB section</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="dn.sections.Section.key">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">key</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#dn.sections.Section.key" title="Link to this definition">¶</a></dt>
@@ -385,12 +402,53 @@ page fields are set for PDFs, line fields (1-based, inclusive) for markdown.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dn.sections.ebook_sections">
+<span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">ebook_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ebook</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_markdown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#ebook_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.ebook_sections" title="Link to this definition">¶</a></dt>
+<dd><p>Cut an EPUB at its own table of contents.</p>
+<p>Each entry’s section starts at its target (a document, or an element inside
+it by <code class="docutils literal notranslate"><span class="pre">id</span></code>) and ends where the next section starts, in reading (spine)
+order, so a chapter holding several entries is cut inside. The hierarchy is
+the publisher’s, whatever headings the text has. Text before the first entry
+becomes a <code class="docutils literal notranslate"><span class="pre">'(front</span> <span class="pre">matter)'</span></code> section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ebook</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – EPUB bytes, a path, or a binary stream.</p></li>
+<li><p><strong>max_level</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Deepest table-of-contents level that starts a section.</p></li>
+<li><p><strong>to_markdown</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span>) – <code class="docutils literal notranslate"><span class="pre">html</span> <span class="pre">-&gt;</span> <span class="pre">markdown</span></code> for each spine document; defaults to
+markdownify with dn’s settings (as <code class="docutils literal notranslate"><span class="pre">dn.ebook_to_markdown</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">ebooklib</span></code> backend).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of <a class="reference internal" href="#dn.sections.Section" title="dn.sections.Section"><code class="xref py py-class docutils literal notranslate"><span class="pre">Section</span></code></a> (<code class="docutils literal notranslate"><span class="pre">href</span></code> set). Entry number <em>k</em> of the table
+of contents has <code class="docutils literal notranslate"><span class="pre">seq</span></code> <em>k</em> (from 1); <code class="docutils literal notranslate"><span class="pre">seq</span></code> 0 is the front matter. An
+entry whose target is not in the book gets an empty section, so keys
+never shift.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the book has no table of contents; the message says what
+    to use instead.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sections</span> <span class="o">=</span> <span class="n">ebook_sections</span><span class="p">(</span><span class="s1">'book.epub'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sections</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">sections</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">sections</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">href</span>
+<span class="go">('0003-setup', ('Guide', 'Setup'), 'ch01.xhtml#setup')</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dn.sections.markdown_sections">
 <span class="sig-prename descclassname"><span class="pre">dn.sections.</span></span><span class="sig-name descname"><span class="pre">markdown_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">markdown</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_seq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dn/sections.html#markdown_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dn.sections.markdown_sections" title="Link to this definition">¶</a></dt>
 <dd><p>Cut markdown at its headings of level <code class="docutils literal notranslate"><span class="pre">max_level</span></code> or shallower.</p>
-<p>Only ATX headings (<code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Title</span></code>) count; underlined (setext) headings are not
-recognised. Deeper headings stay inside their parent section, and headings
-inside fenced code are ignored. Text before the first heading becomes a
+<p>ATX headings (<code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Title</span></code>) and setext headings (a paragraph underlined with
+<code class="docutils literal notranslate"><span class="pre">===</span></code> for level 1 or <code class="docutils literal notranslate"><span class="pre">---</span></code> for level 2) count; a setext heading’s title
+is its whole paragraph, on one line. Deeper headings stay inside their parent
+section, and headings inside fenced code are ignored. Text before the first heading becomes a
 <code class="docutils literal notranslate"><span class="pre">'(preamble)'</span></code> section unless it is blank or only HTML comments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -412,6 +470,8 @@ inside fenced code are ignored. Text before the first heading becomes a
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">title</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">markdown_sections</span><span class="p">(</span><span class="s1">'hello</span><span class="se">\n</span><span class="s1"># A</span><span class="se">\n</span><span class="s1">#### deep</span><span class="se">\n</span><span class="s1"># B'</span><span class="p">)]</span>
 <span class="go">['(preamble)', 'A', 'B']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">s</span><span class="o">.</span><span class="n">level</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">title</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">markdown_sections</span><span class="p">(</span><span class="s1">'Title</span><span class="se">\n</span><span class="s1">=====</span><span class="se">\n</span><span class="s1">text</span><span class="se">\n\n</span><span class="s1">Part</span><span class="se">\n</span><span class="s1">----'</span><span class="p">)]</span>
+<span class="go">[(1, 'Title'), (2, 'Part')]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -563,10 +623,12 @@ outline has <code class="docutils literal notranslate"><span class="pre">seq</sp
 <li><a class="reference internal" href="#dn.sections.DFLT_HEADER_CHARS"><code class="docutils literal notranslate"><span class="pre">DFLT_HEADER_CHARS</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.OutlineEntry"><code class="docutils literal notranslate"><span class="pre">OutlineEntry</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.Section"><code class="docutils literal notranslate"><span class="pre">Section</span></code></a><ul>
+<li><a class="reference internal" href="#dn.sections.Section.href"><code class="docutils literal notranslate"><span class="pre">Section.href</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.Section.key"><code class="docutils literal notranslate"><span class="pre">Section.key</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.Section.slug"><code class="docutils literal notranslate"><span class="pre">Section.slug</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#dn.sections.ebook_sections"><code class="docutils literal notranslate"><span class="pre">ebook_sections()</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.markdown_sections"><code class="docutils literal notranslate"><span class="pre">markdown_sections()</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.pdf_outline"><code class="docutils literal notranslate"><span class="pre">pdf_outline()</span></code></a></li>
 <li><a class="reference internal" href="#dn.sections.pdf_sections"><code class="docutils literal notranslate"><span class="pre">pdf_sections()</span></code></a></li>
@@ -582,7 +644,7 @@ outline has <code class="docutils literal notranslate"><span class="pre">seq</sp
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=0adb0642"></script>
+</div><script src="../_static/documentation_options.js?v=a39b7224"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

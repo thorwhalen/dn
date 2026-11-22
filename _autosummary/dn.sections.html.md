@@ -9,9 +9,12 @@ when it is one big string. This module produces that sequence:
 
 - [`pdf_outline()`](#dn.sections.pdf_outline): a PDF’s bookmarks as [`OutlineEntry`](#dn.sections.OutlineEntry) records.
 - [`pdf_sections()`](#dn.sections.pdf_sections): the PDF’s text, cut at its outline entries.
-- [`markdown_sections()`](#dn.sections.markdown_sections): markdown text, cut at its ATX (`#`) headings.
+- [`markdown_sections()`](#dn.sections.markdown_sections): markdown text, cut at its headings (ATX `#` and
+  setext underlines).
+- [`ebook_sections()`](#dn.sections.ebook_sections): an EPUB’s text, cut at its own table of contents (the
+  publisher’s hierarchy, whatever headings the converter emits).
 
-Both `*_sections` functions return the same [`Section`](#dn.sections.Section) records, in
+All `*_sections` functions return the same [`Section`](#dn.sections.Section) records, in
 reading order, and a section’s own text stops where its first sub-section
 starts. Together the sections hold the whole text (give or take whitespace, and
 a markdown preamble made only of HTML comments, which is dropped).
@@ -21,7 +24,7 @@ outline entry number *k* always gets `seq` *k* (`seq` 0 is reserved for the
 text before the first entry, whether or not there is any), so a change of text
 extractor moves boundaries but never renumbers.
 
-For an ebook, compose with the converter:
+For an ebook without a usable table of contents, compose with the converter:
 `markdown_sections(dn.ebook_to_markdown('book.epub'))`.
 
 ```pycon
@@ -46,11 +49,12 @@ For an ebook, compose with the converter:
 
 ### Functions
 
-| [`markdown_sections`](#dn.sections.markdown_sections)(markdown, \*[, max_level, ...])   | Cut markdown at its headings of level `max_level` or shallower.                                                       |
-|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| [`pdf_outline`](#dn.sections.pdf_outline)(pdf, \*[, max_level])                   | Read a PDF's outline (its bookmarks) as a flat list of [`OutlineEntry`](#dn.sections.OutlineEntry). |
-| [`pdf_sections`](#dn.sections.pdf_sections)(pdf, \*[, max_level, outline, ...])    | Cut a PDF's text at its outline entries.                                                                              |
-| [`slugify`](#dn.sections.slugify)(title, \*[, max_length])                    | Reduce `title` to lowercase ASCII letters, digits and hyphens.                                                        |
+| [`ebook_sections`](#dn.sections.ebook_sections)(ebook, \*[, max_level, ...])       | Cut an EPUB at its own table of contents.                                                                             |
+|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| [`markdown_sections`](#dn.sections.markdown_sections)(markdown, \*[, max_level, ...]) | Cut markdown at its headings of level `max_level` or shallower.                                                       |
+| [`pdf_outline`](#dn.sections.pdf_outline)(pdf, \*[, max_level])                 | Read a PDF's outline (its bookmarks) as a flat list of [`OutlineEntry`](#dn.sections.OutlineEntry). |
+| [`pdf_sections`](#dn.sections.pdf_sections)(pdf, \*[, max_level, outline, ...])  | Cut a PDF's text at its outline entries.                                                                              |
+| [`slugify`](#dn.sections.slugify)(title, \*[, max_length])                  | Reduce `title` to lowercase ASCII letters, digits and hyphens.                                                        |
 
 ### Classes
 
@@ -75,7 +79,7 @@ that page (`'xii'`, `'37'`), which is the physical number as a string
 when the PDF declares no page labels. `path` holds the titles from the
 outermost ancestor bookmark down to this one.
 
-### *class* dn.sections.Section(seq, level, title, path, text, , page_start=None, page_end=None, label_start=None, label_end=None, line_start=None, line_end=None)
+### *class* dn.sections.Section(seq, level, title, path, text, , page_start=None, page_end=None, label_start=None, label_end=None, line_start=None, line_end=None, href=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -85,6 +89,13 @@ One section of a document.
 its title, forms its `key`. `path` holds the titles from the outermost
 ancestor down to the section itself. The locator fields are keyword-only:
 page fields are set for PDFs, line fields (1-based, inclusive) for markdown.
+
+#### href *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]* *= None*
+
+the table-of-contents target (`'ch02.xhtml#s3'`).
+
+* **Type:**
+  For an EPUB section
 
 #### *property* key *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -97,13 +108,47 @@ page fields are set for PDFs, line fields (1-based, inclusive) for markdown.
 
 A filename-safe form of the title.
 
+### dn.sections.ebook_sections(ebook, , max_level=3, to_markdown=None)
+
+Cut an EPUB at its own table of contents.
+
+Each entry’s section starts at its target (a document, or an element inside
+it by `id`) and ends where the next section starts, in reading (spine)
+order, so a chapter holding several entries is cut inside. The hierarchy is
+the publisher’s, whatever headings the text has. Text before the first entry
+becomes a `'(front matter)'` section.
+
+* **Parameters:**
+  * **ebook** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – EPUB bytes, a path, or a binary stream.
+  * **max_level** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Deepest table-of-contents level that starts a section.
+  * **to_markdown** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]) – `html -> markdown` for each spine document; defaults to
+    markdownify with dn’s settings (as `dn.ebook_to_markdown`’s
+    `ebooklib` backend).
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
+* **Returns:**
+  A list of [`Section`](#dn.sections.Section) (`href` set). Entry number *k* of the table
+  of contents has `seq` *k* (from 1); `seq` 0 is the front matter. An
+  entry whose target is not in the book gets an empty section, so keys
+  never shift.
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If the book has no table of contents; the message says what
+      to use instead.
+
+```pycon
+>>> sections = ebook_sections('book.epub')
+>>> sections[3].key, sections[3].path, sections[3].href
+('0003-setup', ('Guide', 'Setup'), 'ch01.xhtml#setup')
+```
+
 ### dn.sections.markdown_sections(markdown, , max_level=3, first_seq=0, parents=())
 
 Cut markdown at its headings of level `max_level` or shallower.
 
-Only ATX headings (`# Title`) count; underlined (setext) headings are not
-recognised. Deeper headings stay inside their parent section, and headings
-inside fenced code are ignored. Text before the first heading becomes a
+ATX headings (`# Title`) and setext headings (a paragraph underlined with
+`===` for level 1 or `---` for level 2) count; a setext heading’s title
+is its whole paragraph, on one line. Deeper headings stay inside their parent
+section, and headings inside fenced code are ignored. Text before the first heading becomes a
 `'(preamble)'` section unless it is blank or only HTML comments.
 
 * **Parameters:**
@@ -121,6 +166,8 @@ inside fenced code are ignored. Text before the first heading becomes a
 ```pycon
 >>> [s.title for s in markdown_sections('hello\n# A\n#### deep\n# B')]
 ['(preamble)', 'A', 'B']
+>>> [(s.level, s.title) for s in markdown_sections('Title\n=====\ntext\n\nPart\n----')]
+[(1, 'Title'), (2, 'Part')]
 ```
 
 ### dn.sections.pdf_outline(pdf, , max_level=None)

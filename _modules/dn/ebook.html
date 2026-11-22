@@ -699,6 +699,33 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">body_soup</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""An EPUB document's ``&lt;body&gt;`` as BeautifulSoup, without the XML declaration,</span>
+<span class="sd">    the doctype or the ``&lt;head&gt;`` (whose ``&lt;title&gt;`` would otherwise come out as text).</span>
+
+<span class="sd">    &gt;&gt;&gt; html = b"&lt;?xml version='1.0'?&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;T&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;x&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"</span>
+<span class="sd">    &gt;&gt;&gt; str(body_soup(html))</span>
+<span class="sd">    '&lt;p&gt;x&lt;/p&gt;'</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bs4</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeautifulSoup</span><span class="p">,</span> <span class="n">Doctype</span><span class="p">,</span> <span class="n">ProcessingInstruction</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"replace"</span><span class="p">)</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="s2">"html.parser"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span>
+        <span class="n">string</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">(</span><span class="n">ProcessingInstruction</span><span class="p">,</span> <span class="n">Doctype</span><span class="p">))</span>
+    <span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">extract</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">soup</span><span class="o">.</span><span class="n">body</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">soup</span><span class="o">.</span><span class="n">head</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">soup</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">soup</span>
+    <span class="n">fresh</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"html.parser"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">contents</span><span class="p">):</span>
+        <span class="n">fresh</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">extract</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">fresh</span>
+
+
 <div class="viewcode-block" id="ebooklib_to_markdown">
 <a class="viewcode-back" href="../../_autosummary/dn.ebook.html#dn.ebook.ebooklib_to_markdown">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ebooklib_to_markdown</span><span class="p">(</span>
@@ -736,9 +763,7 @@
     <span class="n">converter</span> <span class="o">=</span> <span class="n">MarkdownConverter</span><span class="p">(</span><span class="o">**</span><span class="n">HTML_TO_MARKDOWN_DEFAULTS</span><span class="p">)</span>
 
     <span class="n">chunks</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">_collapse_blank_runs</span><span class="p">(</span>
-            <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get_content</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"replace"</span><span class="p">))</span>
-        <span class="p">)</span>
+        <span class="n">_collapse_blank_runs</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">body_soup</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get_content</span><span class="p">()))))</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">book</span><span class="o">.</span><span class="n">get_items_of_type</span><span class="p">(</span><span class="n">ebooklib</span><span class="o">.</span><span class="n">ITEM_DOCUMENT</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">item_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span> <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
@@ -1284,7 +1309,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=0adb0642"></script>
+</div><script src="../../_static/documentation_options.js?v=a39b7224"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
