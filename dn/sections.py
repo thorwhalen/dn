@@ -64,6 +64,9 @@ PdfSource = Union[bytes, str, Path, Any]  # Any: a binary stream or a pypdf.PdfR
 _HEADING = re.compile(r"^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
+_THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$")
+# Lines that cannot start a paragraph: indented code, HTML blocks.
+_NOT_PARAGRAPH_START = re.compile(r"^(?: {4}|\t| {0,3}<)")
 # A line that opens a list item, a block quote or a table row: a setext underline
 # below such a paragraph is a thematic break (or a table rule), not a heading.
 _NOT_SETEXT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>|]|\d{1,9}[.)])(?:\s|$)")
@@ -212,14 +215,23 @@ def markdown_sections(
     return sections
 
 
+def _yaml_front_matter_end(lines) -> int:
+    """Index just past a YAML front-matter block at the very top (``---`` ... ``---``), else 0."""
+    if not lines or lines[0].strip() != "---":
+        return 0
+    for i in range(1, len(lines)):
+        if lines[i].strip() in ("---", "..."):
+            return i + 1
+    return 0
+
+
 def _heading_cuts(lines, *, max_level):
     """``(line index, level, title)`` for every ATX or setext heading."""
     fence = ""  # the open fence's marker, e.g. '```' or '~~~~'
     para_start = None  # first line of the paragraph being read, if any
-    skip = False  # this line is the underline of the setext heading just yielded
+    skip_until = _yaml_front_matter_end(lines)  # also: past an underline just used
     for i, line in enumerate(lines):
-        if skip:
-            skip = False
+        if i < skip_until:
             continue
         m = _FENCE.match(line)
         if fence:
@@ -240,14 +252,27 @@ def _heading_cuts(lines, *, max_level):
             para_start = None
             continue
         if para_start is None:
+            # A rule, a list item, a quote, a table row, indented code or an HTML
+            # block is not a paragraph, so a line of === or --- under it is not an
+            # underline.
+            if (
+                _THEMATIC_BREAK.match(line)
+                or _SETEXT_UNDERLINE.match(line)
+                or _NOT_SETEXT_PARAGRAPH.match(line)
+                or _NOT_PARAGRAPH_START.match(line)
+            ):
+                continue
             para_start = i
+        elif _NOT_SETEXT_PARAGRAPH.match(line) or _THEMATIC_BREAK.match(line):
+            para_start = None  # a list item, quote or rule interrupts the paragraph
+            continue
         under = _SETEXT_UNDERLINE.match(lines[i + 1]) if i + 1 < len(lines) else None
-        if under and not _NOT_SETEXT_PARAGRAPH.match(lines[para_start]):
+        if under:
             level = 1 if under.group(1)[0] == "=" else 2
             if level <= max_level:
                 title = " ".join(x.strip() for x in lines[para_start : i + 1])
                 yield para_start, level, title
-            para_start, skip = None, True
+            para_start, skip_until = None, i + 2
 
 
 # --------------------------------------------------------------------------------------
@@ -468,6 +493,22 @@ def pdf_sections(
 # EPUB
 
 _MARK = "DNSECTIONMARK{:06d}"
+_BLOCK_TAGS = (
+    "p",
+    "div",
+    "section",
+    "article",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "li",
+    "blockquote",
+    "table",
+    "figure",
+)
 _MARK_RE = re.compile(r"DNSECTIONMARK(\d{6})")
 
 
@@ -524,11 +565,13 @@ def ebook_sections(
     """
     import io
     import posixpath
+    from urllib.parse import unquote
 
     try:
         import ebooklib
-        from bs4 import BeautifulSoup
         from ebooklib import epub
+
+        from dn.ebook import body_soup
     except ImportError as e:
         raise ImportError(
             "ebook_sections needs the 'ebook' extra: EbookLib and markdownify (which brings bs4)."
@@ -559,36 +602,50 @@ def ebook_sections(
         d for d in spine if d is not None and d.get_type() == ebooklib.ITEM_DOCUMENT
     ]
 
-    def same_file(item, href_file):
-        name = posixpath.normpath(item.get_name())
-        target = posixpath.normpath(href_file)
-        return (
-            name == target or name.endswith("/" + target) or target.endswith("/" + name)
-        )
+    names = [posixpath.normpath(d.get_name()) for d in spine]
+
+    def file_of(href_file):
+        """The spine document an href's file part names: exact first, then a unique
+        path suffix (a TOC in a sub-folder writes paths relative to itself)."""
+        target = posixpath.normpath(unquote(href_file))
+        if target in names:
+            return target
+        hits = [
+            n for n in names if n.endswith("/" + target) or target.endswith("/" + n)
+        ]
+        return hits[0] if len(hits) == 1 else None
+
+    targets = []  # per entry: (spine document name or None, fragment)
+    for _, _, href, _ in entries:
+        file, _, fragment = href.partition("#")
+        targets.append((file_of(file), unquote(fragment)))
 
     chunks = []
-    for doc in spine:
-        soup = BeautifulSoup(
-            doc.get_content().decode("utf-8", "replace"), "html.parser"
-        )
-        top = soup.body or soup
+    for doc, name in zip(spine, names):
+        soup = body_soup(doc.get_content())
         at_top = 0
-        for k, (_, _, href, _) in enumerate(entries):
-            file, _, fragment = href.partition("#")
-            if not same_file(doc, file):
+        for k, (file, fragment) in enumerate(targets):
+            if file != name:
                 continue
             marker = soup.new_tag("p")
             marker.string = _MARK.format(k)
-            target = soup.find(id=fragment) if fragment else None
+            target = None
+            if fragment:
+                target = soup.find(id=fragment) or soup.find(attrs={"name": fragment})
             if target is not None:
+                # An anchor inside a heading (<h2><a id=..></a>Title</h2>): cut
+                # before the heading, not inside it.
+                if target.name not in _BLOCK_TAGS:
+                    target = target.find_parent(_BLOCK_TAGS) or target
                 target.insert_before(marker)
             else:  # the document itself, or an anchor that is not there
-                top.insert(at_top, marker)
+                soup.insert(at_top, marker)
                 at_top += 1
         chunks.append(to_markdown(str(soup)).strip())
     text = "\n\n".join(c for c in chunks if c)
 
     marks = list(_MARK_RE.finditer(text))
+    position = {int(m.group(1)): j for j, m in enumerate(marks)}
     spans = {}  # entry index -> its text
     for j, m in enumerate(marks):
         end = marks[j + 1].start() if j + 1 < len(marks) else len(text)
@@ -597,7 +654,10 @@ def ebook_sections(
     front = text[: marks[0].start()].strip() if marks else text.strip()
     if front:
         sections.append(Section(0, 1, FRONT_MATTER_TITLE, (FRONT_MATTER_TITLE,), front))
-    for k, (level, title, href, path) in enumerate(entries):
+    # Reading order: where each entry's text starts; an entry with no target last.
+    order = sorted(range(len(entries)), key=lambda k: (position.get(k, len(marks)), k))
+    for k in order:
+        level, title, href, path = entries[k]
         sections.append(Section(k + 1, level, title, path, spans.get(k, ""), href=href))
     return sections
 
