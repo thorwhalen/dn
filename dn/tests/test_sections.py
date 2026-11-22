@@ -289,3 +289,71 @@ def test_bad_page_marker_fails_before_any_work(book_pdf):
 
 def test_accepts_a_stream(book_pdf):
     assert len(pdf_outline(io.BytesIO(book_pdf))) == 4
+
+
+# ---- setext headings and EPUB tables of contents (#9) ---------------------------------
+
+
+def test_setext_headings():
+    md = "Guide\n=====\nIntro.\n\nSetup\nsteps\n-----\nInstall.\n\n- item\n---\n\n```\nCode\n====\n```\n"
+    got = [(s.level, s.title, s.line_start) for s in markdown_sections(md)]
+    # A two-line paragraph is one title; a list item over --- is a list and a rule;
+    # underlines inside fenced code are code.
+    assert got == [(1, "Guide", 1), (2, "Setup steps", 5)]
+    assert [s.title for s in markdown_sections(md, max_level=1)] == ["Guide"]
+
+
+def test_setext_and_atx_mix_and_thematic_break():
+    md = "# A\ntext\n\n---\n\nB\n===\n## C\n"
+    assert [(s.level, s.title) for s in markdown_sections(md)] == [(1, "A"), (1, "B"), (2, "C")]
+
+
+def _epub(tmp_path):
+    epub = pytest.importorskip("ebooklib.epub")
+    book = epub.EpubBook()
+    book.set_identifier("dn-test")
+    book.set_title("A Guide")
+    book.set_language("en")
+    cover = epub.EpubHtml(title="Cover", file_name="cover.xhtml", content="<h1>A Guide</h1><p>By someone.</p>")
+    ch1 = epub.EpubHtml(
+        title="Start",
+        file_name="text/ch1.xhtml",
+        content='<h1>Start</h1><p>Why.</p><h2 id="setup">Setup</h2><p>Install it.</p><h2 id="use">Use</h2><p>Run it.</p>',
+    )
+    ch2 = epub.EpubHtml(title="End", file_name="text/ch2.xhtml", content="<h1>End</h1><p>Bye.</p>")
+    for c in (cover, ch1, ch2):
+        book.add_item(c)
+    book.toc = [
+        (epub.Section("Start", "text/ch1.xhtml"), [epub.Link("text/ch1.xhtml#setup", "Setup", "s"), epub.Link("text/ch1.xhtml#use", "Use", "u")]),
+        epub.Link("text/ch2.xhtml", "End", "e"),
+        epub.Link("text/missing.xhtml", "Lost", "l"),
+    ]
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+    book.spine = [cover, ch1, ch2]
+    path = tmp_path / "guide.epub"
+    epub.write_epub(str(path), book)
+    return path
+
+
+def test_ebook_sections_follow_the_table_of_contents(tmp_path):
+    from dn.sections import ebook_sections
+
+    path = _epub(tmp_path)
+    sections = ebook_sections(path)
+    got = [(s.seq, s.level, s.title, s.path) for s in sections]
+    assert got == [
+        (0, 1, "(front matter)", ("(front matter)",)),
+        (1, 1, "Start", ("Start",)),
+        (2, 2, "Setup", ("Start", "Setup")),
+        (3, 2, "Use", ("Start", "Use")),
+        (4, 1, "End", ("End",)),
+        (5, 1, "Lost", ("Lost",)),
+    ]
+    text = {s.title: s.text for s in sections}
+    assert "By someone" in text["(front matter)"]
+    assert "Why." in text["Start"] and "Install" not in text["Start"]  # cut inside the chapter
+    assert "Install it." in text["Setup"] and "Run it." in text["Use"]
+    assert "Bye." in text["End"] and text["Lost"] == ""  # a missing target keeps its key
+    assert sections[2].href == "text/ch1.xhtml#setup" and sections[2].key == "0002-setup"
+    assert [s.title for s in ebook_sections(path.read_bytes(), max_level=1)] == ["(front matter)", "Start", "End", "Lost"]

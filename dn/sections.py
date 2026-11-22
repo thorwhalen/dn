@@ -7,9 +7,12 @@ when it is one big string. This module produces that sequence:
 
 - :func:`pdf_outline`: a PDF's bookmarks as :class:`OutlineEntry` records.
 - :func:`pdf_sections`: the PDF's text, cut at its outline entries.
-- :func:`markdown_sections`: markdown text, cut at its ATX (``#``) headings.
+- :func:`markdown_sections`: markdown text, cut at its headings (ATX ``#`` and
+  setext underlines).
+- :func:`ebook_sections`: an EPUB's text, cut at its own table of contents (the
+  publisher's hierarchy, whatever headings the converter emits).
 
-Both ``*_sections`` functions return the same :class:`Section` records, in
+All ``*_sections`` functions return the same :class:`Section` records, in
 reading order, and a section's own text stops where its first sub-section
 starts. Together the sections hold the whole text (give or take whitespace, and
 a markdown preamble made only of HTML comments, which is dropped).
@@ -19,7 +22,7 @@ outline entry number *k* always gets ``seq`` *k* (``seq`` 0 is reserved for the
 text before the first entry, whether or not there is any), so a change of text
 extractor moves boundaries but never renumbers.
 
-For an ebook, compose with the converter:
+For an ebook without a usable table of contents, compose with the converter:
 ``markdown_sections(dn.ebook_to_markdown('book.epub'))``.
 
 >>> md = '''# Guide
@@ -60,6 +63,10 @@ PdfSource = Union[bytes, str, Path, Any]  # Any: a binary stream or a pypdf.PdfR
 
 _HEADING = re.compile(r"^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+_SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
+# A line that opens a list item, a block quote or a table row: a setext underline
+# below such a paragraph is a thematic break (or a table rule), not a heading.
+_NOT_SETEXT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>|]|\d{1,9}[.)])(?:\s|$)")
 _HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 # "Chapter 2: ", "3.1 - ", "IV. ", "A. ": numbering a page layout often prints
 # apart from the title proper. A keyword alone, or a plain first word, is not one.
@@ -108,6 +115,8 @@ class Section:
     label_end: Optional[str] = None
     line_start: Optional[int] = None
     line_end: Optional[int] = None
+    #: For an EPUB section: the table-of-contents target (``'ch02.xhtml#s3'``).
+    href: Optional[str] = None
 
     @property
     def slug(self) -> str:
@@ -148,9 +157,10 @@ def markdown_sections(
 ) -> list:
     """Cut markdown at its headings of level ``max_level`` or shallower.
 
-    Only ATX headings (``# Title``) count; underlined (setext) headings are not
-    recognised. Deeper headings stay inside their parent section, and headings
-    inside fenced code are ignored. Text before the first heading becomes a
+    ATX headings (``# Title``) and setext headings (a paragraph underlined with
+    ``===`` for level 1 or ``---`` for level 2) count; a setext heading's title
+    is its whole paragraph, on one line. Deeper headings stay inside their parent
+    section, and headings inside fenced code are ignored. Text before the first heading becomes a
     ``'(preamble)'`` section unless it is blank or only HTML comments.
 
     Args:
@@ -166,6 +176,8 @@ def markdown_sections(
 
     >>> [s.title for s in markdown_sections('hello\\n# A\\n#### deep\\n# B')]
     ['(preamble)', 'A', 'B']
+    >>> [(s.level, s.title) for s in markdown_sections('Title\\n=====\\ntext\\n\\nPart\\n----')]
+    [(1, 'Title'), (2, 'Part')]
     """
     lines = markdown.replace("\r\n", "\n").split("\n")
     if lines and lines[-1] == "":  # the text ended with a newline: not a line
@@ -201,8 +213,14 @@ def markdown_sections(
 
 
 def _heading_cuts(lines, *, max_level):
+    """``(line index, level, title)`` for every ATX or setext heading."""
     fence = ""  # the open fence's marker, e.g. '```' or '~~~~'
+    para_start = None  # first line of the paragraph being read, if any
+    skip = False  # this line is the underline of the setext heading just yielded
     for i, line in enumerate(lines):
+        if skip:
+            skip = False
+            continue
         m = _FENCE.match(line)
         if fence:
             # Only the same character, at least as long, closes a fence.
@@ -210,11 +228,26 @@ def _heading_cuts(lines, *, max_level):
                 fence = ""
             continue
         if m:
-            fence = m.group(1)
+            fence, para_start = m.group(1), None
             continue
         h = _HEADING.match(line)
-        if h and len(h.group(1)) <= max_level:
-            yield i, len(h.group(1)), h.group(2).strip()
+        if h:
+            para_start = None
+            if len(h.group(1)) <= max_level:
+                yield i, len(h.group(1)), h.group(2).strip()
+            continue
+        if not line.strip():
+            para_start = None
+            continue
+        if para_start is None:
+            para_start = i
+        under = _SETEXT_UNDERLINE.match(lines[i + 1]) if i + 1 < len(lines) else None
+        if under and not _NOT_SETEXT_PARAGRAPH.match(lines[para_start]):
+            level = 1 if under.group(1)[0] == "=" else 2
+            if level <= max_level:
+                title = " ".join(x.strip() for x in lines[para_start : i + 1])
+                yield para_start, level, title
+            para_start, skip = None, True
 
 
 # --------------------------------------------------------------------------------------
@@ -428,6 +461,144 @@ def pdf_sections(
             starts[k],
             end,
         )
+    return sections
+
+
+# --------------------------------------------------------------------------------------
+# EPUB
+
+_MARK = "DNSECTIONMARK{:06d}"
+_MARK_RE = re.compile(r"DNSECTIONMARK(\d{6})")
+
+
+def _flatten_toc(toc, max_level, level=1, ancestors=()):
+    """``(level, title, href, path)`` for each table-of-contents entry, in order.
+
+    ebooklib gives ``Link`` objects and ``(Section, [children])`` tuples.
+    """
+    for node in toc:
+        head, children = (node[0], node[1]) if isinstance(node, tuple) else (node, ())
+        title = (getattr(head, "title", "") or "").strip()
+        href = getattr(head, "href", "") or ""
+        if level <= max_level:
+            path = ancestors + (title,)
+            if title:
+                yield level, title, href, path
+            yield from _flatten_toc(children, max_level, level + 1, path)
+
+
+def ebook_sections(
+    ebook: Union[bytes, str, Path, Any],
+    *,
+    max_level: int = DFLT_MAX_LEVEL,
+    to_markdown: Optional[Callable[[str], str]] = None,
+) -> list:
+    """Cut an EPUB at its own table of contents.
+
+    Each entry's section starts at its target (a document, or an element inside
+    it by ``id``) and ends where the next section starts, in reading (spine)
+    order, so a chapter holding several entries is cut inside. The hierarchy is
+    the publisher's, whatever headings the text has. Text before the first entry
+    becomes a ``'(front matter)'`` section.
+
+    Args:
+        ebook: EPUB bytes, a path, or a binary stream.
+        max_level: Deepest table-of-contents level that starts a section.
+        to_markdown: ``html -> markdown`` for each spine document; defaults to
+            markdownify with dn's settings (as ``dn.ebook_to_markdown``'s
+            ``ebooklib`` backend).
+
+    Returns:
+        A list of :class:`Section` (``href`` set). Entry number *k* of the table
+        of contents has ``seq`` *k* (from 1); ``seq`` 0 is the front matter. An
+        entry whose target is not in the book gets an empty section, so keys
+        never shift.
+
+    Raises:
+        ValueError: If the book has no table of contents; the message says what
+            to use instead.
+
+    >>> sections = ebook_sections('book.epub')  # doctest: +SKIP
+    >>> sections[3].key, sections[3].path, sections[3].href  # doctest: +SKIP
+    ('0003-setup', ('Guide', 'Setup'), 'ch01.xhtml#setup')
+    """
+    import io
+    import posixpath
+
+    try:
+        import ebooklib
+        from bs4 import BeautifulSoup
+        from ebooklib import epub
+    except ImportError as e:
+        raise ImportError(
+            "ebook_sections needs the 'ebook' extra: EbookLib and markdownify (which brings bs4)."
+        ) from e
+    if to_markdown is None:
+        from markdownify import MarkdownConverter
+
+        from dn.src import HTML_TO_MARKDOWN_DEFAULTS, _collapse_blank_runs
+
+        converter = MarkdownConverter(**HTML_TO_MARKDOWN_DEFAULTS)
+
+        def to_markdown(html):
+            return _collapse_blank_runs(converter.convert(html))
+
+    if isinstance(ebook, bytes):
+        ebook = io.BytesIO(ebook)
+    book = epub.read_epub(ebook if hasattr(ebook, "read") else str(ebook))
+    entries = list(_flatten_toc(book.toc, max_level))
+    if not entries:
+        raise ValueError(
+            "No table of contents to cut at (or none at this max_level). Cut the "
+            "converted text at its headings instead: "
+            "markdown_sections(dn.ebook_to_markdown(src))."
+        )
+
+    spine = [book.get_item_with_id(idref) for idref, *_ in book.spine]
+    spine = [
+        d for d in spine if d is not None and d.get_type() == ebooklib.ITEM_DOCUMENT
+    ]
+
+    def same_file(item, href_file):
+        name = posixpath.normpath(item.get_name())
+        target = posixpath.normpath(href_file)
+        return (
+            name == target or name.endswith("/" + target) or target.endswith("/" + name)
+        )
+
+    chunks = []
+    for doc in spine:
+        soup = BeautifulSoup(
+            doc.get_content().decode("utf-8", "replace"), "html.parser"
+        )
+        top = soup.body or soup
+        at_top = 0
+        for k, (_, _, href, _) in enumerate(entries):
+            file, _, fragment = href.partition("#")
+            if not same_file(doc, file):
+                continue
+            marker = soup.new_tag("p")
+            marker.string = _MARK.format(k)
+            target = soup.find(id=fragment) if fragment else None
+            if target is not None:
+                target.insert_before(marker)
+            else:  # the document itself, or an anchor that is not there
+                top.insert(at_top, marker)
+                at_top += 1
+        chunks.append(to_markdown(str(soup)).strip())
+    text = "\n\n".join(c for c in chunks if c)
+
+    marks = list(_MARK_RE.finditer(text))
+    spans = {}  # entry index -> its text
+    for j, m in enumerate(marks):
+        end = marks[j + 1].start() if j + 1 < len(marks) else len(text)
+        spans[int(m.group(1))] = text[m.end() : end].strip()
+    sections: list = []
+    front = text[: marks[0].start()].strip() if marks else text.strip()
+    if front:
+        sections.append(Section(0, 1, FRONT_MATTER_TITLE, (FRONT_MATTER_TITLE,), front))
+    for k, (level, title, href, path) in enumerate(entries):
+        sections.append(Section(k + 1, level, title, path, spans.get(k, ""), href=href))
     return sections
 
 

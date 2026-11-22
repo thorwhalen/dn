@@ -36,6 +36,7 @@ from dn.sections import (
     markdown_sections,  # Cut markdown at its headings into addressable sections
     pdf_sections,  # Cut a PDF's text at its outline (bookmark) entries
     pdf_outline,  # A PDF's bookmarks as (level, title, page, label) entries
+    ebook_sections,  # Cut an EPUB at its own table of contents
     Section,  # One section: key, title, path, text, page or line range
     OutlineEntry,  # One PDF bookmark
 )
