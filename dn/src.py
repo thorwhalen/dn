@@ -397,7 +397,7 @@ def default_fallback(b: bytes, input_format: str) -> str:
 #         return fallback(b, input_format)
 
 
-def add_dflt_converter(input_format: str, converter: Callable[[bytes], str]):
+def add_dflt_converter(input_format: str, converter: Callable[[bytes], str]) -> None:
     """Add (or change) a default converter for a given input format."""
     dflt_converters[input_format.lower()] = converter
 
@@ -486,7 +486,7 @@ def notebook_to_markdown(
     class TruncateOutputPreprocessor(Preprocessor):
         """Preprocessor that truncates long outputs in Jupyter Notebook cells."""
 
-        def __init__(self, output_processors, **kwargs):
+        def __init__(self, output_processors, **kwargs) -> None:
             super().__init__(**kwargs)
             self.output_processors = output_processors
             if self.output_processors:
