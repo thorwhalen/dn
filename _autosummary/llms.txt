@@ -6,6 +6,7 @@
 ## Pages in this subsection
 
 - [dn](dn.html.md): Tools for markdown parsing and generation.
+- [dn.docling_pdf](dn.docling_pdf.html.md): An opt-in PDF converter backed by Docling: real tables and section headings.
 - [dn.ebook](dn.ebook.html.md): Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, …) to markdown.
 - [dn.ocr](dn.ocr.html.md): Read text out of PDFs that have no text layer, by OCR.
 - [dn.repair](dn.repair.html.md): Markdown repair and cleanup utilities.

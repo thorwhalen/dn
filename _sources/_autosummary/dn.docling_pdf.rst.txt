@@ -1,0 +1,20 @@
+dn.docling\_pdf
+===============
+
+.. automodule:: dn.docling_pdf
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      INSTALL_HINT
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      docling_converters
+      docling_is_available
+      docling_pdf_to_markdown
+   

@@ -1,4 +1,4 @@
-> built 2026-11-22 13:47 UTC from aea7f1a (main) · dn 0.0.17. Details: build_info.json
+> built 2026-11-22 18:46 UTC from 106b914 (main) · dn 0.0.18. Details: build_info.json
 
 # index.html.md
 
@@ -46,6 +46,7 @@ You can also install these when installing `dn`, like so:
     pip install dn[notebook]          # Jupyter Notebook support
     pip install dn[ebook]             # EPUB (pure-python backend)
     pip install dn[ocr]               # OCR for scanned PDFs
+    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
 
     # Install multiple format support
     pip install dn[pdf,word,excel]    # Multiple formats
@@ -53,6 +54,17 @@ You can also install these when installing `dn`, like so:
     # Install all optional dependencies
     pip install dn[all]
 ```
+
+`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
+
+```python
+from dn.src import bytes_to_markdown
+from dn.docling_pdf import docling_converters
+
+md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
+```
+
+or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
 
 # Examples
 
@@ -345,6 +357,97 @@ HTML output truncated. (Data removed)
 ```
 
 <p class="epythet-aggregates">This documentation as a single file: <a href="dn.md">dn.md</a> (Markdown, for agents).</p>
+
+
+# _autosummary/dn.docling_pdf.html.md
+
+# dn.docling_pdf
+
+An opt-in PDF converter backed by Docling: real tables and section headings.
+
+`dn`’s default PDF converter (pypdf, with OCR for scanned books) is fast and light,
+and it returns flat text under `### Page N` headers: a table becomes one line of
+numbers, a section heading an ordinary line. [Docling](https://github.com/docling-project/docling)
+(MIT code, models under CDLA-Permissive-2.0, hosted by the LF AI & Data Foundation)
+recovers the layout: markdown tables and headings. It is also 50 to 200 times slower,
+installs torch and downloads its models on first use, so it is never a default. Weighed
+in addaix/contaix#24.
+
+Use it for one call, through the existing `converters=` seam:
+
+```default
+from dn.src import bytes_to_markdown
+from dn.docling_pdf import docling_converters
+md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
+```
+
+or make it this process’s default PDF converter:
+
+```default
+from dn.src import add_dflt_converter
+from dn.docling_pdf import docling_pdf_to_markdown
+add_dflt_converter("pdf", docling_pdf_to_markdown)
+```
+
+`pip install 'dn[docling]'` installs it. Importing this module costs nothing: Docling
+is imported on the first conversion.
+
+```pycon
+>>> docling_converters(base={"docx": str})["pdf"] is docling_pdf_to_markdown
+True
+```
+
+### Module Attributes
+
+| [`INSTALL_HINT`](_autosummary/dn.docling_pdf.html.md#dn.docling_pdf.INSTALL_HINT)   | How to get the extra (named in the error when Docling is missing).   |
+|-----------------------------------------------------------------|----------------------------------------------------------------------|
+
+### Functions
+
+| [`docling_converters`](_autosummary/dn.docling_pdf.html.md#dn.docling_pdf.docling_converters)([base])                    | `base` (default: `dn.src.dflt_converters`) with Docling for `"pdf"`.            |
+|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| [`docling_is_available`](_autosummary/dn.docling_pdf.html.md#dn.docling_pdf.docling_is_available)()                        | True when the `docling` package can be imported (nothing is imported to check). |
+| [`docling_pdf_to_markdown`](_autosummary/dn.docling_pdf.html.md#dn.docling_pdf.docling_pdf_to_markdown)(pdf_bytes, \*[, ...]) | Convert PDF bytes to markdown with Docling, keeping tables and headings.        |
+
+### dn.docling_pdf.INSTALL_HINT *= "pip install 'dn[docling]'"*
+
+How to get the extra (named in the error when Docling is missing).
+
+### dn.docling_pdf.docling_converters(base=None)
+
+`base` (default: `dn.src.dflt_converters`) with Docling for `"pdf"`.
+
+A copy: the process’s defaults are left alone.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
+
+### dn.docling_pdf.docling_is_available()
+
+True when the `docling` package can be imported (nothing is imported to check).
+
+```pycon
+>>> isinstance(docling_is_available(), bool)
+True
+```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### dn.docling_pdf.docling_pdf_to_markdown(pdf_bytes, , document_converter=None, name='document.pdf')
+
+Convert PDF bytes to markdown with Docling, keeping tables and headings.
+
+* **Parameters:**
+  * **pdf_bytes** ([`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)) – The PDF file’s bytes.
+  * **document_converter** – A configured `docling.document_converter.DocumentConverter`
+    (OCR, table mode, accelerator…). Default: one built on first use and kept
+    for the process, since building one loads the models.
+  * **name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The file name Docling is told; only its extension matters.
+* **Raises:**
+  [**ImportError**](https://docs.python.org/3/builtins/exceptions.html#ImportError) – Docling is not installed (the message says how to install it).
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/dn.ebook.html.md
@@ -821,14 +924,15 @@ Tools for markdown parsing and generation.
 
 ### Modules
 
-| [`ebook`](_autosummary/dn.ebook.html.md#module-dn.ebook)       | Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, ...) to markdown.   |
-|------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| [`ocr`](_autosummary/dn.ocr.html.md#module-dn.ocr)           | Read text out of PDFs that have no text layer, by OCR.                 |
-| [`repair`](_autosummary/dn.repair.html.md#module-dn.repair)     | Markdown repair and cleanup utilities.                                 |
-| [`sections`](_autosummary/dn.sections.html.md#module-dn.sections) | Split a document into addressable sections.                            |
-| [`src`](_autosummary/dn.src.html.md#module-dn.src)           | Converting things to markdown                                          |
-| [`to`](_autosummary/dn.to.html.md#module-dn.to)             | Converting markdown to other formats                                   |
-| [`util`](_autosummary/dn.util.html.md#module-dn.util)         | General utilities for dn                                               |
+| [`docling_pdf`](_autosummary/dn.docling_pdf.html.md#module-dn.docling_pdf)   | An opt-in PDF converter backed by Docling: real tables and section headings.   |
+|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| [`ebook`](_autosummary/dn.ebook.html.md#module-dn.ebook)               | Convert ebook formats (EPUB, MOBI, AZW3, FB2, LIT, ...) to markdown.           |
+| [`ocr`](_autosummary/dn.ocr.html.md#module-dn.ocr)                   | Read text out of PDFs that have no text layer, by OCR.                         |
+| [`repair`](_autosummary/dn.repair.html.md#module-dn.repair)             | Markdown repair and cleanup utilities.                                         |
+| [`sections`](_autosummary/dn.sections.html.md#module-dn.sections)         | Split a document into addressable sections.                                    |
+| [`src`](_autosummary/dn.src.html.md#module-dn.src)                   | Converting things to markdown                                                  |
+| [`to`](_autosummary/dn.to.html.md#module-dn.to)                     | Converting markdown to other formats                                           |
+| [`util`](_autosummary/dn.util.html.md#module-dn.util)                 | General utilities for dn                                                       |
 
 
 # _autosummary/dn.ocr.html.md
@@ -1797,18 +1901,16 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-22 13:47 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a</code></a> on branch <code>main</code>, for **dn 0.0.17** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 18:46 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/106b914bcb351b8d1ad5fb57bfd06f9a4e222f78"><code>106b914</code></a> on branch <code>main</code>, for **dn 0.0.18** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.17) is behind the latest release on PyPI (0.0.18): `pip install dn` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46"><code>aea7f1a87000a992767fe81e0dce71b677958c46</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/106b914bcb351b8d1ad5fb57bfd06f9a4e222f78"><code>106b914bcb351b8d1ad5fb57bfd06f9a4e222f78</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1819,9 +1921,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45029179250">45029179250</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45056784790">45056784790</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>aea7f1a87000a992767fe81e0dce71b677958c46</code> (in the history of the built commit) |
+| Event commit | <code>106b914bcb351b8d1ad5fb57bfd06f9a4e222f78</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -1846,13 +1948,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.18/">0.0.18</a>, newer than the documented version (0.0.17).
+Latest release: <a href="https://pypi.org/project/dn/0.0.18/">0.0.18</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout aea7f1a87000a992767fe81e0dce71b677958c46
+git checkout 106b914bcb351b8d1ad5fb57bfd06f9a4e222f78
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

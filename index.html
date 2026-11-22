@@ -205,6 +205,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input aria-label="Toggle navigation of API reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/dn.html">dn</a><input aria-label="Toggle navigation of dn" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.docling_pdf.html">dn.docling_pdf</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ebook.html">dn.ebook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.ocr.html">dn.ocr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/dn.repair.html">dn.repair</a></li>
@@ -290,6 +291,7 @@ Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>notebook<span class="o">]</span><span class="w">          </span><span class="c1"># Jupyter Notebook support</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>ebook<span class="o">]</span><span class="w">             </span><span class="c1"># EPUB (pure-python backend)</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>ocr<span class="o">]</span><span class="w">               </span><span class="c1"># OCR for scanned PDFs</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>docling<span class="o">]</span><span class="w">           </span><span class="c1"># PDF tables and headings via Docling (heavy: torch, models)</span>
 
 <span class="w">    </span><span class="c1"># Install multiple format support</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>pdf,word,excel<span class="o">]</span><span class="w">    </span><span class="c1"># Multiple formats</span>
@@ -298,6 +300,14 @@ Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>dn<span class="o">[</span>all<span class="o">]</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">dn[all]</span></code> leaves out <code class="docutils literal notranslate"><span class="pre">docling</span></code>. The default PDF converter returns flat text under <code class="docutils literal notranslate"><span class="pre">###</span> <span class="pre">Page</span> <span class="pre">N</span></code> headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the <code class="docutils literal notranslate"><span class="pre">converters=</span></code> seam:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dn.src</span><span class="w"> </span><span class="kn">import</span> <span class="n">bytes_to_markdown</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dn.docling_pdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">docling_converters</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">bytes_to_markdown</span><span class="p">(</span><span class="n">pdf_bytes</span><span class="p">,</span> <span class="s2">"pdf"</span><span class="p">,</span> <span class="n">converters</span><span class="o">=</span><span class="n">docling_converters</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>or for the whole process with <code class="docutils literal notranslate"><span class="pre">add_dflt_converter(&quot;pdf&quot;,</span> <span class="pre">docling_pdf_to_markdown)</span></code>.</p>
 </section>
 </section>
 <section id="examples">
@@ -561,7 +571,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
 </div>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-22 13:47 UTC from <a href="https://github.com/thorwhalen/dn/commit/aea7f1a87000a992767fe81e0dce71b677958c46">aea7f1a</a> (main) · dn 0.0.17 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-22 18:46 UTC from <a href="https://github.com/thorwhalen/dn/commit/106b914bcb351b8d1ad5fb57bfd06f9a4e222f78">106b914</a> (main) · dn 0.0.18 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -626,7 +636,7 @@ Supported files (given what packages are installed here): ['test.docx', 'test.pp
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=a39b7224"></script>
+</div><script src="_static/documentation_options.js?v=01ec8363"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

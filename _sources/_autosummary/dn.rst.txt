@@ -10,6 +10,7 @@
    :toctree:
    :recursive:
 
+   docling_pdf
    ebook
    ocr
    repair
