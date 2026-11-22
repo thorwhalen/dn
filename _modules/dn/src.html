@@ -652,7 +652,7 @@
 
 <div class="viewcode-block" id="add_dflt_converter">
 <a class="viewcode-back" href="../../_autosummary/dn.src.html#dn.src.add_dflt_converter">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_dflt_converter</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_dflt_converter</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Add (or change) a default converter for a given input format."""</span>
     <span class="n">dflt_converters</span><span class="p">[</span><span class="n">input_format</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">converter</span></div>
 
@@ -744,7 +744,7 @@
     <span class="k">class</span><span class="w"> </span><span class="nc">TruncateOutputPreprocessor</span><span class="p">(</span><span class="n">Preprocessor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Preprocessor that truncates long outputs in Jupyter Notebook cells."""</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_processors</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_processors</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_processors</span> <span class="o">=</span> <span class="n">output_processors</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_processors</span><span class="p">:</span>

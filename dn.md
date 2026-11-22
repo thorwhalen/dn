@@ -1,4 +1,4 @@
-> built 2026-11-22 20:49 UTC from db430aa (main) · dn 0.0.20. Details: build_info.json
+> built 2026-11-22 22:11 UTC from d724746 (main) · dn 0.0.20. Details: build_info.json
 
 # index.html.md
 
@@ -1605,6 +1605,9 @@ to markdown format. It includes:
 
 Add (or change) a default converter for a given input format.
 
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dn.src.bytes_store_to_markdown_store(src_files, target_store=None, \*, converters={'azw': functools.partial(<function ebook_to_markdown>, input_format='azw'), 'azw3': functools.partial(<function ebook_to_markdown>, input_format='azw3'), 'azw4': functools.partial(<function ebook_to_markdown>, input_format='azw4'), 'chm': functools.partial(<function ebook_to_markdown>, input_format='chm'), 'docx': functools.partial(<function ebook_to_markdown>, input_format='docx'), 'epub': functools.partial(<function ebook_to_markdown>, input_format='epub'), 'fb2': functools.partial(<function ebook_to_markdown>, input_format='fb2'), 'fbz': functools.partial(<function ebook_to_markdown>, input_format='fbz'), 'htmlz': functools.partial(<function ebook_to_markdown>, input_format='htmlz'), 'ipynb': <function notebook_to_markdown>, 'kepub': functools.partial(<function ebook_to_markdown>, input_format='kepub'), 'lit': functools.partial(<function ebook_to_markdown>, input_format='lit'), 'lrf': functools.partial(<function ebook_to_markdown>, input_format='lrf'), 'mobi': functools.partial(<function ebook_to_markdown>, input_format='mobi'), 'odt': functools.partial(<function ebook_to_markdown>, input_format='odt'), 'pmlz': functools.partial(<function ebook_to_markdown>, input_format='pmlz'), 'pobi': functools.partial(<function ebook_to_markdown>, input_format='pobi'), 'rtf': functools.partial(<function ebook_to_markdown>, input_format='rtf'), 'txtz': functools.partial(<function ebook_to_markdown>, input_format='txtz'), 'updb': functools.partial(<function ebook_to_markdown>, input_format='updb')}, fallback=<function default_fallback>, ext_to_input_format=<function <lambda>>, try_bytes_detection=True, verbose=False, old_to_new_key=<function <lambda>>, target_store_egress=<function identity>)
 
 Converts files to markdown using the enhanced bytes_to_markdown function.
@@ -1931,7 +1934,7 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-22 20:49 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9"><code>db430aa</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 22:11 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56"><code>d724746</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -1940,7 +1943,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9"><code>db430aad7d46a85b55cb9a6cac0017ec605439b9</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56"><code>d724746e0f395fd0a900fefdd7096a24a980de56</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1951,9 +1954,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45068458515">45068458515</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45076137504">45076137504</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>db430aad7d46a85b55cb9a6cac0017ec605439b9</code> (in the history of the built commit) |
+| Event commit | <code>d724746e0f395fd0a900fefdd7096a24a980de56</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -1984,7 +1987,7 @@ Latest release: <a href="https://pypi.org/project/dn/0.0.20/">0.0.20</a>, the sa
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout db430aad7d46a85b55cb9a6cac0017ec605439b9
+git checkout d724746e0f395fd0a900fefdd7096a24a980de56
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

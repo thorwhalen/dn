@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-22T20:49:48Z",
+  "built_at": "2026-11-22T22:11:49Z",
   "package": {
     "name": "dn",
     "version": "0.0.20",
@@ -9,24 +9,24 @@
   },
   "git": {
     "available": true,
-    "commit": "db430aad7d46a85b55cb9a6cac0017ec605439b9",
-    "short_commit": "db430aa",
+    "commit": "d724746e0f395fd0a900fefdd7096a24a980de56",
+    "short_commit": "d724746",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/dn",
-    "commit_url": "https://github.com/thorwhalen/dn/commit/db430aad7d46a85b55cb9a6cac0017ec605439b9",
+    "commit_url": "https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/dn",
-    "sha": "db430aad7d46a85b55cb9a6cac0017ec605439b9",
+    "sha": "d724746e0f395fd0a900fefdd7096a24a980de56",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "45068458515",
-    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45068458515",
+    "run_id": "45076137504",
+    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45076137504",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -64,7 +64,7 @@
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout db430aad7d46a85b55cb9a6cac0017ec605439b9\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout d724746e0f395fd0a900fefdd7096a24a980de56\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,
