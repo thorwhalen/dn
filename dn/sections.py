@@ -54,8 +54,14 @@ DFLT_SLUG_MAX_LENGTH = 60
 DFLT_PAGE_MARKER = "\n\n<!-- page {label} -->\n\n"
 #: Text above a section's title on its page is taken as a running header or a
 #: "CHAPTER 2" label, and kept with the section, when it is at most this long
-#: (about one printed line). Longer text is the end of the previous section.
+#: (about one printed line) and it is a running header (it heads a neighbouring
+#: page too) or a chapter label. Other text is the end of the previous section.
 DFLT_HEADER_CHARS = 80
+#: Pages either side of a page searched for its running header: 2 covers books
+#: whose odd and even pages carry different headers.
+DFLT_HEADER_SPAN = 2
+#: PDF points: text this far above a bookmark's ``top`` still starts its section.
+_TOP_SLACK = 2.0
 FRONT_MATTER_TITLE = "(front matter)"
 PREAMBLE_TITLE = "(preamble)"
 
@@ -71,6 +77,13 @@ _NOT_PARAGRAPH_START = re.compile(r"^(?: {4}|\t| {0,3}<)")
 # below such a paragraph is a thematic break (or a table rule), not a heading.
 _NOT_SETEXT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>|]|\d{1,9}[.)])(?:\s|$)")
 _HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+# The end of a sentence: a line ending so, above a title, is the previous section's.
+_SENTENCE_END = re.compile(r"[.!?…][\"'”’)\]]*\s*$")
+# A chapter label printed alone above a title: "CHAPTER 2", "Part IV", "3", "A".
+_CHAPTER_LABEL = re.compile(
+    r"^\s*(?:(?i:chapter|part|book|appendix|section|lecture|lesson)\s+)?"
+    r"(?:\d+|[IVXLC]+|[A-Z])\.?\s*$"
+)
 # "Chapter 2: ", "3.1 - ", "IV. ", "A. ": numbering a page layout often prints
 # apart from the title proper. A keyword alone, or a plain first word, is not one.
 _NUMBERING_PREFIX = re.compile(
@@ -86,7 +99,10 @@ class OutlineEntry:
     ``page`` is the 1-based physical page; ``label`` is the number printed on
     that page (``'xii'``, ``'37'``), which is the physical number as a string
     when the PDF declares no page labels. ``path`` holds the titles from the
-    outermost ancestor bookmark down to this one.
+    outermost ancestor bookmark down to this one. ``top`` is the vertical
+    coordinate the bookmark points at (PDF points from the page's bottom), when
+    its destination gives one: :func:`pdf_sections` cuts there when the title
+    cannot be found in the text.
     """
 
     level: int
@@ -94,6 +110,7 @@ class OutlineEntry:
     page: int
     label: Optional[str] = None
     path: tuple = ()
+    top: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -316,20 +333,22 @@ def pdf_outline(pdf: PdfSource, *, max_level: Optional[int] = None) -> list:
                 index = None
             if index is not None and not 0 <= index < n_pages:
                 index = None
-            nodes.append([" ".join(str(item.title or "").split()), index, []])
+            nodes.append(
+                [" ".join(str(item.title or "").split()), index, [], _top_of(item)]
+            )
         return nodes
 
     def flatten(nodes, level, ancestors):
         nonlocal unresolved
-        for title, index, children in nodes:
+        for title, index, children, top in nodes:
             path = ancestors + (title,) if title else ancestors
             below = list(flatten(children, level + 1, path))
             if index is None and below:
-                index = below[0].page - 1
+                index, top = below[0].page - 1, None  # the child's page, not its spot
             if title and index is not None:
                 if max_level is None or level <= max_level:
                     label = labels[index] if index < len(labels) else None
-                    yield OutlineEntry(level, title, index + 1, label, path)
+                    yield OutlineEntry(level, title, index + 1, label, path, top)
             elif title:
                 unresolved += 1
             yield from below
@@ -351,14 +370,17 @@ def pdf_sections(
     page_text: Optional[Callable] = None,
     page_marker: Optional[str] = DFLT_PAGE_MARKER,
     header_chars: int = DFLT_HEADER_CHARS,
+    header_span: int = DFLT_HEADER_SPAN,
 ) -> list:
     """Cut a PDF's text at its outline entries.
 
     A section starts where its title is found on its outline page and ends
     where the next section starts. When the title cannot be located (it is an
-    image, or the extractor garbled it) the section starts at the top of its
-    page, or right after the previous section's title when they share a page.
-    Text before the first entry becomes a ``'(front matter)'`` section.
+    image, or the extractor garbled it), the section starts at the line its
+    bookmark points at, when the bookmark gives a ``top`` coordinate and the
+    default extractor is used; else at the top of its page, or right after the
+    previous section's title when they share a page. Text before the first
+    entry becomes a ``'(front matter)'`` section.
 
     Args:
         pdf: PDF bytes, a path, a binary stream, or an open ``pypdf.PdfReader``.
@@ -374,7 +396,12 @@ def pdf_sections(
             ``None`` for no markers.
         header_chars: Text above a section's title on its page stays with that
             section when it is at most this long (a running header, a "CHAPTER
-            2" label); longer text is the end of the previous section.
+            2" label, an epigraph), unless a line of it ends a sentence and is
+            not a running header (it does not also head a page within
+            ``header_span`` pages, digits aside): that is the previous section's
+            last line spilling onto the page, and it ends that section.
+        header_span: How many pages either side are searched for a running
+            header.
 
     Returns:
         A list of :class:`Section`, in reading order. Entry number *k* of the
@@ -423,17 +450,41 @@ def pdf_sections(
     # Where each entry starts: (page index, character offset in that page's text).
     starts: list = []
     search_from = 0  # on the current page: just past the previous entry's title
+
+    def heads(index):
+        """The first two non-empty lines of a page, normalised for comparison."""
+        lines = [ln for ln in text_of(index).splitlines() if ln.strip()][:2]
+        return {_header_key(ln) for ln in lines}
+
+    def is_header(line, index):
+        if _CHAPTER_LABEL.match(line):
+            return True
+        key = _header_key(line)
+        near = range(max(0, index - header_span), min(n_pages, index + header_span + 1))
+        return bool(key) and any(key in heads(i) for i in near if i != index)
+
     for entry in entries:
         index = min(entry.page, n_pages) - 1
         same_page = bool(starts) and starts[-1][0] == index
         floor = search_from if same_page else 0
         found = _find_title(text_of(index), entry.title, start=floor)
+        if found is None and entry.top is not None and page_text is None:
+            at = _offset_below(reader.pages[index], text_of(index), entry.top, floor)
+            if at is not None:
+                found = (at, at)
         if found is None:
             start, search_from = floor, floor
         else:
             start, search_from = found
             above = text_of(index)[:start]
-            if not same_page and len(above.strip()) <= header_chars:
+            lines = [ln for ln in above.splitlines() if ln.strip()]
+            # a short line ending a sentence, and not a running header, is the
+            # previous section spilling over; anything else short (a label, an
+            # epigraph, an ornament) belongs to this one
+            spill = any(
+                _SENTENCE_END.search(ln) and not is_header(ln, index) for ln in lines
+            )
+            if not same_page and len(above.strip()) <= header_chars and not spill:
                 start = 0  # a running header or chapter label: it belongs here
         starts.append((index, start))
 
@@ -679,6 +730,59 @@ def _pdf_reader(pdf: PdfSource):
     if hasattr(pdf, "read"):
         return PdfReader(pdf)
     return PdfReader(str(Path(pdf).expanduser()))
+
+
+def _top_of(dest) -> Optional[float]:
+    """The vertical coordinate a pypdf outline destination points at, if any."""
+    try:
+        top = dest.top
+    except Exception:  # not every destination type carries one
+        return None
+    try:
+        return None if top is None else float(top)
+    except (TypeError, ValueError):  # a NullObject: "keep the current position"
+        return None
+
+
+def _header_key(line: str) -> str:
+    """A line as running headers compare: no digits (page numbers), case or spacing."""
+    return " ".join(re.sub(r"\d+", " ", line).lower().split())
+
+
+def _offset_below(page, text: str, top: float, floor: int = 0) -> Optional[int]:
+    """The offset in ``text`` (``page``'s default extraction) of the first text line
+    at or below the coordinate ``top``: the line a bookmark pointing there names.
+    None if no text sits below ``top`` at or after ``floor``."""
+    from pypdf.generic import ContentStream
+
+    contents = page.get_contents()
+    if contents is None:
+        return None
+    # pypdf's visitor misplaces lines moved by T*, ' and " (it scales the leading
+    # by the font size): on such a page the coordinates cannot be trusted
+    if any(
+        op in (b"T*", b"'", b'"') for _, op in ContentStream(contents, None).operations
+    ):
+        return None
+    fragments: list = []
+
+    def visit(chunk, cm, tm, font_dict, font_size):
+        if chunk.strip():  # text-space origin, mapped to page space
+            fragments.append((chunk.strip(), tm[4] * cm[1] + tm[5] * cm[3] + cm[5]))
+
+    page.extract_text(visitor_text=visit)
+    cursor, located = 0, []
+    for chunk, y in fragments:  # the extraction holds the fragments, in this order
+        at = text.find(chunk, cursor)
+        if at < 0:
+            continue
+        located.append((at, y))
+        cursor = at + len(chunk)
+    below = [(at, y) for at, y in located if y <= top + _TOP_SLACK and at >= floor]
+    if not below:
+        return None
+    # the highest line under the coordinate; its first fragment
+    return max(below, key=lambda p: (p[1], -p[0]))[0]
 
 
 def _page_labels(reader) -> list:

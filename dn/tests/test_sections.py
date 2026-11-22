@@ -36,10 +36,12 @@ def _make_pdf(pages, outline):
     font_ref = writer._add_object(font)
     for lines in pages:
         page = writer.add_blank_page(width=612, height=792)
-        ops = ["BT", "/F1 12 Tf", "14 TL", "72 720 Td"]
-        for line in lines:
+        # each line placed by its own text matrix (y = 720, 706, ...): pypdf's
+        # visitor misreports positions after T* (it scales the leading)
+        ops = ["BT", "/F1 12 Tf"]
+        for k, line in enumerate(lines):
             escaped = line.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
-            ops += [f"({escaped}) Tj", "T*"]
+            ops += [f"1 0 0 1 72 {720 - 14 * k} Tm", f"({escaped}) Tj"]
         ops.append("ET")
         stream = DecodedStreamObject()
         stream.set_data("\n".join(ops).encode("latin-1"))
@@ -305,7 +307,11 @@ def test_setext_headings():
 
 def test_setext_and_atx_mix_and_thematic_break():
     md = "# A\ntext\n\n---\n\nB\n===\n## C\n"
-    assert [(s.level, s.title) for s in markdown_sections(md)] == [(1, "A"), (1, "B"), (2, "C")]
+    assert [(s.level, s.title) for s in markdown_sections(md)] == [
+        (1, "A"),
+        (1, "B"),
+        (2, "C"),
+    ]
 
 
 def _epub(tmp_path):
@@ -314,17 +320,29 @@ def _epub(tmp_path):
     book.set_identifier("dn-test")
     book.set_title("A Guide")
     book.set_language("en")
-    cover = epub.EpubHtml(title="Cover", file_name="cover.xhtml", content="<h1>A Guide</h1><p>By someone.</p>")
+    cover = epub.EpubHtml(
+        title="Cover",
+        file_name="cover.xhtml",
+        content="<h1>A Guide</h1><p>By someone.</p>",
+    )
     ch1 = epub.EpubHtml(
         title="Start",
         file_name="text/ch1.xhtml",
         content='<h1>Start</h1><p>Why.</p><h2 id="setup">Setup</h2><p>Install it.</p><h2 id="use">Use</h2><p>Run it.</p>',
     )
-    ch2 = epub.EpubHtml(title="End", file_name="text/ch2.xhtml", content="<h1>End</h1><p>Bye.</p>")
+    ch2 = epub.EpubHtml(
+        title="End", file_name="text/ch2.xhtml", content="<h1>End</h1><p>Bye.</p>"
+    )
     for c in (cover, ch1, ch2):
         book.add_item(c)
     book.toc = [
-        (epub.Section("Start", "text/ch1.xhtml"), [epub.Link("text/ch1.xhtml#setup", "Setup", "s"), epub.Link("text/ch1.xhtml#use", "Use", "u")]),
+        (
+            epub.Section("Start", "text/ch1.xhtml"),
+            [
+                epub.Link("text/ch1.xhtml#setup", "Setup", "s"),
+                epub.Link("text/ch1.xhtml#use", "Use", "u"),
+            ],
+        ),
         epub.Link("text/ch2.xhtml", "End", "e"),
         epub.Link("text/missing.xhtml", "Lost", "l"),
     ]
@@ -352,11 +370,22 @@ def test_ebook_sections_follow_the_table_of_contents(tmp_path):
     ]
     text = {s.title: s.text for s in sections}
     assert "By someone" in text["(front matter)"]
-    assert "Why." in text["Start"] and "Install" not in text["Start"]  # cut inside the chapter
+    assert (
+        "Why." in text["Start"] and "Install" not in text["Start"]
+    )  # cut inside the chapter
     assert "Install it." in text["Setup"] and "Run it." in text["Use"]
-    assert "Bye." in text["End"] and text["Lost"] == ""  # a missing target keeps its key
-    assert sections[2].href == "text/ch1.xhtml#setup" and sections[2].key == "0002-setup"
-    assert [s.title for s in ebook_sections(path.read_bytes(), max_level=1)] == ["(front matter)", "Start", "End", "Lost"]
+    assert (
+        "Bye." in text["End"] and text["Lost"] == ""
+    )  # a missing target keeps its key
+    assert (
+        sections[2].href == "text/ch1.xhtml#setup" and sections[2].key == "0002-setup"
+    )
+    assert [s.title for s in ebook_sections(path.read_bytes(), max_level=1)] == [
+        "(front matter)",
+        "Start",
+        "End",
+        "Lost",
+    ]
 
 
 def test_setext_review_cases():
@@ -364,7 +393,10 @@ def test_setext_review_cases():
         return [(s.level, s.title) for s in markdown_sections(md)]
 
     # YAML front matter is not a heading: it stays the preamble, as before setext.
-    assert titles("---\ntitle: X\nauthor: Y\n---\n\n# Ch 1\ntext\n") == [(1, "(preamble)"), (1, "Ch 1")]
+    assert titles("---\ntitle: X\nauthor: Y\n---\n\n# Ch 1\ntext\n") == [
+        (1, "(preamble)"),
+        (1, "Ch 1"),
+    ]
     # A rule ends a block; the paragraph after it is the heading.
     assert titles("x\n\n---\nscene two\n---\n") == [(1, "(preamble)"), (2, "scene two")]
     # A list or a quote interrupts a paragraph: the --- below is a rule.
@@ -390,7 +422,9 @@ def test_ebook_sections_review_cases(tmp_path):
         file_name="text/ch 1.xhtml",  # a space: the TOC href is percent-encoded
         content='<h1>One</h1><p>First.</p><h2><a id="s1"></a>Inside</h2><p>Anchored.</p><p><a name="old"></a>Named.</p>',
     )
-    two = epub.EpubHtml(title="Two", file_name="text/ch2.xhtml", content="<h1>Two</h1><p>Second.</p>")
+    two = epub.EpubHtml(
+        title="Two", file_name="text/ch2.xhtml", content="<h1>Two</h1><p>Second.</p>"
+    )
     book.add_item(one)
     book.add_item(two)
     book.toc = [
@@ -409,8 +443,139 @@ def test_ebook_sections_review_cases(tmp_path):
     by = {s.title: s for s in sections}
     assert "(front matter)" not in by  # no XML declaration or <title> text leaks in
     assert all("xml version" not in s.text for s in sections)
-    assert [s.title for s in sections] == ["One", "Inside", "Named", "Two"]  # reading order
+    assert [s.title for s in sections] == [
+        "One",
+        "Inside",
+        "Named",
+        "Two",
+    ]  # reading order
     assert by["Two"].seq == 1 and by["One"].seq == 2  # keys follow the TOC
     assert "First." in by["One"].text and "Anchored" not in by["One"].text
-    assert by["Inside"].text.startswith("## Inside")  # cut before the heading, not inside it
-    assert by["Named"].text.strip().startswith("Named.") and "Named." not in by["Inside"].text
+    assert by["Inside"].text.startswith(
+        "## Inside"
+    )  # cut before the heading, not inside it
+    assert (
+        by["Named"].text.strip().startswith("Named.")
+        and "Named." not in by["Inside"].text
+    )
+
+
+# --------------------------------------------------------------------------------------
+# #9: coordinate cuts, the one-line spill, outline headings
+
+
+def _with_tops(pdf: bytes, tops: dict) -> bytes:
+    """``pdf`` with its bookmarks rewritten to /XYZ destinations at ``tops[title]``."""
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import Fit
+
+    reader = PdfReader(io.BytesIO(pdf))
+    writer = PdfWriter()
+    for page in reader.pages:
+        writer.add_page(page)
+    for item in reader.outline:
+        page = reader.get_destination_page_number(item)
+        writer.add_outline_item(
+            item.title, page, fit=Fit.xyz(left=0, top=tops.get(item.title), zoom=0)
+        )
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
+
+
+def test_an_unfindable_title_is_cut_at_its_bookmarks_coordinate():
+    # Lines sit at y = 720, 706, 692, 678 (12 pt type, 14 pt leading): the bookmark
+    # points just above the third line, whose text is not the title (an image's
+    # garbled OCR, say).
+    pdf = _make_pdf(
+        [["Intro", "intro body", "G4rbled H3ading", "section body"]],
+        [("Intro", 0, None), ("Clean Heading", 0, None)],
+    )
+    pdf = _with_tops(pdf, {"Intro": 732, "Clean Heading": 702})
+    assert [e.top for e in pdf_outline(pdf)] == [732, 702]
+    intro, section = pdf_sections(pdf)
+    assert intro.text.split() == ["Intro", "intro", "body"]
+    assert section.text.split() == ["G4rbled", "H3ading", "section", "body"]
+    # a custom extractor has no coordinates: the previous fallback holds
+    _, plain = pdf_sections(pdf, page_text=lambda page: page.extract_text())
+    assert plain.text.split()[0] == "intro"
+
+
+def test_a_short_spilled_line_ends_the_previous_section_but_a_running_header_does_not():
+    pages = [
+        ["My Book", "Alpha", "alpha text"],
+        ["My Book", "short spill.", "Beta", "beta text"],
+        ["My Book", "more beta"],
+    ]
+    pdf = _make_pdf(pages, [("Alpha", 0, None), ("Beta", 1, None)])
+    alpha, beta = pdf_sections(pdf)
+    assert "short spill." in alpha.text and "short spill." not in beta.text
+    # the header above a title with nothing else stays with its section
+    pages[1] = ["My Book", "Beta", "beta text"]
+    alpha, beta = pdf_sections(
+        _make_pdf(pages, [("Alpha", 0, None), ("Beta", 1, None)])
+    )
+    assert beta.text.split()[:3] == ["My", "Book", "Beta"]
+
+
+def test_pdf_to_markdown_can_head_the_outline_instead_of_pages(book_pdf):
+    from dn.src import dflt_converters
+
+    to_md = dflt_converters["pdf"]
+    md = to_md(book_pdf, headings="outline", ocr=False)
+    assert "### Page" not in md
+    assert "# Chapter 1: Beginnings\n\nOpening words." in md
+    assert "## First Steps\n\nStep text." in md
+    assert "# Chapter 2: Endings" in md
+    assert md.startswith("A Small Book")  # the front matter, with no heading
+    assert "<!-- page 3 -->" in md  # a page break inside a section is marked
+    no_outline = _make_pdf([["just text"]], [])
+    with pytest.warns(UserWarning, match="no bookmarks"):
+        assert "### Page 1" in to_md(no_outline, headings="outline", ocr=False)
+    with pytest.raises(ValueError):
+        to_md(book_pdf, headings="chapters")
+
+
+def test_review_labels_and_epigraphs_above_a_title_stay_and_tstar_pages_skip_coordinates():
+    for above in (
+        "CHAPTER ONE",
+        "Chapter iv",
+        "* * *",
+        "Fortune favours the bold. - Virgil",
+    ):
+        pdf = _make_pdf(
+            [["Alpha", "alpha text"], [above, "Beta", "beta text"]],
+            [("Alpha", 0, None), ("Beta", 1, None)],
+        )
+        alpha, beta = pdf_sections(pdf)
+        assert above not in alpha.text, above
+    # a page laid out with T*: pypdf's coordinates are wrong there, so no coordinate cut
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, NameObject
+
+    pdf = _make_pdf(
+        [["Intro", "intro body", "G4rbled H3ading", "section body"]],
+        [("Intro", 0, None), ("Clean Heading", 0, None)],
+    )
+    pdf = _with_tops(pdf, {"Intro": 732, "Clean Heading": 702})
+    writer = PdfWriter(clone_from=io.BytesIO(pdf))
+    stream = DecodedStreamObject()
+    stream.set_data(
+        b"BT /F1 12 Tf 14 TL 72 720 Td (Intro) Tj T* (intro body) Tj T* "
+        b"(G4rbled H3ading) Tj T* (section body) Tj ET"
+    )
+    writer.pages[0][NameObject("/Contents")] = writer._add_object(stream)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    intro, section = pdf_sections(buffer.getvalue())
+    assert intro.text.strip() == "Intro"  # the previous fallback: right after the title
+    assert section.text.split()[:2] == ["intro", "body"]
+
+
+def test_outline_markdown_does_not_repeat_a_title_under_a_running_header():
+    from dn.src import dflt_converters
+
+    pages = [["My Book", "Alpha", "a"], ["My Book", "Beta", "b"]]
+    pdf = _make_pdf(pages, [("Alpha", 0, None), ("Beta", 1, None)])
+    md = dflt_converters["pdf"](pdf, headings="outline", ocr=False)
+    assert "# Beta\n\nb" in md and md.count("Beta") == 1
