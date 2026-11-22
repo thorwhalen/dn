@@ -67,6 +67,7 @@ with ignore_import_errors:
         ocr_dpi: Optional[int] = None,
         ocr_lang: Optional[str] = None,
         ocr_max_workers: Optional[int] = None,
+        headings: str = "pages",
     ) -> str:
         """Convert PDF to markdown text.
 
@@ -93,12 +94,18 @@ with ignore_import_errors:
             ocr_dpi: Rendering resolution, defaults to :data:`dn.ocr.DFLT_OCR_DPI`.
             ocr_lang: Tesseract language pack(s), e.g. ``'eng+fra'``.
             ocr_max_workers: Concurrent OCR workers.
+            headings: ``'pages'`` (default) heads each page ``Page N``;
+                ``'outline'`` heads each of the PDF's bookmarks instead (``#`` per
+                outline level, cut as :func:`dn.sections.pdf_sections` cuts), with
+                an HTML comment where each new page starts. A PDF without
+                bookmarks falls back to ``'pages'``, with a warning.
 
         Returns:
             Markdown text.
 
         Raises:
-            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``.
+            ValueError: If ``ocr`` is not ``'auto'``, ``True``, or ``False``, or
+                ``headings`` is not ``'pages'`` or ``'outline'``.
             dn.ocr.OcrError: If ``ocr=True`` and OCR is unavailable or fails.
 
         Note:
@@ -111,6 +118,8 @@ with ignore_import_errors:
                 f"ocr must be 'auto', True, or False; got {ocr!r}. "
                 "(A truthy string is not a way to disable OCR.)"
             )
+        if headings not in ("pages", "outline"):
+            raise ValueError(f"headings must be 'pages' or 'outline'; got {headings!r}")
 
         pdf_reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
         texts = [page.extract_text() or "" for page in pdf_reader.pages]
@@ -149,10 +158,43 @@ with ignore_import_errors:
                     if ocr is True:
                         raise
 
+        if headings == "outline":
+            md = _outline_markdown(pdf_reader, texts)
+            if md is not None:
+                return md
         return "\n\n".join(
             f"{md_inner_file_header} Page {i + 1}\n\n{text}"
             for i, text in enumerate(texts)
         )
+
+    def _outline_markdown(pdf_reader, texts) -> Optional[str]:
+        """The pages' ``texts`` cut at the PDF's bookmarks, one heading each; None
+        (with a warning) when the PDF has no bookmarks."""
+        import warnings
+
+        from dn.sections import FRONT_MATTER_TITLE, _find_title, pdf_sections
+
+        try:
+            sections = pdf_sections(
+                pdf_reader, page_text=lambda page: texts[page.page_number]
+            )
+        except ValueError:  # no bookmarks
+            warnings.warn(
+                "headings='outline': this PDF has no bookmarks; using page headings",
+                stacklevel=3,
+            )
+            return None
+        blocks = []
+        for s in sections:
+            text = s.text
+            if s.title == FRONT_MATTER_TITLE:
+                blocks.append(text)
+                continue
+            found = _find_title(text, s.title)
+            if found is not None and not text[: found[0]].strip():
+                text = text[found[1] :]  # the heading says it already
+            blocks.append(f"{'#' * min(s.level, 6)} {s.title}\n\n{text.strip()}")
+        return "\n\n".join(b for b in blocks if b.strip())
 
     dflt_converters["pdf"] = pdf_to_markdown
 
