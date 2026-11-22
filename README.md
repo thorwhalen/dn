@@ -40,6 +40,7 @@ You can also install these when installing `dn`, like so:
     pip install dn[notebook]          # Jupyter Notebook support
     pip install dn[ebook]             # EPUB (pure-python backend)
     pip install dn[ocr]               # OCR for scanned PDFs
+    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
 
     # Install multiple format support
     pip install dn[pdf,word,excel]    # Multiple formats
@@ -47,6 +48,17 @@ You can also install these when installing `dn`, like so:
     # Install all optional dependencies
     pip install dn[all]
 ```
+
+`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
+
+```python
+from dn.src import bytes_to_markdown
+from dn.docling_pdf import docling_converters
+
+md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
+```
+
+or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
 
 # Examples
 

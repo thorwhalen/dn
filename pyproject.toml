@@ -57,6 +57,11 @@ ocr = [
     "PyMuPDF",
     "Pillow",
 ]
+# Opt-in, and deliberately not in `all`: Docling (MIT; models CDLA-Permissive-2.0)
+# installs torch and downloads its models on first use. See dn/docling_pdf.py.
+docling = [
+    "docling>=2.100",
+]
 all = [
     "pypdf",
     "mammoth",
