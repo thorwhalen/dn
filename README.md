@@ -1,65 +1,13 @@
 # dn
 
-Markdown parsing and generation
-
-To install: `pip install dn`
-
-
-## Optional Dependencies
-
-This package supports converting various file formats to Markdown, with each format requiring specific dependencies:
-
-
-    Format      Required Package(s)
-    ----------- -----------------
-    PDF         pypdf
-    Word        mammoth
-    Excel       pandas, openpyxl, tabulate
-    PowerPoint  python-pptx
-    HTML        markdownify
-    Notebooks   nbconvert, nbformat
-    Ebooks      calibre and/or pandoc (system tools) -- see below
-    Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
-
-**Installation Options**
-
-You can install these dependencies after the fact, if and when package complains it needs some specific resource. 
-
-You can also install these when installing `dn`, like so:
+Markdown parsing and generation: convert notebooks, PDF, Word, Excel, PowerPoint, HTML, ebooks and scanned pages to Markdown, and cut a long Markdown document into addressable sections.
 
 ```bash
-    # Install with minimal dependencies
-    pip install dn
-
-    # Install with support for specific formats
-    pip install dn[pdf]               # PDF conversion support
-    pip install dn[word]              # Word document support
-    pip install dn[excel]             # Excel support
-    pip install dn[powerpoint]        # PowerPoint support
-    pip install dn[html]              # HTML conversion
-    pip install dn[notebook]          # Jupyter Notebook support
-    pip install dn[ebook]             # EPUB (pure-python backend)
-    pip install dn[ocr]               # OCR for scanned PDFs
-    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
-
-    # Install multiple format support
-    pip install dn[pdf,word,excel]    # Multiple formats
-
-    # Install all optional dependencies
-    pip install dn[all]
+pip install dn
 ```
 
-`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
+Each format needs its own small dependency, installed on demand: see [Optional Dependencies](#optional-dependencies).
 
-<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
-```python
-from dn.src import bytes_to_markdown
-from dn.docling_pdf import docling_converters
-
-md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
-```
-
-or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
 
 # Examples
 
@@ -75,9 +23,7 @@ This is a markdown cell with some explanation.
 
 ~~~python
 # This is a code cell
-print("Hello, World!")
-x = 42
-print(f"The answer is {x}")
+print("Hello, World!") x = 42 print(f"The answer is {x}")
 ~~~
 
 ## Another Section
@@ -173,10 +119,65 @@ from dn import pptx_to_markdown  # requires python-pptx
 from dn import html_to_markdown  # requires markdownify
 ```
 
+## Optional Dependencies
+
+This package supports converting various file formats to Markdown, with each format requiring specific dependencies:
+
+
+    Format      Required Package(s)
+    ----------- -----------------
+    PDF         pypdf
+    Word        mammoth
+    Excel       pandas, openpyxl, tabulate
+    PowerPoint  python-pptx
+    HTML        markdownify
+    Notebooks   nbconvert, nbformat
+    Ebooks      calibre and/or pandoc (system tools) -- see below
+    Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
+
+**Installation Options**
+
+You can install these dependencies after the fact, if and when package complains it needs some specific resource. 
+
+You can also install these when installing `dn`, like so:
+
+```bash
+    # Install with minimal dependencies
+    pip install dn
+
+    # Install with support for specific formats
+    pip install dn[pdf]               # PDF conversion support
+    pip install dn[word]              # Word document support
+    pip install dn[excel]             # Excel support
+    pip install dn[powerpoint]        # PowerPoint support
+    pip install dn[html]              # HTML conversion
+    pip install dn[notebook]          # Jupyter Notebook support
+    pip install dn[ebook]             # EPUB (pure-python backend)
+    pip install dn[ocr]               # OCR for scanned PDFs
+    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
+
+    # Install multiple format support
+    pip install dn[pdf,word,excel]    # Multiple formats
+
+    # Install all optional dependencies
+    pip install dn[all]
+```
+
+`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
+
+<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
+```python
+from dn.src import bytes_to_markdown
+from dn.docling_pdf import docling_converters
+
+md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
+```
+
+or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
+
 ## Ebooks (EPUB, MOBI, AZW3, ...)
 
-`dn` converts ebooks to markdown through a registry of interchangeable backends,
-tried best-first:
+`dn` converts ebooks to markdown through a registry of interchangeable backends, tried best-first:
 
     Backend          Needs                  Notes
     ---------------- ---------------------- ------------------------------------
@@ -185,8 +186,7 @@ tried best-first:
     calibre_txt      calibre                All formats; noisier output
     ebooklib         pip install dn[ebook]  EPUB only; no external binary
 
-Calibre and pandoc are system tools, not pip packages. Ask what you have, and how
-to get the rest:
+Calibre and pandoc are system tools, not pip packages. Ask what you have, and how to get the rest:
 
 ```python
 from dn import check_ebook_requirements
@@ -203,8 +203,7 @@ from dn import ebook_to_markdown
 md = ebook_to_markdown("book.mobi")
 ```
 
-Ebook formats also route through the generic entry point, detected from the
-filename or from the file's own leading bytes:
+Ebook formats also route through the generic entry point, detected from the filename or from the file's own leading bytes:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
@@ -216,17 +215,9 @@ md = bytes_to_markdown(epub_bytes)  # format sniffed from the bytes
 
 Add your own strategy — or a whole new format — with `register_ebook_backend`.
 
-Note that only unambiguous ebook extensions are auto-detected. Several formats
-calibre reads are usually something else entirely (`.rb` is Ruby far more often
-than Rocket eBook, `.pdb` is usually a Protein Data Bank file), so those never
-get claimed from a filename; convert them by asking:
-`ebook_to_markdown(src, input_format='rb')`.
+Note that only unambiguous ebook extensions are auto-detected. Several formats calibre reads are usually something else entirely (`.rb` is Ruby far more often than Rocket eBook, `.pdb` is usually a Protein Data Bank file), so those never get claimed from a filename; convert them by asking: `ebook_to_markdown(src, input_format='rb')`.
 
-**What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM
-EPUB) are encrypted: no backend can read them, and you must remove the DRM
-yourself — where you are legally entitled to — before converting. Image-only
-containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from
-`EBOOK_FORMATS`. Scanned *PDFs* are handled -- see the OCR section below.
+**What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM EPUB) are encrypted: no backend can read them, and you must remove the DRM yourself — where you are legally entitled to — before converting. Image-only containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from `EBOOK_FORMATS`. Scanned *PDFs* are handled -- see the OCR section below.
 
 ## Sections: a long document as addressable pieces
 
@@ -254,8 +245,7 @@ markdown_sections(open("report.md").read())  # line_start / line_end instead of 
 
 ## Scanned PDFs (OCR)
 
-A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction
-returns nothing. `dn` notices and runs OCR on exactly those pages:
+A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction returns nothing. `dn` notices and runs OCR on exactly those pages:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
@@ -265,18 +255,14 @@ md = pdf_to_markdown(scanned_pdf_bytes)  # OCRs the pages that have no text
 md = pdf_to_markdown(pdf_bytes, ocr=False)  # opt out (OCR costs ~1s/page)
 ```
 
-`'auto'` engages only when the document has *no* text layer anywhere — the
-scanned-book case, where the alternative is an empty result. A text PDF never
-pays the OCR cost, not even one with blank or figure-only pages. For a PDF
-that's mostly text with a few scanned inserts, ask explicitly:
+`'auto'` engages only when the document has *no* text layer anywhere — the scanned-book case, where the alternative is an empty result. A text PDF never pays the OCR cost, not even one with blank or figure-only pages. For a PDF that's mostly text with a few scanned inserts, ask explicitly:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 md = pdf_to_markdown(pdf_bytes, ocr=True)  # OCR every text-less page
 ```
 
-`'auto'` is also opportunistic: if OCR is unavailable or fails, you still get
-the plain-extraction result. `ocr=True` raises instead.
+`'auto'` is also opportunistic: if OCR is unavailable or fails, you still get the plain-extraction result. `ocr=True` raises instead.
 
 This needs the Tesseract binary plus `pip install dn[ocr]`:
 
