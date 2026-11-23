@@ -2,18 +2,16 @@
 
 # About this build
 
-This documentation was built on **2026-11-23 02:54 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450"><code>02afd8d</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 07:35 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/1629d06f895e9d290055fbdc2da85435daad1c2b"><code>1629d06</code></a> on branch <code>main</code>, for **dn 0.0.21** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.20) is behind the latest release on PyPI (0.0.21): `pip install dn` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450"><code>02afd8d5be920fc4904d7a908f8a6d71286c9450</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/1629d06f895e9d290055fbdc2da85435daad1c2b"><code>1629d06f895e9d290055fbdc2da85435daad1c2b</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -24,15 +22,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45102677823">45102677823</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45132059439">45132059439</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>02afd8d5be920fc4904d7a908f8a6d71286c9450</code> (in the history of the built commit) |
+| Event commit | <code>1629d06f895e9d290055fbdc2da85435daad1c2b</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.23  |
+| epythet  | 0.2.24  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -51,14 +49,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.21/">0.0.21</a>, newer than the documented version (0.0.20).
+Latest release: <a href="https://pypi.org/project/dn/0.0.21/">0.0.21</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout 02afd8d5be920fc4904d7a908f8a6d71286c9450
-pip install "epythet==0.2.23"
+git checkout 1629d06f895e9d290055fbdc2da85435daad1c2b
+pip install "epythet==0.2.24"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

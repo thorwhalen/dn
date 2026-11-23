@@ -135,14 +135,8 @@ Converts a Jupyter notebook to Markdown, applying a output text processors.
 * **Parameters:**
   * **src_notebook** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Path to the source notebook or URL.
   * **target_file** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Path to save the converted Markdown file. If None, returns the Markdown content.
-    If it starts with ‘\*’, the ‘\*’ is replaced with the source notebook name.
-    Popular value for target_file is ‘
-
-    ```
-    *
-    ```
-
-    .md’.
+    If it starts with `'*'`, the `'*'` is replaced with the source notebook name.
+    Popular value for target_file is `'*.md'`.
   * **output_processors** ([`Sequence`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]) – List of functions to process cell outputs.
   * **read_encoding** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Encoding for reading the source notebook.
   * **write_encoding** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Encoding for writing the Markdown file.

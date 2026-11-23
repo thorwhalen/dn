@@ -1,36 +1,36 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-23T02:54:41Z",
+  "built_at": "2026-11-23T07:35:54Z",
   "package": {
     "name": "dn",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "display_name": "dn",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "02afd8d5be920fc4904d7a908f8a6d71286c9450",
-    "short_commit": "02afd8d",
+    "commit": "1629d06f895e9d290055fbdc2da85435daad1c2b",
+    "short_commit": "1629d06",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/dn",
-    "commit_url": "https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450",
+    "commit_url": "https://github.com/thorwhalen/dn/commit/1629d06f895e9d290055fbdc2da85435daad1c2b",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/dn",
-    "sha": "02afd8d5be920fc4904d7a908f8a6d71286c9450",
+    "sha": "1629d06f895e9d290055fbdc2da85435daad1c2b",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "45102677823",
-    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45102677823",
+    "run_id": "45132059439",
+    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45132059439",
     "server_url": "https://github.com"
   },
   "tools": {
-    "epythet": "0.2.23",
+    "epythet": "0.2.24",
     "sphinx": "9.1.1",
     "docutils": "0.22.4",
     "python": "3.12.16"
@@ -61,15 +61,13 @@
   "pypi": {
     "checked": true,
     "latest": "0.0.21",
-    "relation": "behind",
+    "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout 02afd8d5be920fc4904d7a908f8a6d71286c9450\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout 1629d06f895e9d290055fbdc2da85435daad1c2b\npip install \"epythet==0.2.24\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": false,
-    "notes": [
-      "The documented version (0.0.20) is behind the latest release on PyPI (0.0.21): `pip install dn` gives newer code than these docs describe."
-    ]
+    "aligned": true,
+    "notes": []
   }
 }
