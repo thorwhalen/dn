@@ -1,4 +1,4 @@
-> built 2026-11-22 22:11 UTC from d724746 (main) · dn 0.0.20. Details: build_info.json
+> built 2026-11-23 02:54 UTC from 02afd8d (main) · dn 0.0.20. Details: build_info.json
 
 # index.html.md
 
@@ -6,66 +6,13 @@
 
 # dn
 
-Markdown parsing and generation
-
-To install: `pip install dn`
-
-## Optional Dependencies
-
-This package supports converting various file formats to Markdown, with each format requiring specific dependencies:
-
-```none
-Format      Required Package(s)
------------ -----------------
-PDF         pypdf
-Word        mammoth
-Excel       pandas, openpyxl, tabulate
-PowerPoint  python-pptx
-HTML        markdownify
-Notebooks   nbconvert, nbformat
-Ebooks      calibre and/or pandoc (system tools) -- see below
-Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
-```
-
-**Installation Options**
-
-You can install these dependencies after the fact, if and when package complains it needs some specific resource.
-
-You can also install these when installing `dn`, like so:
+Markdown parsing and generation: convert notebooks, PDF, Word, Excel, PowerPoint, HTML, ebooks and scanned pages to Markdown, and cut a long Markdown document into addressable sections.
 
 ```bash
-    # Install with minimal dependencies
-    pip install dn
-
-    # Install with support for specific formats
-    pip install dn[pdf]               # PDF conversion support
-    pip install dn[word]              # Word document support
-    pip install dn[excel]             # Excel support
-    pip install dn[powerpoint]        # PowerPoint support
-    pip install dn[html]              # HTML conversion
-    pip install dn[notebook]          # Jupyter Notebook support
-    pip install dn[ebook]             # EPUB (pure-python backend)
-    pip install dn[ocr]               # OCR for scanned PDFs
-    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
-
-    # Install multiple format support
-    pip install dn[pdf,word,excel]    # Multiple formats
-
-    # Install all optional dependencies
-    pip install dn[all]
+pip install dn
 ```
 
-`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
-
-<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
-```python
-from dn.src import bytes_to_markdown
-from dn.docling_pdf import docling_converters
-
-md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
-```
-
-or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
+Each format needs its own small dependency, installed on demand: see [Optional Dependencies]().
 
 # Examples
 
@@ -80,9 +27,7 @@ This is a markdown cell with some explanation.
 
 ~~~python
 # This is a code cell
-print("Hello, World!")
-x = 42
-print(f"The answer is {x}")
+print("Hello, World!") x = 42 print(f"The answer is {x}")
 ~~~
 
 ## Another Section
@@ -172,10 +117,66 @@ from dn import pptx_to_markdown  # requires python-pptx
 from dn import html_to_markdown  # requires markdownify
 ```
 
+## Optional Dependencies
+
+This package supports converting various file formats to Markdown, with each format requiring specific dependencies:
+
+```none
+Format      Required Package(s)
+----------- -----------------
+PDF         pypdf
+Word        mammoth
+Excel       pandas, openpyxl, tabulate
+PowerPoint  python-pptx
+HTML        markdownify
+Notebooks   nbconvert, nbformat
+Ebooks      calibre and/or pandoc (system tools) -- see below
+Scanned PDF tesseract (system tool) + pytesseract, PyMuPDF
+```
+
+**Installation Options**
+
+You can install these dependencies after the fact, if and when package complains it needs some specific resource.
+
+You can also install these when installing `dn`, like so:
+
+```bash
+    # Install with minimal dependencies
+    pip install dn
+
+    # Install with support for specific formats
+    pip install dn[pdf]               # PDF conversion support
+    pip install dn[word]              # Word document support
+    pip install dn[excel]             # Excel support
+    pip install dn[powerpoint]        # PowerPoint support
+    pip install dn[html]              # HTML conversion
+    pip install dn[notebook]          # Jupyter Notebook support
+    pip install dn[ebook]             # EPUB (pure-python backend)
+    pip install dn[ocr]               # OCR for scanned PDFs
+    pip install dn[docling]           # PDF tables and headings via Docling (heavy: torch, models)
+
+    # Install multiple format support
+    pip install dn[pdf,word,excel]    # Multiple formats
+
+    # Install all optional dependencies
+    pip install dn[all]
+```
+
+`dn[all]` leaves out `docling`. The default PDF converter returns flat text under `### Page N` headers; Docling recovers tables and section headings, at 50 to 200 times the time and a torch install. Choose it per call, through the `converters=` seam:
+
+<!-- wads-docs: skip - needs the docling extra (torch and models) and the reader's pdf_bytes -->
+```python
+from dn.src import bytes_to_markdown
+from dn.docling_pdf import docling_converters
+
+md = bytes_to_markdown(pdf_bytes, "pdf", converters=docling_converters())
+```
+
+or for the whole process with `add_dflt_converter("pdf", docling_pdf_to_markdown)`.
+
 ## Ebooks (EPUB, MOBI, AZW3, …)
 
-`dn` converts ebooks to markdown through a registry of interchangeable backends,
-tried best-first:
+`dn` converts ebooks to markdown through a registry of interchangeable backends, tried best-first:
 
 ```none
 Backend          Needs                  Notes
@@ -186,8 +187,7 @@ calibre_txt      calibre                All formats; noisier output
 ebooklib         pip install dn[ebook]  EPUB only; no external binary
 ```
 
-Calibre and pandoc are system tools, not pip packages. Ask what you have, and how
-to get the rest:
+Calibre and pandoc are system tools, not pip packages. Ask what you have, and how to get the rest:
 
 ```python
 from dn import check_ebook_requirements
@@ -204,8 +204,7 @@ from dn import ebook_to_markdown
 md = ebook_to_markdown("book.mobi")
 ```
 
-Ebook formats also route through the generic entry point, detected from the
-filename or from the file’s own leading bytes:
+Ebook formats also route through the generic entry point, detected from the filename or from the file’s own leading bytes:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
@@ -217,17 +216,9 @@ md = bytes_to_markdown(epub_bytes)  # format sniffed from the bytes
 
 Add your own strategy — or a whole new format — with `register_ebook_backend`.
 
-Note that only unambiguous ebook extensions are auto-detected. Several formats
-calibre reads are usually something else entirely (`.rb` is Ruby far more often
-than Rocket eBook, `.pdb` is usually a Protein Data Bank file), so those never
-get claimed from a filename; convert them by asking:
-`ebook_to_markdown(src, input_format='rb')`.
+Note that only unambiguous ebook extensions are auto-detected. Several formats calibre reads are usually something else entirely (`.rb` is Ruby far more often than Rocket eBook, `.pdb` is usually a Protein Data Bank file), so those never get claimed from a filename; convert them by asking: `ebook_to_markdown(src, input_format='rb')`.
 
-**What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM
-EPUB) are encrypted: no backend can read them, and you must remove the DRM
-yourself — where you are legally entitled to — before converting. Image-only
-containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from
-`EBOOK_FORMATS`. Scanned *PDFs* are handled – see the OCR section below.
+**What cannot be converted.** DRM-protected ebooks (Amazon KFX/AZW, Adobe-DRM EPUB) are encrypted: no backend can read them, and you must remove the DRM yourself — where you are legally entitled to — before converting. Image-only containers (CBZ, CBR, DJVU) hold no text layer and are deliberately excluded from `EBOOK_FORMATS`. Scanned *PDFs* are handled – see the OCR section below.
 
 ## Sections: a long document as addressable pieces
 
@@ -255,8 +246,7 @@ markdown_sections(open("report.md").read())  # line_start / line_end instead of 
 
 ## Scanned PDFs (OCR)
 
-A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction
-returns nothing. `dn` notices and runs OCR on exactly those pages:
+A scanned book is a PDF full of *pictures* of pages, so ordinary text extraction returns nothing. `dn` notices and runs OCR on exactly those pages:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
@@ -266,18 +256,14 @@ md = pdf_to_markdown(scanned_pdf_bytes)  # OCRs the pages that have no text
 md = pdf_to_markdown(pdf_bytes, ocr=False)  # opt out (OCR costs ~1s/page)
 ```
 
-`'auto'` engages only when the document has *no* text layer anywhere — the
-scanned-book case, where the alternative is an empty result. A text PDF never
-pays the OCR cost, not even one with blank or figure-only pages. For a PDF
-that’s mostly text with a few scanned inserts, ask explicitly:
+`'auto'` engages only when the document has *no* text layer anywhere — the scanned-book case, where the alternative is an empty result. A text PDF never pays the OCR cost, not even one with blank or figure-only pages. For a PDF that’s mostly text with a few scanned inserts, ask explicitly:
 
 <!-- wads-docs: skip - fragment: the bytes come from the reader's own file -->
 ```python
 md = pdf_to_markdown(pdf_bytes, ocr=True)  # OCR every text-less page
 ```
 
-`'auto'` is also opportunistic: if OCR is unavailable or fails, you still get
-the plain-extraction result. `ocr=True` raises instead.
+`'auto'` is also opportunistic: if OCR is unavailable or fails, you still get the plain-extraction result. `ocr=True` raises instead.
 
 This needs the Tesseract binary plus `pip install dn[ocr]`:
 
@@ -1934,16 +1920,18 @@ Fetch the content of a URL.
 
 # About this build
 
-This documentation was built on **2026-11-22 22:11 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56"><code>d724746</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 02:54 UTC** from commit <a href="https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450"><code>02afd8d</code></a> on branch <code>main</code>, for **dn 0.0.20** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.20) is behind the latest release on PyPI (0.0.21): `pip install dn` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56"><code>d724746e0f395fd0a900fefdd7096a24a980de56</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450"><code>02afd8d5be920fc4904d7a908f8a6d71286c9450</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
 | Tags at this commit | none                                                                                                                                                 |
 | Working tree        | clean                                                                                                                                                |
@@ -1954,9 +1942,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/dn</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45076137504">45076137504</a>        |
+| Run          | <a href="https://github.com/thorwhalen/dn/actions/runs/45102677823">45102677823</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>d724746e0f395fd0a900fefdd7096a24a980de56</code> (in the history of the built commit) |
+| Event commit | <code>02afd8d5be920fc4904d7a908f8a6d71286c9450</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -1981,13 +1969,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dn/0.0.20/">0.0.20</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dn/0.0.21/">0.0.21</a>, newer than the documented version (0.0.20).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/dn && cd dn
-git checkout d724746e0f395fd0a900fefdd7096a24a980de56
+git checkout 02afd8d5be920fc4904d7a908f8a6d71286c9450
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

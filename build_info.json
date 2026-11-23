@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-22T22:11:49Z",
+  "built_at": "2026-11-23T02:54:41Z",
   "package": {
     "name": "dn",
     "version": "0.0.20",
@@ -9,24 +9,24 @@
   },
   "git": {
     "available": true,
-    "commit": "d724746e0f395fd0a900fefdd7096a24a980de56",
-    "short_commit": "d724746",
+    "commit": "02afd8d5be920fc4904d7a908f8a6d71286c9450",
+    "short_commit": "02afd8d",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/dn",
-    "commit_url": "https://github.com/thorwhalen/dn/commit/d724746e0f395fd0a900fefdd7096a24a980de56",
+    "commit_url": "https://github.com/thorwhalen/dn/commit/02afd8d5be920fc4904d7a908f8a6d71286c9450",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/dn",
-    "sha": "d724746e0f395fd0a900fefdd7096a24a980de56",
+    "sha": "02afd8d5be920fc4904d7a908f8a6d71286c9450",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "45076137504",
-    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45076137504",
+    "run_id": "45102677823",
+    "run_url": "https://github.com/thorwhalen/dn/actions/runs/45102677823",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -60,14 +60,16 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.20",
-    "relation": "same",
+    "latest": "0.0.21",
+    "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout d724746e0f395fd0a900fefdd7096a24a980de56\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/dn && cd dn\ngit checkout 02afd8d5be920fc4904d7a908f8a6d71286c9450\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": true,
-    "notes": []
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.20) is behind the latest release on PyPI (0.0.21): `pip install dn` gives newer code than these docs describe."
+    ]
   }
 }
